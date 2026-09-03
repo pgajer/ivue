@@ -10,6 +10,14 @@ A package for reusable visualization of numerical data and embedded graphs.
 This development version contains the package scaffold; plotting functions
 have not yet been migrated from gflow.
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/pgajer/ivue}
+  \item Report bugs at \url{https://github.com/pgajer/ivue/issues}
+}
+
+}
 \author{
 \strong{Maintainer}: Pawel Gajer \email{pgajer@gmail.com}
 

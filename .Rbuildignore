@@ -5,7 +5,11 @@
 ^.*\.Rproj$
 ^AGENTS\.md$
 ^MIGRATION\.md$
+^MIGRATION_STATUS\.md$
 ^Makefile$
 ^ivue_.*\.tar\.gz$
 ^ivue\.Rcheck$
 ^Rplots\.pdf$
+^artifacts$
+^tools$
+^\.github$

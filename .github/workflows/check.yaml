@@ -1,0 +1,69 @@
+name: Package and Browser Checks
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {os: ubuntu-latest, r: release}
+          - {os: ubuntu-latest, r: devel}
+          - {os: macos-latest, r: release}
+          - {os: windows-latest, r: release}
+    runs-on: ${{ matrix.os }}
+    env:
+      RGL_USE_NULL: "TRUE"
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: ${{ matrix.r }}
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-pandoc@v2
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: any::rcmdcheck
+          needs: check
+      - uses: r-lib/actions/check-r-package@v2
+        with:
+          args: 'c("--no-manual")'
+          error-on: '"warning"'
+
+  browser:
+    runs-on: ubuntu-latest
+    env:
+      RGL_USE_NULL: "TRUE"
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-pandoc@v2
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: any::rmarkdown
+          needs: check
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: R CMD INSTALL .
+      - run: Rscript -e 'stopifnot(requireNamespace("rgl", quietly = TRUE))'
+      - run: Rscript tools/render_examples.R
+      - run: npm install --prefix "$RUNNER_TEMP/ivue-browser" playwright@1.62.1
+      - run: node "$RUNNER_TEMP/ivue-browser/node_modules/playwright/cli.js" install --with-deps chromium
+      - run: PLAYWRIGHT_MODULE="$RUNNER_TEMP/ivue-browser/node_modules/playwright" node tools/browser_smoke.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: browser-evidence
+          path: artifacts/

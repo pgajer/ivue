@@ -10,3 +10,4 @@ Rplots.pdf
 *.so
 *.dll
 *.dylib
+artifacts/
