@@ -46,7 +46,7 @@ Mutually exclusive with palette.}
 \item{limits}{Two finite, nondecreasing numeric limits. Equal limits are
 permitted for constant data.}
 
-\item{center}{Optional reference value for a diverging scale. Supply an
+\item{center}{Optional reference value for a continuous diverging scale. Supply an
 appropriate diverging palette explicitly. Automatic limits are symmetric
 about center; explicit limits must contain it strictly.}
 
@@ -89,4 +89,7 @@ construction and mapping do not load rgl or create a graphics device.
 \examples{
 sc <- color.scale.cont(c(-1, 0, 1))
 map.colors(c(-1, 0.5, NA), sc)
+groups <- factor(c("low", "high", "low"), levels = c("low", "high"))
+group.scale <- color.scale.groups(groups, c(low = "blue", high = "red"))
+map.colors(groups, group.scale)
 }

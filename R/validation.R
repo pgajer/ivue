@@ -1,7 +1,7 @@
 .stop <- function(...) stop(..., call. = FALSE)
 
 .scalar <- function(x, name, lower = -Inf, upper = Inf, integer = FALSE) {
-    if (!is.numeric(x) || length(x) != 1L || !is.finite(x) ||
+    if (!is.numeric(x) || is.complex(x) || length(x) != 1L || !is.finite(x) ||
         x < lower || x > upper || (integer && x != floor(x))) {
         .stop(name, " must be a finite numeric scalar in [", lower, ", ", upper,
               "]", if (integer) " and a whole number" else "", ".")
@@ -27,14 +27,14 @@
     if ((!is.matrix(X) && !is.data.frame(X)) || ncol(X) != 3L)
         .stop("X must be a numeric matrix or data frame with exactly 3 columns.")
     X <- as.matrix(X)
-    if (!is.numeric(X) || nrow(X) < 1L || any(!is.finite(X)))
+    if (!is.numeric(X) || is.complex(X) || nrow(X) < 1L || any(!is.finite(X)))
         .stop("X must contain at least one row of finite numeric coordinates.")
     storage.mode(X) <- "double"
     X
 }
 
 .indices <- function(x, n, name) {
-    if (!is.numeric(x) || any(!is.finite(x)) || any(x != floor(x)) ||
+    if (!is.numeric(x) || is.complex(x) || any(!is.finite(x)) || any(x != floor(x)) ||
         any(x < 1 | x > n))
         .stop(name, " must contain whole-number row indices between 1 and ", n, ".")
     as.integer(x)
@@ -51,7 +51,7 @@
 
 .named.list <- function(x, allowed, name) {
     if (!is.list(x) || (length(x) && (is.null(names(x)) ||
-        any(!nzchar(names(x))) || anyDuplicated(names(x)) ||
+        anyNA(names(x)) || any(!nzchar(names(x))) || anyDuplicated(names(x)) ||
         any(!names(x) %in% allowed))))
         .stop(name, " must be a named list with unique keys from: ",
               paste(allowed, collapse = ", "), ".")

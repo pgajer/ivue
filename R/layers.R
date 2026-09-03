@@ -18,6 +18,8 @@
 #' @examples
 #' edges <- matrix(c(1, 2, 2, 3), ncol = 2, byrow = TRUE)
 #' layer3D.edges(edges)
+#' layer3D.path(c(1, 3, 2), col = "red", width = 2)
+#' layer3D.labels(c(1, 2), c("Start", "End"))
 layer3D.edges <- function(edges, col = "gray65", width = 1) {
     if (!is.matrix(edges) || !is.numeric(edges) || ncol(edges) != 2L ||
         any(!is.finite(edges)) || any(edges < 1 | edges != floor(edges)))
@@ -68,10 +70,17 @@ layer3D.labels <- function(rows, labels, col = "black", cex = 1,
 #' @param args Named list of additional arguments to fun.
 #' @return An `ivue_layer` specification.
 #' @export
+#' @examples
+#' labels <- layer3D.callback(function(ctx) {
+#'   rgl::text3d(ctx$X[1, , drop = FALSE], texts = "First point")
+#' })
+#' if (nzchar(system.file(package = "rgl"))) {
+#'   w <- plot3D.plain(matrix(1:9, ncol = 3), layers = list(labels))
+#' }
 layer3D.callback <- function(fun, args = list()) {
     if (!is.function(fun)) .stop("fun must be a function.")
     if (!is.list(args) || (length(args) && (is.null(names(args)) ||
-        any(!nzchar(names(args))) || anyDuplicated(names(args)))))
+        anyNA(names(args)) || any(!nzchar(names(args))) || anyDuplicated(names(args)))))
         .stop("args must be a named list with unique argument names.")
     structure(list(type = "callback", fun = fun, args = args), class = "ivue_layer")
 }

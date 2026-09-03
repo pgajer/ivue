@@ -4,9 +4,12 @@ Version: 0.0.0.9001
 Authors@R:
     person("Pawel", "Gajer", email = "pgajer@gmail.com",
            role = c("aut", "cre"))
-Description: A home for reusable three-dimensional plotting utilities for
-    numerical data and embedded graphs. Visualization is designed around
-    browser-based scenes, independently of domain-specific analysis packages.
+Description: Creates interactive three-dimensional point clouds and embedded
+    weighted graphs as browser widgets using 'rgl' null-device scenes.
+    Provides reusable continuous and categorical color scales, matching
+    legends, highlighting, and geometric edge, path, and label layers.
+    Supports multiple weighted-graph formats and optional layouts through
+    'igraph', with explicit distance or strength weight semantics.
 License: GPL (>= 3)
 URL: https://github.com/pgajer/ivue
 BugReports: https://github.com/pgajer/ivue/issues
@@ -27,7 +30,10 @@ Suggests:
     Matrix,
     callr,
     pkgload,
-    testthat (>= 3.0.0)
+    testthat (>= 3.1.7),
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
 Config/testthat/edition: 3
 Roxygen: list(markdown = TRUE)
 Config/roxygen2/version: 8.0.0

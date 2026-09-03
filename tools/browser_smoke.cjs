@@ -29,7 +29,7 @@ async function pixels(page) {
     for (const viewport of [{ width: 1280, height: 900 }, { width: 390, height: 844 }]) {
       for (const name of ['saddle', 'plain', 'groups', 'graph', 'saddle-selfcontained', 'multiple']) {
         const file = path.resolve('artifacts', name + '.html');
-        if (!fs.existsSync(file)) continue;
+        if (!fs.existsSync(file)) throw new Error(`Missing browser fixture: ${file}`);
         const page = await browser.newPage({ viewport });
         const errors = [];
         page.on('pageerror', error => errors.push(error.message));

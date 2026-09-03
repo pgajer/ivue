@@ -87,12 +87,21 @@ present, must match vertex IDs exactly. Values/groups follow graph vertex order.
 ```sh
 make document
 make check
+make check-cran
+make check-minimal
 ```
 
 `make document` requires `roxygen2`. `make check` regenerates documentation,
 builds the source package, and checks it without compiling a PDF manual.
 Generated help files and `NAMESPACE` are tracked; build and check outputs are
 ignored by Git.
+
+`make check-cran` also checks the PDF manual and rebuilds the vignette.
+`make check-minimal` checks without suggested packages, including the
+backend-free color API and the missing-rgl installation message. On macOS,
+set `R_TIDYCMD` to a modern HTML Tidy executable to validate the HTML manual.
+After installation, `vignette("ivue-introduction", package = "ivue")` covers
+shared scales, highlighting, graph inputs, layers, camera reuse, and export.
 
 See [MIGRATION_STATUS.md](MIGRATION_STATUS.md) for implemented scope and
 verification, and [MIGRATION.md](MIGRATION.md) for the specification.

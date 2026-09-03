@@ -3,14 +3,14 @@
     sprintf("rgba(%d,%d,%d,%.4f)", rgba[1, ], rgba[2, ], rgba[3, ], rgba[4, ] / 255)
 }
 
-.legend <- function(widget, mapping, title, position, font.size, width) {
+.legend <- function(widget, mapping, title, position, font.size, width, alpha = 1) {
     data <- mapping$legend
     items <- lapply(seq_len(nrow(data)), function(i) {
         label <- data$label[i]
         if (!is.na(data$count[i])) label <- sprintf("%s (%d)", label, data$count[i])
         htmltools::tags$div(style = "display:flex;gap:6px;align-items:center;margin:2px 0;",
             htmltools::tags$span(style = paste0("flex:0 0 12px;height:12px;border:1px solid #777;background:",
-                                                .css.color(data$color[i]), ";")),
+                                                .css.color(.with.alpha(data$color[i], alpha)), ";")),
             htmltools::tags$span(style = "overflow-wrap:anywhere;min-width:0;", label))
     })
     ramp <- NULL
@@ -18,7 +18,7 @@
         sc <- mapping$scale
         cols <- .continuous.colors(seq(sc$limits[1], sc$limits[2], length.out = 33L), sc)
         ramp <- htmltools::tags$div(style = paste0("height:12px;margin:4px 0;background:linear-gradient(to right,",
-                    paste(.css.color(cols), collapse = ","), ");"))
+                    paste(.css.color(.with.alpha(cols, alpha)), collapse = ","), ");"))
     }
     box <- htmltools::tags$div(class = "ivue-legend",
         style = paste0("position:absolute;top:8px;", position, ":8px;z-index:5;",
