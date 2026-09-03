@@ -19,7 +19,10 @@ suggested packages and do not launch a browser or write outside temporary files.
   R-devel (2026-09-02 r90474), and Linux R 4.1.3: Status OK in CI using
   `--as-cran --no-manual` with incoming checks disabled by the CI action.
 - Dependency-only checks on Linux R-release and local macOS R-devel: Status OK.
-- Win-builder R-devel: exact archive uploaded; result review pending.
+- Initial Win-builder R-devel (2026-08-31 r90457 ucrt), Windows Server 2022 x64:
+  0 errors, 0 warnings, 1 NOTE covering `New submission` and four invalid
+  README file links. All 158 test assertions, examples, and manuals passed.
+  The links now point to GitHub; replacement-archive checks are pending.
 
 ## Notes
 
@@ -27,4 +30,5 @@ The local incoming check reports only `New submission`. PDF and HTML manual
 checks and vignette rebuilding passed. This is a new package with no CRAN
 reverse dependencies. Its migrated development consumers were tested locally.
 
-Do not submit this comment until the pending Win-builder review is complete.
+Do not submit this comment until the corrected archive has passed local and
+Win-builder checks and the final results have been recorded here.
