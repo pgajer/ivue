@@ -92,6 +92,30 @@ test_that("empty labels and explicit NA factor levels preserve group identity", 
     expect_length(map.colors(c("", "a"), color.scale.groups(c("", "a")))$colors, 2)
 })
 
+test_that("NaN groups retain missingness independently of their string representation", {
+    inputs <- list(c(1, NaN, NA_real_),
+                   c(1 + 0i, complex(real = NaN), complex(imaginary = NaN)),
+                   c(NaN, NA_real_))
+    for (x in inputs) for (unknown in c("error", "missing")) {
+        sc <- color.scale.groups(x, na.color = "transparent", unknown = unknown)
+        m <- map.colors(x, sc)
+        expect_identical(m$colors == "transparent", is.na(x))
+        expect_equal(tail(m$legend$count, 1), sum(is.na(x)))
+        expect_equal(sum(m$legend$count), length(x))
+    }
+    x <- c(NaN, complex(real = NaN), complex(imaginary = NaN))
+    labels <- unique(c("NaN", as.character(x)))
+    sc <- color.scale.groups(labels, na.color = "transparent")
+    m <- map.colors(x, sc)
+    expect_identical(m$colors, rep("transparent", length(x)))
+    expect_equal(m$legend$count, c(rep(0L, length(labels)), length(x)))
+    literal <- map.colors(labels, sc)
+    expect_false(any(literal$colors == "transparent"))
+    expect_identical(literal$legend$label, labels)
+    expect_equal(literal$legend$count, rep(1L, length(labels)))
+    expect_error(map.colors(c("unseen", NA), sc), "Unknown")
+})
+
 test_that("automatic precision separates nearby boundaries while manual digits warn", {
     v <- seq(1, 1.0001, length.out = 20)
     for (mode in c("continuous", "binned")) {

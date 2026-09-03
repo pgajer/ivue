@@ -1,5 +1,7 @@
 # ivue 0.1.0
 
+- Treat numeric and complex NaN groups as missing while preserving literal
+  "NaN" categories and accurate legend counts.
 - Use plot3D.groups as the canonical categorical plot name, without a cltrs
   alias. Add backend-free prepare.graph for inspecting and reusing graph data.
 - Align named graph values, groups, colors, and logical highlight masks by
