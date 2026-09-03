@@ -4,18 +4,18 @@ Interactive 3D visualization of data and graphs in R.
 
 ## Status
 
-Development version `0.0.0.9001` implements browser-first plotting on `rgl`
+Version `0.1.0` is the first release candidate for browser-first plotting on `rgl`
 null-device scenes. It is independent of `gflow`, `gflowui`, and Shiny. No native
 graphics window or XQuartz setup is needed for ordinary plotting. This is not
 yet a CRAN release.
 
 ```r
 install.packages(c("remotes", "rgl"))
-remotes::install_github("pgajer/ivue", ref = "codex/ivue-migration")
+remotes::install_github("pgajer/ivue")
 ```
 
-The development implementation is on `codex/ivue-migration`; it has not been
-merged into `main`. During local development use `make install` in this repo.
+The current implementation is on `main`. During local development use
+`make install` in this repo.
 `rgl` is a deferred-loaded suggested dependency so even `pkgload::load_all()`
 does not initialize native graphics early. Color mapping works without it;
 plotting requires it. `igraph` is optional for layout and igraph input, and
@@ -105,6 +105,9 @@ shared scales, highlighting, graph inputs, layers, camera reuse, and export.
 
 See [MIGRATION_STATUS.md](MIGRATION_STATUS.md) for implemented scope and
 verification, and [MIGRATION.md](MIGRATION.md) for the specification.
+Current release evidence is in [RELEASE_VALIDATION.md](RELEASE_VALIDATION.md);
+the [submission checklist](CRAN-SUBMISSION-CHECKLIST.md) distinguishes a checked
+candidate from a completed CRAN submission.
 
 `Rscript tools/render_examples.R` generates runnable HTML examples.
 `node tools/browser_smoke.cjs` checks desktop/mobile canvas pixels, rotation,

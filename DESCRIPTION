@@ -1,6 +1,6 @@
 Package: ivue
 Title: Interactive 3D Visualization of Data and Graphs
-Version: 0.0.0.9001
+Version: 0.1.0
 Authors@R:
     person("Pawel", "Gajer", email = "pgajer@gmail.com",
            role = c("aut", "cre"))

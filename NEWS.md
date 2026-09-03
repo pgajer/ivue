@@ -1,4 +1,4 @@
-# ivue 0.0.0.9001
+# ivue 0.1.0
 
 - Added canonical browser-first point, continuous-color, group, and weighted
   graph plots with shared scene lifecycle and no output-name aliases.
