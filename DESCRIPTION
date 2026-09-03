@@ -1,0 +1,16 @@
+Package: ivue
+Title: Interactive 3D Visualization of Data and Graphs
+Version: 0.0.0.9000
+Authors@R:
+    person("Pawel", "Gajer", email = "pgajer@gmail.com",
+           role = c("aut", "cre"))
+Description: A home for reusable three-dimensional plotting utilities for
+    numerical data and embedded graphs. Visualization is designed around
+    browser-based scenes, independently of domain-specific analysis packages.
+License: GPL (>= 3)
+Encoding: UTF-8
+Language: en-US
+Depends:
+    R (>= 4.1.0)
+Roxygen: list(markdown = TRUE)
+Config/roxygen2/version: 8.0.0
