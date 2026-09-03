@@ -15,14 +15,16 @@ suggested packages and do not launch a browser or write outside temporary files.
 
 - macOS arm64, R-devel 4.7.0 (2026-06-24 r90190), full `--as-cran` check of the
   R-release-built submission archive: 0 errors, 0 warnings, 1 NOTE.
-- Linux, Windows, and macOS R 4.6.1; Linux R-devel (2026-09-02 r90473), Windows
+- Linux, Windows, and macOS R 4.6.1; Linux R-devel (2026-09-01 r90464), Windows
   R-devel (2026-09-02 r90474), and Linux R 4.1.3: Status OK in CI using
   `--as-cran --no-manual` with incoming checks disabled by the CI action.
 - Dependency-only checks on Linux R-release and local macOS R-devel: Status OK.
 - Initial Win-builder R-devel (2026-08-31 r90457 ucrt), Windows Server 2022 x64:
   0 errors, 0 warnings, 1 NOTE covering `New submission` and four invalid
   README file links. All 158 test assertions, examples, and manuals passed.
-  The links now point to GitHub; replacement-archive checks are pending.
+  The links now point to GitHub. The replacement archive passed local full
+  and dependency-only checks and all seven CI jobs; repeat Win-builder
+  results are pending.
 
 ## Notes
 
