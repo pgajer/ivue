@@ -23,8 +23,11 @@ suggested packages and do not launch a browser or write outside temporary files.
   0 errors, 0 warnings, 1 NOTE covering `New submission` and four invalid
   README file links. All 158 test assertions, examples, and manuals passed.
   The links now point to GitHub. The replacement archive passed local full
-  and dependency-only checks and all seven CI jobs; repeat Win-builder
-  results are pending.
+  and dependency-only checks and all seven CI jobs.
+- Repeat Win-builder R-devel (2026-08-31 r90457 ucrt), checked at
+  2026-09-03 15:49:06 UTC: 0 errors, 0 warnings, 1 NOTE (`New submission`).
+  The README-link findings are resolved; examples, tests, vignette rebuilding,
+  and PDF/HTML manuals passed. The result log has been reviewed and preserved.
 
 ## Notes
 
@@ -32,5 +35,15 @@ The local incoming check reports only `New submission`. PDF and HTML manual
 checks and vignette rebuilding passed. This is a new package with no CRAN
 reverse dependencies. Its migrated development consumers were tested locally.
 
-Do not submit this comment until the corrected archive has passed local and
-Win-builder checks and the final results have been recorded here.
+## Internal Audit Gate — Not Ready for Submission
+
+An independent audit reproduced lost geometry opacity in the current archive:
+even alpha = 0 draws opaque points and spheres, while legends show the requested
+opacity. Edge and label color alpha is also lost. Smaller scale/input/legend
+findings and reproduction scripts are in
+tools/audits/ivue-0.1.0-independent-audit.md.
+
+Do not upload the current archive or use this draft comment. Correct the
+rendering defect, resolve or explicitly disposition the remaining audit findings,
+check a replacement archive, and then replace this internal gate with the final
+factual submission narrative. Clean check logs do not resolve the audit findings.
