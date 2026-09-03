@@ -43,7 +43,12 @@ jobs:
           error-on: '"warning"'
       - name: Check without suggested packages
         if: matrix.os == 'ubuntu-latest' && matrix.r == 'release'
-        run: make check-minimal
+        run: make check-minimal R_ENV=env
+      - uses: actions/upload-artifact@v4
+        if: matrix.os == 'ubuntu-latest' && matrix.r == 'release'
+        with:
+          name: source-tarball-r-release
+          path: ivue_*.tar.gz
 
   browser:
     runs-on: ubuntu-latest
