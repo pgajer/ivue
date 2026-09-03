@@ -25,6 +25,14 @@ plotting must not require `gflow`, `gflowui`, or Shiny.
 
 - Follow `MIGRATION.md` and record the source commit and source paths for each
   migrated group of functions.
+- Do not migrate `.html` aliases or provide thin `.widget` aliases. Export
+  canonical plotting names only.
+- Keep the embedded-graph phase, but redesign `plot3D.graph` and
+  `.compute.igraph.layout` for weighted-graph inputs before implementing them.
+  Share input normalization across formats, distinguish weight semantics, and
+  separate supplied coordinates from optional layout computation.
+- Prefer a consistent, explicit new API over preserving inconsistent legacy
+  arguments. Document changes and update callers rather than adding aliases.
 - Migrate the plotting functions together with their required helpers and
   focused regression tests.
 - Update downstream callers and verify them before removing source functions
