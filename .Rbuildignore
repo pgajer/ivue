@@ -1,0 +1,11 @@
+^\.git$
+^\.gitignore$
+^\.DS_Store$
+^\.Rproj\.user$
+^.*\.Rproj$
+^AGENTS\.md$
+^MIGRATION\.md$
+^Makefile$
+^ivue_.*\.tar\.gz$
+^ivue\.Rcheck$
+^Rplots\.pdf$
