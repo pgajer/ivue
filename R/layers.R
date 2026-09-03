@@ -103,17 +103,22 @@ layer3D.callback <- function(fun, args = list()) {
         if (!is.null(layer$path)) .indices(layer$path, nrow(X), "path")
         n <- nrow(layer$edges)
         if (!n) return(invisible(NULL))
-        col <- .colors(layer$col, n)
+        material <- .material.colors(.colors(layer$col, n))
         widths <- .widths(layer$width, n)
         for (w in unique(widths)) {
             keep <- which(widths == w)
             xyz <- X[as.vector(t(layer$edges[keep, , drop = FALSE])), , drop = FALSE]
-            rgl::segments3d(xyz, col = rep(col[keep], each = 2L), lwd = w, lit = FALSE)
+            rgl::segments3d(xyz, col = rep(material$col[keep], each = 2L),
+                            alpha = rep(material$alpha[keep], each = 2L), lwd = w, lit = FALSE)
         }
     } else if (layer$type == "labels") {
         rows <- .indices(layer$rows, nrow(X), "label rows")
-        if (length(rows)) rgl::text3d(sweep(X[rows, , drop = FALSE], 2, layer$offset, "+"),
-                texts = layer$labels, col = layer$col, cex = layer$cex, adj = layer$adj)
+        if (length(rows)) {
+            material <- .material.colors(.colors(layer$col, length(rows)))
+            rgl::text3d(sweep(X[rows, , drop = FALSE], 2, layer$offset, "+"),
+                texts = layer$labels, col = material$col, alpha = material$alpha,
+                cex = layer$cex, adj = layer$adj)
+        }
     } else .stop("Unknown layer type.")
     invisible(NULL)
 }

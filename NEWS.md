@@ -1,5 +1,11 @@
 # ivue 0.1.0
 
+- Pass color alpha and plot opacity to actual point, sphere, edge, path, and
+  label materials; retain documented highlight-style overrides.
+- Freeze numeric palette indices in fitted scales, handle empty and missing
+  factor levels, and automatically distinguish nearby legend boundaries.
+- Normalize extreme finite ranges without overflow and reject contradictory
+  explicit limits and bin boundaries.
 - Added canonical browser-first point, continuous-color, group, and weighted
   graph plots with shared scene lifecycle and no output-name aliases.
 - Added reusable color scales, consistent legends, geometric/callback layers,

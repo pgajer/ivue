@@ -19,7 +19,7 @@ color.scale.cont(
   winsor.p = 0,
   oob = c("squish", "censor", "error"),
   na.color = "gray80",
-  digits = 3L
+  digits = NULL
 )
 
 color.scale.groups(
@@ -38,10 +38,12 @@ is rejected. Automatic limits are fitted to these reference values only.}
 \item{mode}{Continuous interpolation (default) or explicit bins.}
 
 \item{palette}{R colors or a function of the requested number of colors.
-NULL uses the Viridis HCL palette.}
+NULL uses the Viridis HCL palette. Numeric palette indices are resolved
+when fitting the scale, so later session palette changes have no effect.}
 
 \item{color.map}{Optional function of numeric values returning R colors.
-Mutually exclusive with palette.}
+Mutually exclusive with palette. Called during mapping; keeping this
+callback independent of mutable external state is the caller's responsibility.}
 
 \item{limits}{Two finite, nondecreasing numeric limits. Equal limits are
 permitted for constant data.}
@@ -63,12 +65,20 @@ Zero (default) disables winsorization; must be less than 0.5.}
 
 \item{na.color}{Color for missing values and censored out-of-bounds values.}
 
-\item{digits}{Significant digits for legend labels, not bin calculations.}
+\item{digits}{NULL (default) increases significant digits from 3 up to 17
+until distinct legend boundaries/ticks have distinct labels. An explicit
+integer fixes precision and warns if labels become ambiguous. Does not
+change bin calculations.}
 
 \item{groups}{Reference group labels or a factor. Factors retain level order;
-other inputs use first-occurrence order. Missing labels remain missing.}
+other inputs use first-occurrence order. Missing factor levels and values
+use na.color, distinct from the literal group "NA". Empty strings are valid
+groups. Legend labels are quoted when empty strings or a group named
+"Missing" occur, keeping them distinct from the missing-value legend entry.}
 
-\item{colors}{Optional named group colors, covering all reference levels.}
+\item{colors}{Optional named group colors, covering all nonmissing reference
+levels. Names must be unique and nonmissing; an empty name identifies the
+empty-string group. Numeric colors are fixed when the scale is fitted.}
 
 \item{unknown}{Whether unseen groups raise an error or use the missing color.}
 

@@ -16,7 +16,7 @@
     ramp <- NULL
     if (mapping$scale$type == "continuous" && mapping$scale$mode == "continuous") {
         sc <- mapping$scale
-        cols <- .continuous.colors(seq(sc$limits[1], sc$limits[2], length.out = 33L), sc)
+        cols <- .continuous.colors(.scale.sequence(sc$limits, 33L), sc)
         ramp <- htmltools::tags$div(style = paste0("height:12px;margin:4px 0;background:linear-gradient(to right,",
                     paste(.css.color(.with.alpha(cols, alpha)), collapse = ","), ");"))
     }

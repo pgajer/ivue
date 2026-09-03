@@ -62,3 +62,16 @@
     rgba <- grDevices::col2rgb(col, alpha = TRUE) / 255
     grDevices::rgb(rgba[1, ], rgba[2, ], rgba[3, ], rgba[4, ] * alpha)
 }
+
+.material.colors <- function(col, alpha = 1) {
+    rgba <- grDevices::col2rgb(col, alpha = TRUE) / 255
+    list(col = grDevices::rgb(rgba[1, ], rgba[2, ], rgba[3, ]),
+         alpha = rgba[4, ] * alpha)
+}
+
+.fixed.colors <- function(col, n = length(col), name = "colors") {
+    col <- .colors(col, n, name)
+    if (!is.numeric(col)) return(col)
+    rgba <- grDevices::col2rgb(col, alpha = TRUE) / 255
+    stats::setNames(grDevices::rgb(rgba[1, ], rgba[2, ], rgba[3, ], rgba[4, ]), names(col))
+}

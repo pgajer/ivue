@@ -25,7 +25,8 @@ test_that("bins handle constants, ties, missing values, and label precision", {
         expect_equal(tail(map.colors(NA_real_, empty)$legend$count, 1), 1)
     }
     sc <- color.scale.cont(c(1, 1, 2, 2, 3), mode = "binned", method = "quantile", digits = 1)
-    expect_equal(sum(map.colors(c(1, 1, 2, 2, 3), sc)$legend$count), 5)
+    expect_warning(mapped <- map.colors(c(1, 1, 2, 2, 3), sc), "indistinguishable")
+    expect_equal(sum(mapped$legend$count), 5)
     expect_error(color.scale.cont(1:3, mode = "binned", breaks = c(1, 1, 3)), "increasing")
     expect_error(color.scale.cont(1:3, mode = "binned", n.bins = NA), "n.bins")
     expect_error(color.scale.cont(1:3, mode = "binned", winsor.p = 0.5), "less")
