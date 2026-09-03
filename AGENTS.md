@@ -23,8 +23,8 @@ plotting must not require `gflow`, `gflowui`, or Shiny.
 
 ## Migration
 
-- Follow `MIGRATION.md` and record the source commit and source paths for each
-  migrated group of functions.
+- Record the source commit, source paths, and attribution for migrated code in
+  `inst/MIGRATION_PROVENANCE.md`.
 - Do not migrate `.html` aliases or provide thin `.widget` aliases. Export
   canonical plotting names only.
 - Keep the embedded-graph phase, but redesign `plot3D.graph` and
@@ -46,3 +46,18 @@ plotting must not require `gflow`, `gflowui`, or Shiny.
   or generated Rd files.
 - Run focused tests after adding behavior and `make check` for package checks.
 - Keep build products and check output out of commits.
+
+## Private Agent Work Products
+
+- Keep internal audits, agent handoffs, planning notes, and release working
+  records under `~/.codex/private/ivue/`, not in the repository.
+- Organize private material by workstream, with `audits/`, `handoffs/`,
+  `plans/`, or `validation/` subdirectories as needed. Maintain a workstream
+  README recording each file's origin, former path, purpose, and disposition.
+- Keep public package documentation, formal submission comments, source
+  attribution, regression tests, and reusable validation/CI tools in Git.
+- Builds and tests must never depend on private files. When moving a tracked
+  internal record, preserve it privately and use a normal Git deletion;
+  do not rewrite repository history without separate explicit authorization.
+- Private files are not backed up by repository pushes. Do not store secrets
+  or credentials in the private tree.
