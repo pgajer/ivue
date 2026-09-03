@@ -55,5 +55,11 @@ and mobile widths. The categorical API is now `plot3D.groups`; `prepare.graph`
 exposes normalized graph data without rgl; and named annotations align by exact
 vertex ID. Point identification and camera reset are recorded as post-CRAN work.
 
-This draft remains on hold until the implementation is independently reviewed.
+Independent re-audit confirms the original findings and implemented API changes
+but found one new categorical missing-value regression: numeric/complex `NaN`
+is treated as an unknown group rather than mapped to `na.color`. This draft is
+not ready for submission. Fix that behavior, rebuild and check the source
+archive, replace the packaged development-branch README instructions, and update
+the final archive evidence before using these comments. Condense this internal
+audit narrative into the final reviewer-facing submission comment at that point.
 The older archives and their Win-builder results must not be used for submission.
