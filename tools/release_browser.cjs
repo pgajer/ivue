@@ -11,7 +11,7 @@ const { pathToFileURL } = require('node:url');
   try {
     const files = fs.readdirSync('artifacts/benchmark').filter(x => x.endsWith('.html')).map(x => 'artifacts/benchmark/' + x);
     files.push(...fs.readdirSync('artifacts/downstream-pipeline').filter(x => x.endsWith('.html')).map(x => 'artifacts/downstream-pipeline/' + x));
-    files.push('ivue.Rcheck/ivue/doc/ivue-introduction.html');
+    files.push(process.env.IVUE_VIGNETTE_HTML || 'ivue.Rcheck/ivue/doc/ivue-introduction.html');
     if (files.length !== 8) throw new Error(`Expected eight release fixtures, got ${files.length}`);
     for (const width of [1280, 390]) for (const file of files) {
       const page = await browser.newPage({ viewport: { width, height: 900 } });
