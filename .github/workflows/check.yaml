@@ -24,6 +24,7 @@ jobs:
     env:
       RGL_USE_NULL: "TRUE"
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      PKG_USE_BIOCONDUCTOR: "false"
     steps:
       - uses: actions/checkout@v4
       - uses: r-lib/actions/setup-r@v2
