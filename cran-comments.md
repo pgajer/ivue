@@ -28,6 +28,13 @@ suggested packages and do not launch a browser or write outside temporary files.
   2026-09-03 15:49:06 UTC: 0 errors, 0 warnings, 1 NOTE (`New submission`).
   The README-link findings are resolved; examples, tests, vignette rebuilding,
   and PDF/HTML manuals passed. The result log has been reviewed and preserved.
+- Corrected-candidate CI at commit `ab4a857`: all seven jobs passed on Linux
+  R-release/devel/4.1.3, Windows R-release/devel, macOS R-release, and Chromium.
+  Each package job passed 273 assertions. The browser job passed the general
+  interaction suite and all 38 geometry-opacity cases.
+- macOS arm64, local R-devel 4.7.0: full `--as-cran` check of the exact
+  R-release-built corrected archive: 0 errors, 0 warnings, 1 NOTE (`New
+  submission`). Dependency-only check: Status OK.
 
 ## Notes
 
@@ -35,15 +42,16 @@ The local incoming check reports only `New submission`. PDF and HTML manual
 checks and vignette rebuilding passed. This is a new package with no CRAN
 reverse dependencies. Its migrated development consumers were tested locally.
 
-## Internal Audit Gate — Not Ready for Submission
+## Independent Audit Correction
 
-An independent audit reproduced lost geometry opacity in the current archive:
-even alpha = 0 draws opaque points and spheres, while legends show the requested
-opacity. Edge and label color alpha is also lost. Smaller scale/input/legend
-findings and reproduction scripts are in
-tools/audits/ivue-0.1.0-independent-audit.md.
+The independent audit of the previous archive found lost geometry opacity and
+five scale/input/legend issues. The corrected candidate passes the unchanged 14
+R probes and unchanged browser probe. New browser tests also cover points,
+spheres, scales, missing colors, highlights, edges, paths, and labels at desktop
+and mobile widths. The categorical API is now `plot3D.groups`; `prepare.graph`
+exposes normalized graph data without rgl; and named annotations align by exact
+vertex ID. Point identification and camera reset are recorded as post-CRAN work.
 
-Do not upload the current archive or use this draft comment. Correct the
-rendering defect, resolve or explicitly disposition the remaining audit findings,
-check a replacement archive, and then replace this internal gate with the final
-factual submission narrative. Clean check logs do not resolve the audit findings.
+This draft remains on hold until the implementation is independently reviewed
+and the replacement archive's pending Win-builder result is read. The older
+archives and their Win-builder results must not be used for submission.
