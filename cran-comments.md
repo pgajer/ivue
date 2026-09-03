@@ -35,6 +35,9 @@ suggested packages and do not launch a browser or write outside temporary files.
 - macOS arm64, local R-devel 4.7.0: full `--as-cran` check of the exact
   R-release-built corrected archive: 0 errors, 0 warnings, 1 NOTE (`New
   submission`). Dependency-only check: Status OK.
+- Win-builder R-devel (2026-08-31 r90457 ucrt), checked at 2026-09-03
+  16:49:06 UTC: 0 errors, 0 warnings, 1 NOTE (`New submission`). Tests,
+  vignette rebuilding, and PDF/HTML manuals passed.
 
 ## Notes
 
@@ -52,6 +55,5 @@ and mobile widths. The categorical API is now `plot3D.groups`; `prepare.graph`
 exposes normalized graph data without rgl; and named annotations align by exact
 vertex ID. Point identification and camera reset are recorded as post-CRAN work.
 
-This draft remains on hold until the implementation is independently reviewed
-and the replacement archive's pending Win-builder result is read. The older
-archives and their Win-builder results must not be used for submission.
+This draft remains on hold until the implementation is independently reviewed.
+The older archives and their Win-builder results must not be used for submission.
