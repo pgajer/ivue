@@ -11,16 +11,18 @@
 .draw.points <- function(X, rows, colors, style) {
     if (!length(rows)) return(data.frame(row = integer(), object = integer(), index = integer()))
     col <- if (is.null(style$col)) colors[rows] else .colors(style$col, nrow(X))[rows]
-    col <- .with.alpha(col, style$alpha)
+    material <- .material.colors(col, style$alpha)
     id <- if (style$point.type == "point") {
-        rgl::points3d(X[rows, , drop = FALSE], col = col, size = style$point.size, lit = FALSE)
+        rgl::points3d(X[rows, , drop = FALSE], col = material$col,
+                      alpha = material$alpha, size = style$point.size, lit = FALSE)
     } else {
         radius <- style$sphere.radius
         if (is.null(radius)) {
             span <- max(apply(X, 2, function(x) diff(range(x))))
             radius <- max(1e-8, span * 0.01)
         }
-        rgl::spheres3d(X[rows, , drop = FALSE], col = col, radius = radius)
+        rgl::spheres3d(X[rows, , drop = FALSE], col = material$col,
+                       alpha = material$alpha, radius = radius)
     }
     data.frame(row = rows, object = as.integer(id), index = seq_along(rows))
 }
