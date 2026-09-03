@@ -26,8 +26,3 @@
 - Reject invalid complex numeric controls and binned diverging centers that
   were previously ignored; binned scales can use explicit bin colors.
 - Normalize matrix adjacency rows without repeatedly scanning all edges.
-
-# ivue 0.0.0.9000
-
-* Created the initial package scaffold and local Git repository before
-  migration of plotting utilities from `gflow`.

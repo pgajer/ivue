@@ -17,8 +17,8 @@ have.rgl <- nzchar(system.file(package = "rgl"))
 
 `ivue` returns interactive browser widgets. Plotting requires the separately
 installed `rgl` package; color scales, mapping, and `prepare.graph()` do not.
-The two-package CRAN installation command is `install.packages(c("ivue", "rgl"))`;
-for a pre-CRAN development build, install ivue from its repository and install
+The two-package CRAN installation command is `install.packages(c("ivue", "rgl"))`.
+For development builds, install ivue from its repository and install
 `rgl` separately. Printing a widget displays it in RStudio's Viewer or an
 interactive R console's browser. Assigning it to a variable defers viewing.
 Optional graph layouts and igraph inputs require
