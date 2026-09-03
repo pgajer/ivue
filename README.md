@@ -5,16 +5,13 @@ Interactive 3D visualization of data and graphs in R.
 ## Get Started
 
 Explore point clouds and embedded graphs with numerical or categorical colors.
-Version `0.1.0` is a development candidate, not yet a CRAN release. Install the
-current audit-fix candidate and its plotting backend with:
+Install ivue and its plotting backend with:
 
 ```r
-install.packages(c("remotes", "rgl"))
-remotes::install_github("pgajer/ivue", ref = "codex/ivue-audit-fixes")
+install.packages(c("ivue", "rgl"))
 ```
 
-After CRAN publication, the corresponding installation command will be
-`install.packages(c("ivue", "rgl"))`. Printing a returned widget displays it
+Printing a returned widget displays it
 in RStudio's Viewer or an interactive R session's browser. Assign it to a
 variable to defer viewing, or save it as HTML. No native graphics window or
 XQuartz setup is needed. ivue does not depend on gflow, gflowui, or Shiny.
@@ -80,6 +77,8 @@ plot3D.graph(igraph::make_ring(4), layout = "fr", weight.type = "unweighted")
 `prepare.graph()` validates input without rgl and exposes the edge order used
 for styling. **Weights do not automatically control edge width or color**;
 the example chooses a width mapping explicitly. Prepared graphs can be reused.
+Their integer edge endpoints index the current vertex table. To change vertex
+order, prepare a new graph from IDs rather than reorder that table in place.
 
 Supported formats: paired adjacency/weight lists, edge tables with explicit
 vertices, dense/sparse adjacency matrices, and igraph objects. Vertex identity,

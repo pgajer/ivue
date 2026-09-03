@@ -150,8 +150,10 @@ map.colors <- function(x, scale) {
     if (scale$type == "groups") {
         .groups(x)
         labels <- as.character(x)
+        input.missing <- is.na(x) | is.na(labels)
         index <- match(labels, scale$levels)
-        if (scale$unknown == "error" && any(!is.na(labels) & is.na(index)))
+        index[input.missing] <- NA_integer_
+        if (scale$unknown == "error" && any(!input.missing & is.na(index)))
             .stop("Unknown groups are not present in the reference scale.")
         colors <- unname(scale$colors[index])
         missing <- is.na(index)
