@@ -19,3 +19,11 @@ An advanced escape hatch for drawing with rgl. The callback must not open,
 close, or switch devices. Its context contains X, row.ids, colors, highlight,
 and draw.ids (row, object, index). Captured object IDs are not live devices.
 }
+\examples{
+labels <- layer3D.callback(function(ctx) {
+  rgl::text3d(ctx$X[1, , drop = FALSE], texts = "First point")
+})
+if (nzchar(system.file(package = "rgl"))) {
+  w <- plot3D.plain(matrix(1:9, ncol = 3), layers = list(labels))
+}
+}

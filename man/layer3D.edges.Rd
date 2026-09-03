@@ -49,4 +49,6 @@ They never open devices themselves. Row indices refer to the original X.
 \examples{
 edges <- matrix(c(1, 2, 2, 3), ncol = 2, byrow = TRUE)
 layer3D.edges(edges)
+layer3D.path(c(1, 3, 2), col = "red", width = 2)
+layer3D.labels(c(1, 2), c("Start", "End"))
 }

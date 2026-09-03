@@ -74,6 +74,8 @@ Only fr and kk need igraph. Negative and zero finite weights can be
 stored/drawn, but these layout algorithms require positive weights.
 Explicit sparse zeros are rejected because zero-edge semantics would be
 ambiguous. Duplicate/asymmetric adjacency entries are rejected, not averaged.
+igraph vertex names supply canonical IDs; a pre-existing id attribute is
+retained as .igraph.id (an existing .igraph.id attribute is a conflict).
 }
 \examples{
 g <- list(adj.list = list(2L, c(1L, 3L), 2L, integer()),

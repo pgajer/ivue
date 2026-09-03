@@ -1,0 +1,213 @@
+---
+title: "Point Clouds and Weighted Graphs with ivue"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Point Clouds and Weighted Graphs with ivue}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7, fig.height = 5)
+library(ivue)
+have.rgl <- nzchar(system.file(package = "rgl"))
+```
+
+## Installation and output
+
+`ivue` returns interactive browser widgets. Plotting requires the separately
+installed `rgl` package; color scales and mapping do not. Install the backend
+with `install.packages("rgl")`. Optional graph layouts and igraph inputs require
+`igraph`, and sparse matrix inputs require `Matrix`.
+
+The plotting functions initialize a private null device before loading `rgl`.
+They do not open a native graphics window, save files, or launch a browser.
+The private device is closed after scene capture, including on errors, and
+caller options and any surviving previous device are restored. An `rgl`
+namespace that another package already initialized unsuccessfully may require
+a fresh R session.
+
+## A sample from a saddle
+
+The input is an `n x 3` numeric matrix, or an all-numeric data frame. Each row
+is one observation. Coordinates must be finite; ivue does not silently drop
+rows with missing coordinates.
+
+```{r saddle-data}
+set.seed(1)
+xs <- runif(250, -1, 1)
+ys <- runif(250, -1, 1)
+zs <- 1.2 * (xs^2 - ys^2)
+X <- cbind(x = xs, y = ys, z = zs)
+```
+
+```{r saddle-plain, eval=have.rgl}
+plain <- plot3D.plain(X, col = "#197A68", point.size = 5,
+                     axes = TRUE, xlab = "x", ylab = "y", zlab = "z")
+plain
+```
+
+`point.size` is a screen-pixel size. Spheres are a separate primitive, with
+`point.type = "sphere"` and `sphere.radius` measured in coordinate units.
+For example, `plot3D.plain(X, point.type = "sphere", sphere.radius = 0.02)`
+draws spheres of radius 0.02. A missing radius uses one percent of the largest
+coordinate span. Dense sphere scenes can be much more expensive than points.
+
+The default `aspect = "equal"` preserves equal units across axes. Choose
+`aspect = "normalized"` only when stretching axes independently is intended;
+it changes relative geometric distances.
+
+## Reusable numerical colors
+
+Continuous interpolation is the default. Here zero has a scientific meaning,
+so we specify both a center and a diverging palette. Automatic limits become
+symmetric around that center.
+
+```{r height-scale}
+height.scale <- color.scale.cont(zs, center = 0,
+  palette = c("#2166AC", "#F7F7F7", "#B2182B"))
+mapping <- map.colors(zs, height.scale)
+head(mapping$colors)
+mapping$legend
+```
+
+```{r saddle-continuous, eval=have.rgl}
+colored <- plot3D.cont(X, values = zs, scale = height.scale,
+                       point.size = 5, legend.title = "Saddle height")
+colored
+```
+
+Construct one scale from a reference sample and reuse it to compare plots.
+`limits` fixes the numerical range. Values outside it are squished by default;
+`oob = "censor"` maps them to the missing color, while `oob = "error"` rejects
+them. Missing values use `na.color` without removing coordinate rows.
+
+For binned colors, request them explicitly. Break calculations retain full
+precision; `digits` affects legend text only. There is no automatic
+winsorization. `center` is a continuous-scale control; for binned diverging
+colors, supply the intended breaks and bin colors directly.
+
+```{r binned-scale}
+binned <- color.scale.cont(zs, mode = "binned",
+  breaks = c(-1.2, -0.4, 0.4, 1.2),
+  palette = c("#2166AC", "#EEEEEE", "#B2182B"))
+map.colors(zs, binned)$legend
+```
+
+`palette` can be a vector of colors or a function of the requested number of
+colors. `color.map` instead receives numerical values and must return one
+color per value. Do not supply both.
+
+## Groups and highlighting
+
+Groups need not be clusters. Factors retain their level order; other vectors
+use first-occurrence order. Named colors make the assignment explicit and
+stable across datasets. Unknown groups raise an error unless the scale uses
+`unknown = "missing"`.
+
+```{r group-scale}
+groups <- factor(ifelse(zs < 0, "Negative", "Nonnegative"),
+                 levels = c("Negative", "Nonnegative"))
+group.scale <- color.scale.groups(groups,
+  colors = c(Negative = "#D95479", Nonnegative = "#009F87"))
+map.colors(groups, group.scale)$legend
+```
+
+```{r saddle-groups, eval=have.rgl}
+plot3D.cltrs(X, groups, scale = group.scale, point.size = 5,
+  highlight = abs(zs) > 0.4,
+  highlight.style = list(point.size = 7),
+  non.highlight.style = list(col = "gray75", alpha = 0.25))
+```
+
+`highlight` changes styling, not membership: all 250 rows keep their original
+IDs and the color scale is not refitted. Legends describe the base color scale
+and global `alpha`, not the per-highlight overrides. Scale colors can include
+alpha, and global `alpha` multiplies it.
+
+## Weighted graphs and geometric layers
+
+A graph supplies topology and weights. Coordinates supply geometry; one does
+not substitute for the other. The following graph contains an isolated vertex.
+
+```{r graph-data}
+vertices <- data.frame(id = c("A", "B", "C", "D"),
+                       label = c("Start", "Middle", "End", "Isolate"))
+edges <- data.frame(from = c("A", "B"), to = c("B", "C"), weight = c(2, 4))
+coords <- rbind(A = c(0, 0, 0), B = c(1, 1, 0),
+                C = c(2, 0, 1), D = c(0, 2, 1))
+graph <- list(vertices = vertices, edges = edges)
+```
+
+```{r embedded-graph, eval=have.rgl}
+plot3D.graph(graph, X = coords, edge.col = "gray50", edge.width = 2,
+  point.type = "sphere", sphere.radius = 0.07,
+  layers = list(layer3D.path(c(1, 2, 3), col = "#D55E00", width = 4),
+                layer3D.labels(1:4, vertices$label, offset = c(0, 0, 0.15))))
+```
+
+The other accepted formats are paired `adj.list`/`weight.list` lists, dense or
+sparse adjacency matrices, and igraph objects. For the same graph:
+
+```{r adjacency-list}
+adjacency <- list(
+  adj.list = list(A = 2L, B = c(1L, 3L), C = 2L, D = integer()),
+  weight.list = list(A = 2, B = c(2, 4), C = 4, D = numeric()))
+```
+
+Undirected adjacency entries must be reciprocal, with matching weights.
+Matrices use zero to mean no edge; use tables or lists for actual zero-weight
+edges. Coordinate row names are aligned to vertex IDs. Without row names,
+coordinates follow vertex order. Vertex values and groups always follow graph
+vertex order, and layer row indices refer to that order after alignment.
+Edge colors and widths follow normalized edge order, visible in
+`attr(widget, "ivue")$graph$edges`; matrix/list inputs use one copy of each
+undirected edge in vertex-row order. Table inputs retain their supplied order.
+
+Supplying `X` does not construct an igraph object or compute a layout for table,
+list, or matrix inputs. To compute geometry instead, supply `layout`, not `X`:
+
+```{r optional-layout, eval=have.rgl && requireNamespace("igraph", quietly=TRUE)}
+layout.widget <- plot3D.graph(adjacency, layout = "kk", weight.type = "distance",
+                              seed = 1)
+stopifnot(inherits(layout.widget, "htmlwidget"))
+```
+
+`kk` treats positive weights as distances; `fr` requires positive strengths.
+No weight inversion occurs. `weight.type = "unweighted"` allows missing or unit
+weights only. Zero and negative weights may be drawn with supplied coordinates,
+but cannot be used by these layout adapters. Directed rendering, self-loops,
+and parallel edges are explicitly unsupported in this release.
+
+Use `layer3D.edges()` when you already have geometric endpoint pairs, without
+requiring a graph object. `layer3D.callback()` supports advanced rgl drawing;
+callbacks receive coordinates and row/draw IDs but must not open, close, or
+switch devices. Layers are applied before serialization, not appended to a
+live browser widget later.
+
+## Cameras, metadata, and export
+
+The widget's metadata describes the captured R scene. Reusing its initial camera
+keeps related plots comparable. Rotating a widget in the browser does not update
+this R-side camera metadata.
+
+```{r camera-export, eval=have.rgl}
+camera <- attr(colored, "ivue")$camera
+comparison <- plot3D.plain(X, camera = camera)
+stopifnot(identical(attr(comparison, "ivue")$row.ids, seq_len(nrow(X))))
+
+out <- tempfile(fileext = ".html")
+htmlwidgets::saveWidget(colored, out, selfcontained = FALSE)
+stopifnot(file.exists(out))
+unlink(c(out, sub("\\.html$", "_files", out)), recursive = TRUE)
+```
+
+For a single portable HTML file, use `selfcontained = TRUE`; Pandoc must be
+installed. Otherwise distribute the HTML file together with its dependency
+directory. Widgets can also be used in Shiny through `rgl::rglwidgetOutput()`
+and `rgl::renderRglwidget()`; Shiny is not an ivue dependency.
+
+Default widget width follows its container, with a height of 600 pixels.
+Explicit `width` and `height` set dimensions. Long legends scroll within their
+allocated area, and `legend.show = FALSE` permits a separate application legend
+built from the same `map.colors()` result.

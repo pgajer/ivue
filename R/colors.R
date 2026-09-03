@@ -12,7 +12,7 @@
 #'   Mutually exclusive with palette.
 #' @param limits Two finite, nondecreasing numeric limits. Equal limits are
 #'   permitted for constant data.
-#' @param center Optional reference value for a diverging scale. Supply an
+#' @param center Optional reference value for a continuous diverging scale. Supply an
 #'   appropriate diverging palette explicitly. Automatic limits are symmetric
 #'   about center; explicit limits must contain it strictly.
 #' @param breaks Strictly increasing numerical bin boundaries, or NULL.
@@ -31,6 +31,9 @@
 #' @examples
 #' sc <- color.scale.cont(c(-1, 0, 1))
 #' map.colors(c(-1, 0.5, NA), sc)
+#' groups <- factor(c("low", "high", "low"), levels = c("low", "high"))
+#' group.scale <- color.scale.groups(groups, c(low = "blue", high = "red"))
+#' map.colors(groups, group.scale)
 color.scale.cont <- function(values, mode = c("continuous", "binned"),
                              palette = NULL, color.map = NULL, limits = NULL,
                              center = NULL, breaks = NULL, n.bins = 10L,
@@ -61,6 +64,7 @@ color.scale.cont <- function(values, mode = c("continuous", "binned"),
     if (!is.numeric(limits) || length(limits) != 2L || any(!is.finite(limits)) ||
         limits[1] > limits[2]) .stop("limits must be two finite nondecreasing numbers.")
     if (!is.null(center)) {
+        if (mode != "continuous") .stop("center requires continuous mode; use explicit bin colors for binned scales.")
         .scalar(center, "center")
         if (is.null(palette) && is.null(color.map))
             .stop("Supply a diverging palette or color.map when using center.")
@@ -170,7 +174,7 @@ map.colors <- function(x, scale) {
 }
 
 .values <- function(x) {
-    if (!is.numeric(x) || !is.null(dim(x)) || any(is.infinite(x)))
+    if (!is.numeric(x) || is.complex(x) || !is.null(dim(x)) || any(is.infinite(x)))
         .stop("values must be a numeric vector without infinity.")
 }
 

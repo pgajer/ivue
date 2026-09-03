@@ -13,3 +13,6 @@
 ^artifacts$
 ^tools$
 ^\.github$
+^CRAN-SUBMISSION-CHECKLIST\.md$
+^cran-comments\.md$
+^RELEASE_VALIDATION\.md$

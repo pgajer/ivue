@@ -52,6 +52,8 @@
                 sphere.radius = sphere.radius, alpha = alpha, col = NULL))
     selected.style <- .point.style(highlight.style, defaults)
     other.style <- .point.style(non.highlight.style, defaults)
+    if (!is.null(selected.style$col)) .colors(selected.style$col, n, "highlight.style$col")
+    if (!is.null(other.style$col)) .colors(other.style$col, n, "non.highlight.style$col")
     .named.list(camera, c("theta", "phi", "fov", "zoom", "userMatrix"), "camera")
     for (nm in setdiff(names(camera), "userMatrix")) .scalar(camera[[nm]], paste0("camera$", nm))
     if (!is.null(camera$fov)) .scalar(camera$fov, "camera$fov", 0, 179)
@@ -63,7 +65,8 @@
     # This option must precede the first namespace load, not just open3d().
     old.options <- options(rgl.useNULL = TRUE)
     on.exit(options(old.options), add = TRUE)
-    if (!requireNamespace("rgl", quietly = TRUE)) .stop("The rgl package is required.")
+    if (!requireNamespace("rgl", quietly = TRUE))
+        .stop("Plotting requires rgl. Install it with install.packages('rgl').")
     existing.devices <- rgl::rgl.dev.list()
     previous <- rgl::cur3d()
     previous.subscene <- if (previous) rgl::currentSubscene3d() else 0L

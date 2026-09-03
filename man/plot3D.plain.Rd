@@ -116,6 +116,8 @@ row.ids, mapped colors, highlight, draw.ids (row, object, index), camera,
 aspect, captured scene, and (for colored plots) mapping data. Object IDs
 describe the captured scene, not an open device. Save separately with
 \code{htmlwidgets::saveWidget()}.
+Mapped colors describe the base scale before highlight and opacity
+overrides. Legends reflect the scale and global alpha, not highlight styles.
 }
 \description{
 These functions always return a browser widget. They use a private null
@@ -128,4 +130,9 @@ xs <- runif(250, -1, 1)
 ys <- runif(250, -1, 1)
 X <- cbind(xs, ys, 1.2 * (xs^2 - ys^2))
 if (nzchar(system.file(package = "rgl"))) w <- plot3D.plain(X, axes = TRUE)
+if (nzchar(system.file(package = "rgl"))) {
+  sc <- color.scale.cont(X[, 3])
+  continuous <- plot3D.cont(X, X[, 3], scale = sc)
+  grouped <- plot3D.cltrs(X, ifelse(X[, 3] >= 0, "positive", "negative"))
+}
 }

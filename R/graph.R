@@ -38,6 +38,8 @@
 #'   stored/drawn, but these layout algorithms require positive weights.
 #'   Explicit sparse zeros are rejected because zero-edge semantics would be
 #'   ambiguous. Duplicate/asymmetric adjacency entries are rejected, not averaged.
+#'   igraph vertex names supply canonical IDs; a pre-existing id attribute is
+#'   retained as .igraph.id (an existing .igraph.id attribute is a conflict).
 #' @seealso [plot3D.plain()], [layer3D.edges()]
 #' @export
 #' @examples
@@ -77,6 +79,7 @@ plot3D.graph <- function(graph, X = NULL, layout = NULL, vertices = NULL,
 
 .vertex.table <- function(vertices) {
     if (!is.data.frame(vertices)) vertices <- data.frame(id = as.character(vertices))
+    if (anyDuplicated(names(vertices))) .stop("Vertex table column names must be unique.")
     if (!"id" %in% names(vertices)) .stop("vertices must have an id column.")
     vertices$id <- as.character(vertices$id)
     if (!nrow(vertices) || anyNA(vertices$id) || any(!nzchar(vertices$id)) || anyDuplicated(vertices$id))
@@ -100,6 +103,10 @@ plot3D.graph <- function(graph, X = NULL, layout = NULL, vertices = NULL,
         directed <- stored.directed
         v <- igraph::as_data_frame(graph, what = "vertices")
         ids <- if ("name" %in% names(v)) as.character(v$name) else as.character(seq_len(igraph::vcount(graph)))
+        if ("id" %in% names(v)) {
+            if (".igraph.id" %in% names(v)) .stop("Rename the conflicting igraph .igraph.id attribute.")
+            names(v)[names(v) == "id"] <- ".igraph.id"
+        }
         v$id <- ids
         e <- igraph::as_data_frame(graph, what = "edges")
         graph <- list(vertices = v, edges = e)
@@ -129,8 +136,9 @@ plot3D.graph <- function(graph, X = NULL, layout = NULL, vertices = NULL,
             idx <- which(graph != 0, arr.ind = TRUE)
             ii <- idx[, 1]; jj <- idx[, 2]; ww <- graph[idx]
         }
-        a <- lapply(seq_len(nrow(v)), function(i) jj[ii == i])
-        w <- lapply(seq_len(nrow(v)), function(i) ww[ii == i])
+        rows <- factor(ii, levels = seq_len(nrow(v)))
+        a <- unname(split(jj, rows))
+        w <- unname(split(ww, rows))
         graph <- list(adj.list = a, weight.list = w, vertices = v)
         vertices <- NULL
     }
@@ -160,6 +168,8 @@ plot3D.graph <- function(graph, X = NULL, layout = NULL, vertices = NULL,
         if (!is.null(names(a)) && !identical(names(a), v$id)) .stop("Named adjacency lists must follow vertex order.")
         if (is.null(w) && identical(weight.type, "unweighted")) w <- lapply(a, function(x) rep(1, length(x)))
         if (!is.list(w) || length(w) != length(a)) .stop("weight.list must align with adj.list.")
+        if (!is.null(names(w)) && !identical(names(w), v$id))
+            .stop("Named weight lists must follow vertex order.")
         for (i in seq_along(a)) {
             .indices(a[[i]], nrow(v), "adj.list")
             if (anyDuplicated(a[[i]])) .stop("Duplicate adjacency entries are not supported.")
@@ -181,6 +191,7 @@ plot3D.graph <- function(graph, X = NULL, layout = NULL, vertices = NULL,
         e <- graph$edges
         if (!is.data.frame(e) || !all(c("from", "to") %in% names(e)))
             .stop("edges must be a data frame with from, to, and weight columns.")
+        if (anyDuplicated(names(e))) .stop("Edge table column names must be unique.")
         e$from <- match(as.character(e$from), v$id)
         e$to <- match(as.character(e$to), v$id)
         if (anyNA(e$from) || anyNA(e$to)) .stop("Edge endpoints must match vertex IDs.")
