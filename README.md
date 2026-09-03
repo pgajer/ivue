@@ -115,13 +115,10 @@ set `R_TIDYCMD` to a modern HTML Tidy executable to validate the HTML manual.
 After installation, `vignette("ivue-introduction", package = "ivue")` covers
 shared scales, highlighting, graph inputs, layers, camera reuse, and export.
 
-See [MIGRATION_STATUS.md](https://github.com/pgajer/ivue/blob/main/MIGRATION_STATUS.md)
-for implemented scope and verification, and
-[MIGRATION.md](https://github.com/pgajer/ivue/blob/main/MIGRATION.md) for the specification.
-Current release evidence is in
-[RELEASE_VALIDATION.md](https://github.com/pgajer/ivue/blob/main/RELEASE_VALIDATION.md);
-the [submission checklist](https://github.com/pgajer/ivue/blob/main/CRAN-SUBMISSION-CHECKLIST.md) distinguishes a checked
-candidate from a completed CRAN submission.
+Source attribution is recorded in
+[MIGRATION_PROVENANCE.md](https://github.com/pgajer/ivue/blob/main/inst/MIGRATION_PROVENANCE.md).
+The [package checks](https://github.com/pgajer/ivue/actions/workflows/check.yaml)
+cover supported R versions and operating systems as well as browser rendering.
 
 `Rscript tools/render_examples.R` generates runnable HTML examples.
 `node tools/browser_smoke.cjs` checks desktop/mobile canvas pixels, rotation,

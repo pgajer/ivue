@@ -11,3 +11,13 @@ Rplots.pdf
 *.dll
 *.dylib
 artifacts/
+
+# Internal working records belong in ~/.codex/private/ivue/.
+/MIGRATION.md
+/MIGRATION_STATUS.md
+/RELEASE_VALIDATION.md
+/CRAN-SUBMISSION-CHECKLIST.md
+/tools/audits/
+/tools/handoffs/
+/tools/INTERACTIVITY_ROADMAP.md
+/private/
