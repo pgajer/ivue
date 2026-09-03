@@ -8,6 +8,7 @@
 #'   to, weight columns plus the vertices argument; a numerical square adjacency
 #'   matrix; a Matrix sparse adjacency matrix; or an igraph object. Matrices use
 #'   zero for absent edges; use lists/tables to represent zero-weight edges.
+#'   A graph returned by [prepare.graph()] can be reused directly.
 #' @param X Finite n-by-3 coordinates. Unnamed rows follow vertex order; named
 #'   rows must match vertex IDs exactly and are aligned to graph vertex order.
 #' @param layout NULL when X is supplied, otherwise "fr", "kk", or a function
@@ -28,8 +29,10 @@
 #'   caller's random-number state.
 #' @param edge.col,edge.width Explicit visual attributes, scalar or one per
 #'   normalized edge. They are not automatically inferred from weights.
-#' @param values,groups Optional vertex coloring, in graph vertex order. Supply
-#'   at most one; color scales and legends use the corresponding point family.
+#' @param values,groups Optional vertex coloring. Unnamed vectors follow graph
+#'   vertex order. Named vectors must match vertex IDs exactly and are reordered
+#'   to that order; partial, duplicate, missing, or extra names are rejected.
+#'   Supply at most one; scales and legends use the corresponding point family.
 #' @param layers Additional layer3D specifications.
 #' @param ... Named controls for the selected point family. Legacy graph-layout
 #'   and basin arguments are not supported.
@@ -40,7 +43,11 @@
 #'   ambiguous. Duplicate/asymmetric adjacency entries are rejected, not averaged.
 #'   igraph vertex names supply canonical IDs; a pre-existing id attribute is
 #'   retained as .igraph.id (an existing .igraph.id attribute is a conflict).
-#' @seealso [plot3D.plain()], [layer3D.edges()]
+#'   Named per-vertex `col`, highlight-style color vectors, and logical
+#'   `highlight` masks use the same exact-ID alignment as values/groups.
+#'   Unnamed scalar colors are recycled. Numeric highlight indices always refer
+#'   to graph vertex order, not the supplied coordinate row order.
+#' @seealso [prepare.graph()], [plot3D.plain()], [layer3D.edges()]
 #' @export
 #' @examples
 #' g <- list(adj.list = list(2L, c(1L, 3L), 2L, integer()),
@@ -60,21 +67,66 @@ plot3D.graph <- function(graph, X = NULL, layout = NULL, vertices = NULL,
     }
     X <- .align.coordinates(X, g$vertices$id)
     if (!is.null(values) && !is.null(groups)) .stop("Supply values or groups, not both.")
+    values <- .align.vertex.data(values, g$vertices$id, "values")
+    groups <- .align.vertex.data(groups, g$vertices$id, "groups")
     if (!is.list(layers) || inherits(layers, "ivue_layer")) .stop("layers must be a list.")
     edge.matrix <- matrix(as.integer(as.matrix(g$edges[c("from", "to")])), ncol = 2L)
     edge.layer <- layer3D.edges(edge.matrix, edge.col, edge.width)
     dots <- list(...)
-    fun <- if (!is.null(values)) plot3D.cont else if (!is.null(groups)) plot3D.cltrs else plot3D.plain
+    fun <- if (!is.null(values)) plot3D.cont else if (!is.null(groups)) plot3D.groups else plot3D.plain
     allowed <- setdiff(union(names(formals(fun)), names(formals(plot3D.plain))),
                        c("X", "values", "groups", "layers", "..."))
     if (!identical(fun, plot3D.plain)) allowed <- setdiff(allowed, "col")
     .named.list(dots, allowed, "graph scene controls")
+    dots$col <- .align.vertex.data(dots$col, g$vertices$id, "col", scalar = TRUE)
+    if (is.logical(dots$highlight))
+        dots$highlight <- .align.vertex.data(dots$highlight, g$vertices$id, "highlight")
+    for (style in c("highlight.style", "non.highlight.style")) {
+        if (is.list(dots[[style]])) dots[[style]]$col <- .align.vertex.data(
+            dots[[style]]$col, g$vertices$id, paste0(style, "$col"), scalar = TRUE)
+    }
     args <- c(list(X = X, layers = c(list(edge.layer), layers)), dots)
     if (!is.null(values)) args$values <- values
     if (!is.null(groups)) args$groups <- groups
     w <- do.call(fun, args)
     attr(w, "ivue")$graph <- g
     w
+}
+
+#' Prepare Graph Data for Visualization
+#'
+#' Validate graph input and expose vertex IDs, edge order, weights, and
+#' attributes without loading rgl, opening a device, or computing a layout.
+#' The prepared object can be inspected and reused by [plot3D.graph()].
+#'
+#' @inheritParams plot3D.graph
+#' @return An `ivue_graph` list with `vertices` (a data frame with canonical
+#'   character `id` plus supplied attributes), `edges` (a data frame with
+#'   integer `from` and `to` row indices into vertices, numerical `weight`,
+#'   and supplied attributes), `directed`, and `weight.type`.
+#' @details Vertex order is preserved. Edge-table input retains edge row order;
+#'   reciprocal undirected adjacency input retains one copy of each edge, from
+#'   the lower vertex index. Matrix inputs follow that adjacency convention.
+#'   `edge.col` and `edge.width` follow this prepared edge order and are never
+#'   inferred automatically from weights. Isolates remain in the vertex table.
+#'   Prepared objects are revalidated on reuse; editing them does not bypass
+#'   validation. Directed data can be prepared but cannot currently be rendered.
+#'   Missing weights require explicit `weight.type = "unweighted"`.
+#' @export
+#' @examples
+#' edges <- data.frame(from = "a", to = "b", weight = 2)
+#' graph <- prepare.graph(edges, vertices = c("a", "b", "isolate"),
+#'                        weight.type = "strength")
+#' graph$vertices
+#' graph$edges
+#' widths <- 1 + graph$edges$weight
+#' X <- rbind(b = c(1, 0, 0), isolate = c(0, 1, 0), a = c(0, 0, 0))
+#' values <- c(isolate = 3, a = 1, b = 2)
+#' if (nzchar(system.file(package = "rgl"))) {
+#'   w <- plot3D.graph(graph, X = X, values = values, edge.width = widths)
+#' }
+prepare.graph <- function(graph, vertices = NULL, directed = NULL, weight.type = NULL) {
+    .normalize.graph(graph, vertices, directed, weight.type)
 }
 
 .vertex.table <- function(vertices) {
@@ -92,7 +144,8 @@ plot3D.graph <- function(graph, X = NULL, layout = NULL, vertices = NULL,
     if (inherits(graph, "ivue_graph")) {
         if (!is.null(vertices) || !is.null(directed) || !is.null(weight.type))
             .stop("Do not override an already normalized graph.")
-        return(graph)
+        return(.validated.graph(.vertex.table(graph$vertices), graph$edges,
+                                graph$directed, graph$weight.type))
     }
     if (!is.null(weight.type)) weight.type <- match.arg(weight.type, c("distance", "strength", "unweighted"))
     if (inherits(graph, "igraph")) {
@@ -197,7 +250,17 @@ plot3D.graph <- function(graph, X = NULL, layout = NULL, vertices = NULL,
         if (anyNA(e$from) || anyNA(e$to)) .stop("Edge endpoints must match vertex IDs.")
         if (is.null(e$weight) && identical(weight.type, "unweighted")) e$weight <- rep(1, nrow(e))
     }
-    if (!is.numeric(e$weight) || length(e$weight) != nrow(e) || any(!is.finite(e$weight)))
+    .validated.graph(v, e, directed, weight.type)
+}
+
+.validated.graph <- function(v, e, directed, weight.type) {
+    .flag(directed, "directed")
+    if (!is.null(weight.type)) weight.type <- match.arg(weight.type, c("distance", "strength", "unweighted"))
+    if (!is.data.frame(e) || !all(c("from", "to", "weight") %in% names(e)) || anyDuplicated(names(e)))
+        .stop("Prepared edges must have unique columns including from, to, and weight.")
+    e$from <- .indices(e$from, nrow(v), "edge from")
+    e$to <- .indices(e$to, nrow(v), "edge to")
+    if (!is.numeric(e$weight) || is.complex(e$weight) || length(e$weight) != nrow(e) || any(!is.finite(e$weight)))
         .stop("Edges require finite numeric weights, or explicit unweighted mode.")
     if (identical(weight.type, "unweighted") && any(e$weight != 1))
         .stop("Unweighted mode cannot discard non-unit weights.")
@@ -207,6 +270,20 @@ plot3D.graph <- function(graph, X = NULL, layout = NULL, vertices = NULL,
     if (anyDuplicated(keys)) .stop("Parallel edges are not supported; aggregate them explicitly if appropriate.")
     rownames(e) <- NULL
     structure(list(vertices = v, edges = e, directed = directed, weight.type = weight.type), class = "ivue_graph")
+}
+
+.align.vertex.data <- function(x, ids, name, scalar = FALSE) {
+    if (is.null(x)) return(NULL)
+    keys <- names(x)
+    if (is.null(keys)) {
+        if (length(x) != length(ids) && !(scalar && length(x) == 1L))
+            .stop(name, " must have one entry per vertex", if (scalar) " or be an unnamed scalar" else "", ".")
+        return(x)
+    }
+    if (length(x) != length(ids) || anyNA(keys) || any(!nzchar(keys)) ||
+        anyDuplicated(keys) || !setequal(keys, ids))
+        .stop("Named ", name, " must match vertex IDs exactly, without missing, duplicate, or extra names.")
+    x[match(ids, keys)]
 }
 
 .align.coordinates <- function(X, ids) {

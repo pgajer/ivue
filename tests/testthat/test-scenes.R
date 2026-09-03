@@ -17,7 +17,7 @@ test_that("all families return widgets without losing rows or caller options", {
     same.camera <- plot3D.plain(X, camera = info$camera)
     expect_equal(attr(same.camera, "ivue")$camera, info$camera)
     expect_s3_class(plot3D.cont(X, seq_len(10), axes = TRUE), "htmlwidget")
-    expect_s3_class(plot3D.cltrs(X, rep(c("a", "b"), 5)), "htmlwidget")
+    expect_s3_class(plot3D.groups(X, rep(c("a", "b"), 5)), "htmlwidget")
     expect_s3_class(plot3D.plain(matrix(c(1, 1, 1), 1), point.type = "sphere"), "htmlwidget")
 })
 
@@ -60,7 +60,7 @@ test_that("bad coordinates and controls fail explicitly", {
     expect_error(plot3D.plain(X, sphere.radius = -1), "sphere.radius")
     expect_error(plot3D.cont(X, 1:3, size = 3), "scene controls")
     expect_error(plot3D.cont(X, 1:2), "per row")
-    expect_error(plot3D.cltrs(X, c("a", "b")), "per row")
+    expect_error(plot3D.groups(X, c("a", "b")), "per row")
     expect_error(plot3D.plain(X, camera = list(unknown = 1)), "camera")
     expect_error(plot3D.plain(X, col = c("red", "blue")), "length")
     expect_error(plot3D.cont(X, 1:3, output.file = "no.html"), "scene controls")

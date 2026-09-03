@@ -32,7 +32,7 @@ server <- function(input, output, session) {
       args$groups <- ifelse(X[, 3] >= 0, "Nonnegative", "Negative")
       args$scale <- ivue::color.scale.groups(args$groups,
         c(Negative = "#D95479BB", Nonnegative = "#009F87CC"))
-      do.call(ivue::plot3D.cltrs, args)
+      do.call(ivue::plot3D.groups, args)
     } else do.call(ivue::plot3D.plain, args)
   })
   output$scene <- rgl::renderRglwidget(widget())

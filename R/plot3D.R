@@ -16,6 +16,8 @@
 #' @param highlight.style,non.highlight.style Named style overrides: point.type,
 #'   point.size, sphere.radius, col, alpha. Color vectors must align to all rows.
 #'   Highlighting changes styling, never the fitted color scale or row identity.
+#'   A style's alpha replaces the global alpha multiplier for that subset;
+#'   it still multiplies the alpha component of the selected colors.
 #' @param axes Show axes.
 #' @param xlab,ylab,zlab Axis labels.
 #' @param aspect Equal data-unit scales (default), or normalized axis lengths.
@@ -42,7 +44,7 @@
 #' if (nzchar(system.file(package = "rgl"))) {
 #'   sc <- color.scale.cont(X[, 3])
 #'   continuous <- plot3D.cont(X, X[, 3], scale = sc)
-#'   grouped <- plot3D.cltrs(X, ifelse(X[, 3] >= 0, "positive", "negative"))
+#'   grouped <- plot3D.groups(X, ifelse(X[, 3] >= 0, "positive", "negative"))
 #' }
 plot3D.plain <- function(X, col = "gray55", point.type = c("point", "sphere"),
                          point.size = 3, sphere.radius = NULL, alpha = 1,
@@ -84,7 +86,7 @@ plot3D.cont <- function(X, values, scale = NULL, legend.show = TRUE,
 #' @rdname plot3D.plain
 #' @param groups Group labels or factor, one per row; groups need not be clusters.
 #' @export
-plot3D.cltrs <- function(X, groups, scale = NULL, legend.show = TRUE,
+plot3D.groups <- function(X, groups, scale = NULL, legend.show = TRUE,
                          legend.title = "Group", legend.position = c("left", "right"),
                          legend.font.size = 12, legend.width = 240, ...) {
     X <- .coordinates(X)
@@ -92,7 +94,7 @@ plot3D.cltrs <- function(X, groups, scale = NULL, legend.show = TRUE,
     if (length(groups) != nrow(X)) .stop("groups must have one entry per row of X.")
     if (is.null(scale)) scale <- color.scale.groups(groups)
     if (!inherits(scale, "ivue_color_scale") || scale$type != "groups")
-        .stop("plot3D.cltrs requires a group scale.")
+        .stop("plot3D.groups requires a group scale.")
     .colored.scene(X, groups, scale, legend.show, legend.title,
                    match.arg(legend.position), legend.font.size, legend.width, list(...))
 }

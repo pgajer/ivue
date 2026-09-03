@@ -15,7 +15,8 @@ Implementations were reorganized and rewritten against documented contracts;
 legacy function bodies and aliases are not bundled as a second implementation.
 gflow's inst/COPYRIGHTS lists Eigen, Spectra, ANN, and Qhull. None of those
 vendored libraries or their source files are imported into ivue. Optional
-igraph and required rgl remain separately installed dependencies.
+igraph and rgl remain separately installed optional package dependencies;
+rgl is required for plotting, but not for color mapping or graph preparation.
 
 Baseline consumers inspected: gflowui at
 `474218781e63095a8ac1e508b269b4bd7ae42003` and gflowx at

@@ -16,8 +16,12 @@ have.rgl <- nzchar(system.file(package = "rgl"))
 ## Installation and output
 
 `ivue` returns interactive browser widgets. Plotting requires the separately
-installed `rgl` package; color scales and mapping do not. Install the backend
-with `install.packages("rgl")`. Optional graph layouts and igraph inputs require
+installed `rgl` package; color scales, mapping, and `prepare.graph()` do not.
+The two-package CRAN installation command is `install.packages(c("ivue", "rgl"))`;
+for a pre-CRAN development build, install ivue from its repository and install
+`rgl` separately. Printing a widget displays it in RStudio's Viewer or an
+interactive R console's browser. Assigning it to a variable defers viewing.
+Optional graph layouts and igraph inputs require
 `igraph`, and sparse matrix inputs require `Matrix`.
 
 The plotting functions initialize a private null device before loading `rgl`.
@@ -83,7 +87,9 @@ Construct one scale from a reference sample and reuse it to compare plots.
 them. Missing values use `na.color` without removing coordinate rows.
 
 For binned colors, request them explicitly. Break calculations retain full
-precision; `digits` affects legend text only. There is no automatic
+precision. The default `digits = NULL` increases legend precision until nearby
+boundaries are distinguishable; an explicit `digits` fixes precision and warns
+if labels are ambiguous. There is no automatic
 winsorization. `center` is a continuous-scale control; for binned diverging
 colors, supply the intended breaks and bin colors directly.
 
@@ -96,14 +102,20 @@ map.colors(zs, binned)$legend
 
 `palette` can be a vector of colors or a function of the requested number of
 colors. `color.map` instead receives numerical values and must return one
-color per value. Do not supply both.
+color per value. Do not supply both. Numeric palette indices, including missing
+colors, are fixed when a scale is fitted, so later changes to R's `palette()`
+do not change its colors. A `color.map` callback is run at mapping time; its
+dependence on mutable external state remains the caller's responsibility.
 
 ## Groups and highlighting
 
 Groups need not be clusters. Factors retain their level order; other vectors
 use first-occurrence order. Named colors make the assignment explicit and
 stable across datasets. Unknown groups raise an error unless the scale uses
-`unknown = "missing"`.
+`unknown = "missing"`. Missing factor levels are treated as missing, not as
+the literal group `"NA"`. Empty strings remain valid groups. Legends quote
+group labels when needed to distinguish an empty label or a group called
+`"Missing"` from the missing-value entry.
 
 ```{r group-scale}
 groups <- factor(ifelse(zs < 0, "Negative", "Nonnegative"),
@@ -114,7 +126,7 @@ map.colors(groups, group.scale)$legend
 ```
 
 ```{r saddle-groups, eval=have.rgl}
-plot3D.cltrs(X, groups, scale = group.scale, point.size = 5,
+plot3D.groups(X, groups, scale = group.scale, point.size = 5,
   highlight = abs(zs) > 0.4,
   highlight.style = list(point.size = 7),
   non.highlight.style = list(col = "gray75", alpha = 0.25))
@@ -123,7 +135,8 @@ plot3D.cltrs(X, groups, scale = group.scale, point.size = 5,
 `highlight` changes styling, not membership: all 250 rows keep their original
 IDs and the color scale is not refitted. Legends describe the base color scale
 and global `alpha`, not the per-highlight overrides. Scale colors can include
-alpha, and global `alpha` multiplies it.
+alpha, and global `alpha` multiplies it. A highlight-style `alpha` overrides
+the global multiplier for that subset, while preserving its color's alpha.
 
 ## Weighted graphs and geometric layers
 
@@ -136,11 +149,15 @@ vertices <- data.frame(id = c("A", "B", "C", "D"),
 edges <- data.frame(from = c("A", "B"), to = c("B", "C"), weight = c(2, 4))
 coords <- rbind(A = c(0, 0, 0), B = c(1, 1, 0),
                 C = c(2, 0, 1), D = c(0, 2, 1))
-graph <- list(vertices = vertices, edges = edges)
+graph <- prepare.graph(edges, vertices = vertices, weight.type = "distance")
+graph$edges
+coords <- coords[c("C", "A", "D", "B"), ]
+values <- c(D = 40, B = 20, A = 10, C = 30)
 ```
 
 ```{r embedded-graph, eval=have.rgl}
-plot3D.graph(graph, X = coords, edge.col = "gray50", edge.width = 2,
+plot3D.graph(graph, X = coords, values = values, edge.col = "gray50",
+  edge.width = 1 + graph$edges$weight,
   point.type = "sphere", sphere.radius = 0.07,
   layers = list(layer3D.path(c(1, 2, 3), col = "#D55E00", width = 4),
                 layer3D.labels(1:4, vertices$label, offset = c(0, 0, 0.15))))
@@ -158,10 +175,16 @@ adjacency <- list(
 Undirected adjacency entries must be reciprocal, with matching weights.
 Matrices use zero to mean no edge; use tables or lists for actual zero-weight
 edges. Coordinate row names are aligned to vertex IDs. Without row names,
-coordinates follow vertex order. Vertex values and groups always follow graph
-vertex order, and layer row indices refer to that order after alignment.
-Edge colors and widths follow normalized edge order, visible in
-`attr(widget, "ivue")$graph$edges`; matrix/list inputs use one copy of each
+coordinates follow vertex order. Named values and groups are independently
+aligned by exact vertex ID, as in the shuffled example above. Unnamed annotation
+vectors follow vertex order. Duplicate, missing, partial, and extra names are
+rejected. Named point colors, highlight-style color vectors, and logical
+highlight masks use the same rule. Layer row indices and numeric highlight
+indices refer to graph vertex order after alignment.
+
+Weights do not automatically control edge width or color. The example chooses
+`1 + graph$edges$weight` explicitly. Edge colors and widths follow the edge order
+exposed by `prepare.graph()` before rendering; matrix/list inputs use one copy of each
 undirected edge in vertex-row order. Table inputs retain their supplied order.
 
 Supplying `X` does not construct an igraph object or compute a layout for table,
@@ -171,6 +194,9 @@ list, or matrix inputs. To compute geometry instead, supply `layout`, not `X`:
 layout.widget <- plot3D.graph(adjacency, layout = "kk", weight.type = "distance",
                               seed = 1)
 stopifnot(inherits(layout.widget, "htmlwidget"))
+unweighted <- igraph::make_ring(4)
+unweighted.widget <- plot3D.graph(unweighted, layout = "fr", weight.type = "unweighted")
+stopifnot(inherits(unweighted.widget, "htmlwidget"))
 ```
 
 `kk` treats positive weights as distances; `fr` requires positive strengths.

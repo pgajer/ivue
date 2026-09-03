@@ -59,7 +59,7 @@ test_that("invalid numeric and callback controls fail without implicit coercion"
 test_that("legends preserve global opacity and escape user labels", {
     skip_if(!nzchar(system.file(package = "rgl")), "Rendering tests require rgl")
     X <- matrix(1:9, 3)
-    w <- plot3D.cltrs(X, rep("<script>alert(1)</script>", 3), alpha = 0.5,
+    w <- plot3D.groups(X, rep("<script>alert(1)</script>", 3), alpha = 0.5,
       scale = color.scale.groups("<script>alert(1)</script>",
         colors = stats::setNames("#FF000080", "<script>alert(1)</script>")))
     html <- w$jsHooks$render[[2]]$data$legend

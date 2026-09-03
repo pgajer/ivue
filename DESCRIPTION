@@ -5,11 +5,12 @@ Authors@R:
     person("Pawel", "Gajer", email = "pgajer@gmail.com",
            role = c("aut", "cre"))
 Description: Creates interactive three-dimensional point clouds and embedded
-    weighted graphs as browser widgets using 'rgl' null-device scenes.
+    weighted graphs with numerical or categorical annotations.
     Provides reusable continuous and categorical color scales, matching
     legends, highlighting, and geometric edge, path, and label layers.
     Supports multiple weighted-graph formats and optional layouts through
-    'igraph', with explicit distance or strength weight semantics.
+    'igraph', with explicit distance or strength weight semantics. Renders
+    browser widgets using 'rgl' without requiring a native graphics window.
 License: GPL (>= 3)
 URL: https://github.com/pgajer/ivue
 BugReports: https://github.com/pgajer/ivue/issues

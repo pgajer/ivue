@@ -72,9 +72,11 @@ jobs:
       - run: R CMD INSTALL .
       - run: Rscript -e 'stopifnot(requireNamespace("rgl", quietly = TRUE))'
       - run: Rscript tools/render_examples.R
+      - run: Rscript tools/render_audit_fixes.R
       - run: npm install --prefix "$RUNNER_TEMP/ivue-browser" playwright@1.62.1
       - run: node "$RUNNER_TEMP/ivue-browser/node_modules/playwright/cli.js" install --with-deps chromium
       - run: PLAYWRIGHT_MODULE="$RUNNER_TEMP/ivue-browser/node_modules/playwright" node tools/browser_smoke.cjs
+      - run: PLAYWRIGHT_MODULE="$RUNNER_TEMP/ivue-browser/node_modules/playwright" node tools/audit_fix_browser.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
