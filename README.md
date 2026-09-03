@@ -2,22 +2,26 @@
 
 Interactive 3D visualization of data and graphs in R.
 
-## Status
+## Get Started
 
-Version `0.1.0` is the first release candidate for browser-first plotting on `rgl`
-null-device scenes. It is independent of `gflow`, `gflowui`, and Shiny. No native
-graphics window or XQuartz setup is needed for ordinary plotting. This is not
-yet a CRAN release.
+Explore point clouds and embedded graphs with numerical or categorical colors.
+Version `0.1.0` is a development candidate, not yet a CRAN release. Install the
+current audit-fix candidate and its plotting backend with:
 
 ```r
 install.packages(c("remotes", "rgl"))
-remotes::install_github("pgajer/ivue")
+remotes::install_github("pgajer/ivue", ref = "codex/ivue-audit-fixes")
 ```
 
-The current implementation is on `main`. During local development use
-`make install` in this repo.
+After CRAN publication, the corresponding installation command will be
+`install.packages(c("ivue", "rgl"))`. Printing a returned widget displays it
+in RStudio's Viewer or an interactive R session's browser. Assign it to a
+variable to defer viewing, or save it as HTML. No native graphics window or
+XQuartz setup is needed. ivue does not depend on gflow, gflowui, or Shiny.
+
+During local development use `make install` in this repo.
 `rgl` is a deferred-loaded suggested dependency so even `pkgload::load_all()`
-does not initialize native graphics early. Color mapping works without it;
+does not initialize native graphics early. Color mapping and graph preparation work without it;
 plotting requires it. `igraph` is optional for layout and igraph input, and
 `Matrix` is optional for sparse input.
 
@@ -44,11 +48,9 @@ zs <- 1.2 * (xs^2 - ys^2)
 X <- cbind(x = xs, y = ys, z = zs)
 
 plot3D.plain(X, point.size = 5, axes = TRUE)
-scale <- color.scale.cont(zs, center = 0,
-                         palette = c("#2166AC", "#F7F7F7", "#B2182B"))
-w <- plot3D.cont(X, values = zs, scale = scale, point.size = 5, axes = TRUE)
+w <- plot3D.cont(X, values = zs, point.size = 5, axes = TRUE)
 w
-plot3D.cltrs(X, groups = ifelse(zs >= 0, "Nonnegative", "Negative"))
+plot3D.groups(X, groups = ifelse(zs >= 0, "Nonnegative", "Negative"))
 htmlwidgets::saveWidget(w, "saddle.html", selfcontained = FALSE)
 ```
 
@@ -60,15 +62,24 @@ styling without removing rows or refitting scales. Save files separately.
 ## Weighted Graphs
 
 ```r
-g <- list(adj.list = list(2L, c(1L, 3L), 2L, integer()),
-          weight.list = list(2, c(2, 4), 4, numeric()))
-coords <- rbind(c(0, 0, 0), c(1, 1, 0), c(2, 0, 1), c(0, 2, 1))
-plot3D.graph(g, X = coords,
-             layers = list(layer3D.path(c(1, 2, 3)), layer3D.labels(4, "Isolate")))
+edges <- data.frame(from = c("a", "b"), to = c("b", "c"), weight = c(2, 4))
+g <- prepare.graph(edges, vertices = c("a", "b", "c", "isolate"),
+                   weight.type = "distance")
+g$edges
+coords <- rbind(c = c(2, 0, 1), a = c(0, 0, 0),
+                isolate = c(0, 2, 1), b = c(1, 1, 0))
+values <- c(b = 20, isolate = 40, c = 30, a = 10)
+plot3D.graph(g, X = coords, values = values, edge.width = 1 + g$edges$weight)
 
 # Optional layout requires igraph. No weight inversion is performed.
-plot3D.graph(g, layout = "kk", weight.type = "distance")
+plot3D.graph(g, layout = "kk")
+# An igraph object without weights needs an explicit unweighted declaration.
+plot3D.graph(igraph::make_ring(4), layout = "fr", weight.type = "unweighted")
 ```
+
+`prepare.graph()` validates input without rgl and exposes the edge order used
+for styling. **Weights do not automatically control edge width or color**;
+the example chooses a width mapping explicitly. Prepared graphs can be reused.
 
 Supported formats: paired adjacency/weight lists, edge tables with explicit
 vertices, dense/sparse adjacency matrices, and igraph objects. Vertex identity,
@@ -80,7 +91,9 @@ Supply coordinates or request a layout, never both. Existing coordinates need
 no igraph conversion. `fr` treats weights as strengths; `kk` treats them as
 distances. Both require positive layout weights. Custom layout callbacks can
 consume the normalized graph without igraph. Coordinate row names, when
-present, must match vertex IDs exactly. Values/groups follow graph vertex order.
+present, must match vertex IDs exactly. Named values, groups, colors, and logical
+highlight masks follow the same rule, independently of coordinate row order.
+Unnamed vectors follow graph vertex order. Partial or duplicate names are errors.
 
 ## Development
 

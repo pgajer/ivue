@@ -13,7 +13,7 @@ widgets <- list(
   saddle = plot3D.cont(X, zs, scale = sc, point.size = 6, axes = TRUE,
                       xlab = "x", ylab = "y", zlab = "z", legend.title = "Saddle height"),
   plain = plot3D.plain(X, point.type = "sphere", sphere.radius = 0.025, col = "#197A68", axes = TRUE),
-  groups = plot3D.cltrs(X, factor(ifelse(zs >= 0, "Nonnegative", "Negative")),
+  groups = plot3D.groups(X, factor(ifelse(zs >= 0, "Nonnegative", "Negative")),
                         point.size = 6, axes = TRUE),
   graph = plot3D.graph(edges, vertices = seq_len(nrow(X)), X = X, values = zs,
                        scale = sc, point.size = 5, axes = TRUE,

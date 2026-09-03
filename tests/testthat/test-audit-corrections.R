@@ -14,7 +14,7 @@ test_that("actual point and sphere materials carry opacity in every family", {
         expect_equal(scene.alpha(plain, object.type), rep(128/255 * 0.5, 3), tolerance = 1e-7)
         cont <- plot3D.cont(X, c(0, 1, NA), alpha = 0, point.type = type)
         expect_equal(scene.alpha(cont, object.type), rep(0, 3))
-        groups <- plot3D.cltrs(X, c("a", "b", NA), alpha = 0, point.type = type)
+        groups <- plot3D.groups(X, c("a", "b", NA), alpha = 0, point.type = type)
         expect_equal(scene.alpha(groups, object.type), rep(0, 3))
         graph <- list(vertices = letters[1:3],
                       edges = data.frame(from = "a", to = "b", weight = 1))
@@ -26,7 +26,7 @@ test_that("actual point and sphere materials carry opacity in every family", {
                  c(128/255, 128/255, 0), tolerance = 1e-7)
     sc <- color.scale.groups(c("a", "b"), colors = c(a = "#FF000080", b = "blue"),
                              na.color = "transparent")
-    expect_equal(scene.alpha(plot3D.cltrs(X, c("a", "b", NA), scale = sc), "points"),
+    expect_equal(scene.alpha(plot3D.groups(X, c("a", "b", NA), scale = sc), "points"),
                  c(128/255, 1, 0), tolerance = 1e-7)
 })
 

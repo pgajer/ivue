@@ -25,7 +25,8 @@ plot3D.graph(
 indices); a list with edges and vertices; a weighted data frame with from,
 to, weight columns plus the vertices argument; a numerical square adjacency
 matrix; a Matrix sparse adjacency matrix; or an igraph object. Matrices use
-zero for absent edges; use lists/tables to represent zero-weight edges.}
+zero for absent edges; use lists/tables to represent zero-weight edges.
+A graph returned by \code{\link[=prepare.graph]{prepare.graph()}} can be reused directly.}
 
 \item{X}{Finite n-by-3 coordinates. Unnamed rows follow vertex order; named
 rows must match vertex IDs exactly and are aligned to graph vertex order.}
@@ -54,8 +55,10 @@ caller's random-number state.}
 \item{edge.col, edge.width}{Explicit visual attributes, scalar or one per
 normalized edge. They are not automatically inferred from weights.}
 
-\item{values, groups}{Optional vertex coloring, in graph vertex order. Supply
-at most one; color scales and legends use the corresponding point family.}
+\item{values, groups}{Optional vertex coloring. Unnamed vectors follow graph
+vertex order. Named vectors must match vertex IDs exactly and are reordered
+to that order; partial, duplicate, missing, or extra names are rejected.
+Supply at most one; scales and legends use the corresponding point family.}
 
 \item{layers}{Additional layer3D specifications.}
 
@@ -76,6 +79,10 @@ Explicit sparse zeros are rejected because zero-edge semantics would be
 ambiguous. Duplicate/asymmetric adjacency entries are rejected, not averaged.
 igraph vertex names supply canonical IDs; a pre-existing id attribute is
 retained as .igraph.id (an existing .igraph.id attribute is a conflict).
+Named per-vertex \code{col}, highlight-style color vectors, and logical
+\code{highlight} masks use the same exact-ID alignment as values/groups.
+Unnamed scalar colors are recycled. Numeric highlight indices always refer
+to graph vertex order, not the supplied coordinate row order.
 }
 \examples{
 g <- list(adj.list = list(2L, c(1L, 3L), 2L, integer()),
@@ -84,5 +91,5 @@ X <- rbind(c(0, 0, 0), c(1, 1, 0), c(2, 0, 1), c(0, 2, 1))
 if (nzchar(system.file(package = "rgl"))) w <- plot3D.graph(g, X = X)
 }
 \seealso{
-\code{\link[=plot3D.plain]{plot3D.plain()}}, \code{\link[=layer3D.edges]{layer3D.edges()}}
+\code{\link[=prepare.graph]{prepare.graph()}}, \code{\link[=plot3D.plain]{plot3D.plain()}}, \code{\link[=layer3D.edges]{layer3D.edges()}}
 }

@@ -1,5 +1,9 @@
 # ivue 0.1.0
 
+- Use plot3D.groups as the canonical categorical plot name, without a cltrs
+  alias. Add backend-free prepare.graph for inspecting and reusing graph data.
+- Align named graph values, groups, colors, and logical highlight masks by
+  exact vertex ID; reject partial, duplicate, missing, or extra names.
 - Pass color alpha and plot opacity to actual point, sphere, edge, path, and
   label materials; retain documented highlight-style overrides.
 - Freeze numeric palette indices in fitted scales, handle empty and missing

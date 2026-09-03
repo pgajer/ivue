@@ -3,7 +3,7 @@
 \name{plot3D.plain}
 \alias{plot3D.plain}
 \alias{plot3D.cont}
-\alias{plot3D.cltrs}
+\alias{plot3D.groups}
 \title{Interactive 3D Point Clouds}
 \usage{
 plot3D.plain(
@@ -41,7 +41,7 @@ plot3D.cont(
   ...
 )
 
-plot3D.cltrs(
+plot3D.groups(
   X,
   groups,
   scale = NULL,
@@ -72,7 +72,9 @@ the largest coordinate span, with a minimum of 1e-8. Does not choose type.}
 
 \item{highlight.style, non.highlight.style}{Named style overrides: point.type,
 point.size, sphere.radius, col, alpha. Color vectors must align to all rows.
-Highlighting changes styling, never the fitted color scale or row identity.}
+Highlighting changes styling, never the fitted color scale or row identity.
+A style's alpha replaces the global alpha multiplier for that subset;
+it still multiplies the alpha component of the selected colors.}
 
 \item{axes}{Show axes.}
 
@@ -133,6 +135,6 @@ if (nzchar(system.file(package = "rgl"))) w <- plot3D.plain(X, axes = TRUE)
 if (nzchar(system.file(package = "rgl"))) {
   sc <- color.scale.cont(X[, 3])
   continuous <- plot3D.cont(X, X[, 3], scale = sc)
-  grouped <- plot3D.cltrs(X, ifelse(X[, 3] >= 0, "positive", "negative"))
+  grouped <- plot3D.groups(X, ifelse(X[, 3] >= 0, "positive", "negative"))
 }
 }
