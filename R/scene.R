@@ -30,7 +30,7 @@
 .scene <- function(X, colors, point.type, point.size, sphere.radius, alpha,
                    highlight, highlight.style, non.highlight.style, axes,
                    xlab, ylab, zlab, aspect, camera, width, height,
-                   background.color, layers, shiny.brush) {
+                   background.color, layers, shiny.brush, limits = NULL) {
     X <- .coordinates(X)
     n <- nrow(X)
     colors <- .colors(colors, n)
@@ -82,7 +82,10 @@
         }
     }, add = TRUE)
     rgl::bg3d(color = background.color)
-    rgl::plot3d(X, type = "n", axes = axes, xlab = xlab, ylab = ylab, zlab = zlab)
+    bounds <- if (is.null(limits)) list() else
+        list(xlim = limits[1, ], ylim = limits[2, ], zlim = limits[3, ])
+    do.call(rgl::plot3d, c(list(x = X, type = "n", axes = axes,
+                             xlab = xlab, ylab = ylab, zlab = zlab), bounds))
     if (aspect == "equal") rgl::aspect3d("iso") else rgl::aspect3d(1, 1, 1)
     camera <- utils::modifyList(list(theta = 35, phi = 20, fov = 30, zoom = 0.8), camera)
     do.call(rgl::view3d, camera)
