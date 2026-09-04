@@ -11,6 +11,8 @@ Description: Creates interactive three-dimensional point clouds and embedded
     Supports multiple weighted-graph formats and optional layouts through
     'igraph', with explicit distance or strength weight semantics. Renders
     browser widgets using 'rgl' without requiring a native graphics window.
+    Plays recorded coordinate frames with interactive controls and exports
+    orthographic graph animations to GIF.
 License: GPL (>= 3)
 URL: https://github.com/pgajer/ivue
 BugReports: https://github.com/pgajer/ivue/issues
@@ -22,11 +24,13 @@ Imports:
     htmlwidgets,
     htmltools,
     grDevices,
+    graphics,
     stats,
     utils,
     methods
 Suggests:
     rgl,
+    magick,
     geometry,
     igraph,
     Matrix,

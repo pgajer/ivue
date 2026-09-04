@@ -1,0 +1,243 @@
+---
+title: "Playing and Exporting Coordinate Animations"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Playing and Exporting Coordinate Animations}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", out.width = "100%")
+library(ivue)
+have.rgl <- nzchar(system.file(package = "rgl"))
+have.magick <- requireNamespace("magick", quietly = TRUE)
+```
+
+`animate.frames()` turns recorded coordinates into a browser player.
+`write.animation.gif()` exports the same retained frames to a GIF for a
+README, presentation, or website. `ivue` draws the frames; the package or
+simulation producing them remains responsible for their computation.
+
+Playback requires `rgl`. GIF export additionally requires `magick`:
+
+```{r installation, eval=FALSE}
+install.packages(c("rgl", "magick"))
+```
+
+## Watch a Sierpinski triangle unfold
+
+This small example is a recorded two-dimensional GRIP layout of a level-4
+Sierpinski triangle. Forty frames were selected across a longer solve. The
+coordinates are unchanged: no frame was aligned to a target shape, rotated,
+or normalized for presentation. The package includes the record so this
+vignette does not require `grip` to run.
+
+```{r triangle-data}
+triangle <- readRDS(system.file("extdata", "sierpinski-trace.rds", package = "ivue"))
+length(triangle$frames)
+dim(triangle$frames[[1]])
+head(triangle$meta[, c("phase", "active_vertices")])
+```
+
+```{r triangle-player, eval=have.rgl}
+triangle.labels <- paste0("Frame ", triangle$original.frame.index,
+                           " | ", triangle$meta$phase,
+                           " | ", triangle$meta$active_vertices, " vertices")
+triangle.player <- animate.frames(
+  triangle$frames, edges = triangle$edges, labels = triangle.labels,
+  fps = 5, col = "#C24E25", point.size = 4,
+  edge.col = "#314E6ECC", edge.width = 1,
+  background.color = "#FAF7F0", height = 450
+)
+triangle.player
+```
+
+Press **Play** to start; the button becomes **Pause**. Drag the slider to
+inspect a particular frame. With the slider focused, use the arrow keys to
+move one frame at a time. **Slower** and **Faster** change playback speed,
+**Reverse** changes direction, and **Reset** returns to the beginning.
+Drag inside the scene to rotate it, including during playback. The default
+2D camera looks straight down onto the xy plane.
+
+The recorded frames all have the same number of rows. A vertex that has not
+yet been introduced has an entirely missing (`NA` or `NaN`) row. Its point and all incident
+edges stay hidden until its coordinates are finite. Rows remain associated
+with the same vertices throughout playback; they must not be reordered.
+
+## Supply your own frames
+
+Frames are a list of numeric matrices with two or three columns. Every
+matrix must have identical dimensions. If row names are supplied, they must
+be unique and identical across frames. A row must be completely finite or
+completely missing (`NA` or `NaN`); partial missing coordinates and infinity
+are errors. GRIP records its inactive vertices using `NaN` rows.
+
+Here a triangle gains its third vertex and then expands. The second edge
+appears only when its missing endpoint is introduced.
+
+```{r small-example, eval=have.rgl}
+X <- rbind(a = c(0, 0), b = c(1, 0), c = c(0.5, 0.9))
+first <- X
+first[3, ] <- NA
+small <- animate.frames(
+  list(first, X, X * 1.4),
+  edges = rbind(c(1, 2), c(2, 3), c(3, 1)),
+  labels = c("Two vertices", "Triangle", "Expanded triangle"),
+  fps = 1, loop = FALSE, point.size = 9, height = 280
+)
+small
+```
+
+Vertices may disappear as well as appear. An entirely empty frame is
+allowed, provided at least one frame contains a finite point. The stricter
+finite-coordinate requirement of ordinary `plot3D` functions is unchanged.
+
+## Animate a changing 3D surface
+
+Any sequence of recorded coordinates can be played. This example explicitly
+constructs a sequence from a plane to a saddle; it is an illustrative
+deformation, not the output of a layout optimizer. The xy positions and
+vertex identities are fixed while the height changes.
+
+```{r saddle-frames}
+side <- 9L
+grid <- expand.grid(x = seq(-1, 1, length.out = side),
+                    y = seq(-1, 1, length.out = side))
+amplitudes <- seq(0, 1.2, length.out = 25)
+saddle.frames <- lapply(amplitudes, function(a) {
+  cbind(x = grid$x, y = grid$y, z = a * (grid$x^2 - grid$y^2))
+})
+ids <- matrix(seq_len(nrow(grid)), side, side)
+saddle.edges <- rbind(
+  cbind(as.vector(ids[-side, ]), as.vector(ids[-1, ])),
+  cbind(as.vector(ids[, -side]), as.vector(ids[, -1]))
+)
+height.scale <- color.scale.cont(saddle.frames[[25]][, 3], center = 0,
+                                 palette = c("#2455A4", "#ECE6C2", "#B83232"))
+point.colors <- map.colors(saddle.frames[[25]][, 3], height.scale)$colors
+```
+
+```{r saddle-player, eval=have.rgl}
+saddle.player <- animate.frames(
+  saddle.frames, edges = saddle.edges,
+  labels = sprintf("Saddle amplitude = %.2f", amplitudes),
+  col = point.colors, point.size = 6, edge.col = "#314E6E99",
+  camera = camera.zup(elevation = 25, turn = -130),
+  fps = 8, height = 450
+)
+saddle.player
+```
+
+Colors describe each vertex's **final height** and remain fixed across
+frames. This makes identity easy to follow; they do not encode instantaneous
+height. Frame-dependent colors and animated mesh faces are outside this
+initial API. `edges` draws a wire grid without filling its faces.
+
+## Export interactive HTML
+
+The returned object is an ordinary htmlwidget. Saving it preserves the
+player and camera controls and does not require Shiny or a running R session
+for playback. No file is saved merely by constructing a player.
+
+```{r html-export, eval=FALSE}
+htmlwidgets::saveWidget(triangle.player, "triangle-playback.html", selfcontained = TRUE)
+htmlwidgets::saveWidget(saddle.player, "saddle-playback.html", selfcontained = TRUE)
+```
+
+Self-contained HTML requires Pandoc and bundles widget assets into one file.
+Use `selfcontained = FALSE` to save the HTML alongside a dependency folder;
+keep that folder with the HTML when sharing it.
+
+## Export a GIF
+
+GIF export uses the frames retained in the player, including inactive
+vertices and edges. This example writes into R's temporary directory, leaving
+your working directory untouched. Supply your own destination to keep it.
+
+```{r gif-export, eval=have.rgl && have.magick}
+gif.path <- tempfile(fileext = ".gif")
+write.animation.gif(triangle.player, gif.path, fps = 5,
+                     width = 480, height = 480, final.hold = 2)
+knitr::include_graphics(gif.path)
+```
+
+```{r keep-gif, eval=FALSE}
+write.animation.gif(saddle.player, "saddle.gif", fps = 8,
+                     width = 600, height = 500, final.hold = 2,
+                     loop = TRUE, overwrite = FALSE)
+```
+
+The GIF has the widget's **initial camera orientation**, not a rotation made
+later in the browser. Set `camera` explicitly when constructing the player to
+choose the exported view. Export requires an orthographic camera (`fov = 0`),
+which is the animation default. It renders a diagram from the recorded
+coordinates using R graphics and `magick`; it is not a screenshot of the
+WebGL scene. Point appearance can differ slightly. Edges are painted before
+points, so complex 3D intersections do not have WebGL depth-buffer semantics.
+
+The last frame has `final.hold` additional seconds per loop. GIF frame delays
+are rounded to centiseconds. Existing files are protected unless you set
+`overwrite = TRUE`.
+
+## Control size and preserve diagnostic meaning
+
+Playback changes only which recorded frame is displayed. It does not
+interpolate missing frames, align to a target, or recenter each frame. All
+original frames determine one fixed viewing box, so translation, contraction,
+and expansion remain visible. Rotating or zooming the camera changes the
+view, not the stored coordinates.
+
+By default, at most 100 evenly spaced frames are retained, including the
+first and last. If this limit is exceeded, a message reports the subsampling.
+For a diagnostic inspection, choose frames explicitly or retain all of them:
+
+```{r frame-selection, eval=have.rgl}
+selected <- animate.frames(triangle$frames, triangle$edges,
+                            frame.index = c(1, 10, 20, 30, 40),
+                            labels = triangle.labels, fps = 2)
+attr(selected, "ivue.animation")$frame.index
+```
+
+```{r all-frames, eval=FALSE}
+all.frames <- animate.frames(my.frames, edges = my.edges, max.frames = NULL)
+```
+
+Every retained frame has equal duration. A subsampled animation therefore
+shows the order of the solve, not elapsed computation time. Widget size grows
+with both frame count and graph size; large traces benefit from an explicit
+selection. The exported GIF uses that same selection.
+
+## Use a fresh GRIP trace
+
+With a recent `grip` installation, pass its recorded matrices directly.
+This optional recipe is not evaluated when building the vignette:
+
+```{r fresh-grip, eval=FALSE}
+edges <- grip::edges.sierpinski.triangle(level = 4)
+tr <- grip::trace.grip(edges, n = max(edges), dim = 2,
+                       preset = "carpet", seed = 1,
+                       trace = "round", trace.every = 1)
+player <- ivue::animate.frames(
+  tr$frames, edges,
+  labels = paste(tr$meta$phase, "|", tr$meta$active_vertices, "vertices"),
+  max.frames = 80, fps = 6
+)
+player
+ivue::write.animation.gif(player, "grip-trace.gif")
+```
+
+The same interface accepts three-dimensional traces and frames recorded by
+other solvers. Neither `animate.frames()` nor GIF export calls `grip` or
+computes a layout.
+
+The bundled triangle's package version, source commit, settings, and selected
+indices are recorded alongside its coordinates:
+
+```{r provenance}
+triangle$provenance
+```
+
+Its generation script is `tools/generate-animation-example.R` in the ivue
+source repository. The stored record allows the vignette to keep working
+independently of future changes to GRIP's layout algorithm.

@@ -1,5 +1,14 @@
 # ivue 0.1.0
 
+- Add animate.frames for recorded 2D and 3D coordinate sequences, with browser
+  playback, timeline and speed controls, fixed viewing bounds, and inactive
+  vertex/edge handling. Keep coordinates unchanged and support explicit frame
+  selection or bounded subsampling.
+- Add write.animation.gif for orthographic GIF export through optional magick,
+  with frame labels, loop and final-hold controls, and overwrite protection.
+- Add an animation vignette with a provenance-recorded Sierpinski trace,
+  a changing 3D saddle, and recipes for HTML/GIF export and fresh GRIP traces.
+
 - Add layer3D.surface for independent gridded reference surfaces, with face
   opacity, optional grid lines, and lighting controls.
 - Extend the vignette with an interactive Delaunay saddle mesh and an example
