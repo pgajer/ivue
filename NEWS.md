@@ -1,5 +1,8 @@
 # ivue 0.1.0
 
+- Add layer3D.mesh for supplied triangular surfaces, with independent face and
+  unique-edge opacity controls. Mesh connectivity can be reused across embeddings
+  without requiring a triangulation package.
 - Add layer3D.axes for origin-crossing coordinate axes with solid 3D arrowheads,
   and camera.zup for reproducible z-up initial views. Illustrate them with an
   area-uniform saddle sample and a blue-yellow-red scale in the vignette.

@@ -29,6 +29,16 @@ widgets$axes <- plot3D.cont(X, zs, scale = byr,
 widgets$axes.front <- plot3D.cont(X, zs, scale = byr,
   point.type = "sphere", sphere.radius = 0.02, axes = FALSE,
   layers = list(layer3D.axes()), camera = camera.zup(turn = 0), legend.title = "Saddle height")
+# A supplied grid triangulation exercises mesh rendering without geometry.
+uv <- expand.grid(x = seq(-1, 1, length.out = 9), y = seq(-1, 1, length.out = 9))
+mesh.X <- cbind(as.matrix(uv), z = .8 * (uv$x^2 - uv$y^2))
+i <- as.vector(outer(1:8, 9 * (0:7), "+"))
+triangles <- rbind(cbind(i, i + 1, i + 10), cbind(i, i + 10, i + 9))
+widgets$mesh <- plot3D.cont(mesh.X, mesh.X[, "z"],
+  scale = color.scale.cont(mesh.X[, "z"], center = 0, palette = c("blue", "yellow", "red")),
+  point.type = "sphere", sphere.radius = 0.02, axes = FALSE,
+  layers = list(layer3D.mesh(triangles), layer3D.axes()), camera = camera.zup(),
+  legend.title = "Saddle height")
 for (name in names(widgets)) {
   htmlwidgets::saveWidget(widgets[[name]], file.path("artifacts", paste0(name, ".html")),
                           selfcontained = FALSE, libdir = "lib")

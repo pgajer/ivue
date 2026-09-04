@@ -69,6 +69,20 @@ The axes and camera are independent. `turn = 0` places x horizontally to the
 right; `fov = 0` (the helper's default) gives orthographic projection. The
 vignette also shows surface-area-uniform saddle sampling and axis styling.
 
+## Triangular Surfaces
+
+`layer3D.mesh(triangles)` draws supplied faces, where each row of `triangles`
+contains three vertex indices into the plot coordinates. Face opacity (`alpha`)
+and mesh-edge opacity (`edge.alpha`) are independent; shared edges are drawn
+only once. Reuse the layer with other coordinates to show how the same mesh
+deforms, preserving vertex identities and row order.
+
+For the saddle, `geometry::delaunayn(X[, c("x", "y")])` constructs faces in
+the original parameter plane. `geometry` is an optional external tool, not a
+base R package or an ivue dependency. The complete plotting recipe is in
+[`tools/saddle-delaunay.R`](tools/saddle-delaunay.R). The mesh is a display
+overlay; it does not change any graph used for fitting or scoring.
+
 ## Weighted Graphs
 
 ```r
