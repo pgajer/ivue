@@ -27,6 +27,7 @@ Imports:
     methods
 Suggests:
     rgl,
+    geometry,
     igraph,
     Matrix,
     callr,

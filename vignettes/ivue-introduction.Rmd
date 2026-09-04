@@ -11,6 +11,7 @@ vignette: >
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7, fig.height = 5)
 library(ivue)
 have.rgl <- nzchar(system.file(package = "rgl"))
+have.geometry <- requireNamespace("geometry", quietly = TRUE)
 ```
 
 ## Installation and output
@@ -157,12 +158,13 @@ saddle.view <- plot3D.cont(
 saddle.view$elementId <- "saddle-coordinate-example"
 htmltools::tagList(
   htmltools::tags$style(htmltools::HTML("
-    #saddle-coordinate-example {
+    #saddle-coordinate-example, #saddle-mesh-example {
       height: auto !important; aspect-ratio: 7 / 5;
     }
     @media (max-width: 600px) {
-      #saddle-coordinate-example { margin-top: 160px; }
-      #saddle-coordinate-example > .ivue-legend {
+      #saddle-coordinate-example, #saddle-mesh-example { margin-top: 160px; }
+      #saddle-coordinate-example > .ivue-legend,
+      #saddle-mesh-example > .ivue-legend {
         top: -155px !important; max-height: none !important;
       }
     }
@@ -192,6 +194,73 @@ The helper only specifies the initial view: dragging can still tilt z, and at
 elevations of plus or minus 90 degrees z points along the viewing direction.
 Neither the axes constructor nor the camera helper needs rgl until a plot is
 actually drawn. The same layer and camera also work with `plot3D.graph()`.
+
+## A triangular mesh beneath the spheres
+
+Connecting neighboring observations with triangular faces makes the saddle's
+shape easier to see. Construct a Delaunay triangulation in the original
+two-dimensional parameter plane, then draw its faces at the three-dimensional
+saddle coordinates. Triangulating the 3D coordinates instead would construct
+a different object, not this surface mesh.
+
+The `geometry` package is an add-on, not part of base R. Install it with
+`install.packages("geometry")` to run this example. It is suggested for the
+vignette, but `layer3D.mesh()` does not require it when triangle indices are
+already available. The example below is evaluated when both `geometry` and
+`rgl` are installed.
+
+```{r saddle-triangulation, eval=have.geometry}
+triangles <- geometry::delaunayn(saddle[, c("x", "y")])
+surface <- layer3D.mesh(
+  triangles, col = "gray75", alpha = 0.2,
+  edge.col = "gray45", edge.alpha = 0.35, edge.width = 1
+)
+```
+
+Each row of `triangles` contains three indices into `saddle`. The mesh joins
+those observations with planar faces, approximating the surface over the
+sample's parameter-space convex hull. It does not extend to unsampled corners
+of the square. The points, colors, axes, and initial camera below are the same
+as in the preceding plot.
+
+```{r saddle-mesh, eval=have.rgl && have.geometry}
+saddle.mesh <- plot3D.cont(
+  saddle, values = saddle[, "z"], scale = byr.scale,
+  point.type = "sphere", sphere.radius = 0.02,
+  legend.title = "Saddle height", legend.width = 160,
+  axes = FALSE, aspect = "equal",
+  layers = list(surface, layer3D.axes()),
+  camera = camera.zup(elevation = 20, turn = -135, fov = 0, zoom = 0.4),
+  height = 500L
+)
+```
+
+```{r saddle-mesh-display, eval=have.rgl && have.geometry, echo=FALSE}
+saddle.mesh$elementId <- "saddle-mesh-example"
+saddle.mesh
+```
+
+`alpha` controls face opacity; `edge.alpha` independently controls the mesh
+lines. Shared edges are drawn once. Set `alpha = 0` for a wireframe or
+`edges = FALSE` to show faces without their outlines.
+
+To inspect another embedding of these same observations, retain `surface`
+and replace only the plotting coordinates. For example, if `Z` contains the
+metric-MDS or metric-MDS-followed-by-edge-KK coordinates in the same row order:
+
+```{r mesh-other-embedding, eval=FALSE}
+plot3D.cont(
+  Z, values = saddle[, "z"], scale = byr.scale,
+  point.type = "sphere", sphere.radius = 0.02, axes = FALSE,
+  layers = list(surface, layer3D.axes()), camera = camera.zup()
+)
+```
+
+Do not retriangulate `Z`: fixed triangle connectivity reveals how the original
+mesh stretches, folds, or collapses. Original heights continue to determine
+point colors. The mesh is a visualization overlay, separate from any
+symmetric-kNN graph used for fitting or fidelity scoring; adding it does not
+change that graph or its objectives.
 
 ## Groups and highlighting
 

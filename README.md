@@ -78,8 +78,9 @@ only once. Reuse the layer with other coordinates to show how the same mesh
 deforms, preserving vertex identities and row order.
 
 For the saddle, `geometry::delaunayn(X[, c("x", "y")])` constructs faces in
-the original parameter plane. `geometry` is an optional external tool, not a
-base R package or an ivue dependency. The complete plotting recipe is in
+the original parameter plane. `geometry` is an add-on package, listed in
+`Suggests` for the vignette; mesh rendering itself does not require it.
+The complete plotting recipe is in
 [`tools/saddle-delaunay.R`](tools/saddle-delaunay.R). The mesh is a display
 overlay; it does not change any graph used for fitting or scoring.
 
