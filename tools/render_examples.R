@@ -39,6 +39,15 @@ widgets$mesh <- plot3D.cont(mesh.X, mesh.X[, "z"],
   point.type = "sphere", sphere.radius = 0.02, axes = FALSE,
   layers = list(layer3D.mesh(triangles), layer3D.axes()), camera = camera.zup(),
   legend.title = "Saddle height")
+# Independent dense reference grid beneath the random observations.
+grid <- seq(-1, 1, length.out = 51)
+reference <- layer3D.surface(grid, grid,
+  outer(grid, grid, function(x, y) 1.2 * (x^2 - y^2)),
+  col = "lightblue", alpha = .3, lit = TRUE)
+widgets$surface <- plot3D.cont(X, zs, scale = byr,
+  point.type = "sphere", sphere.radius = .02,
+  layers = list(reference, layer3D.axes()), camera = camera.zup(zoom = .5),
+  legend.title = "Saddle height", legend.width = 160)
 for (name in names(widgets)) {
   htmlwidgets::saveWidget(widgets[[name]], file.path("artifacts", paste0(name, ".html")),
                           selfcontained = FALSE, libdir = "lib")

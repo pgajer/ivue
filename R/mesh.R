@@ -32,7 +32,7 @@
 #'   the layer does not. A polygon offset reduces interference between faces
 #'   and their edge overlay. Transparency is handled by the renderer and can
 #'   have ordering artifacts for intersecting surfaces.
-#' @seealso [layer3D.edges()], [layer3D.axes()], [plot3D.cont()]
+#' @seealso [layer3D.surface()], [layer3D.edges()], [layer3D.axes()], [plot3D.cont()]
 #' @export
 #' @examples
 #' triangles <- rbind(c(1, 2, 3), c(1, 3, 4))

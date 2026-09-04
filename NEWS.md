@@ -1,5 +1,7 @@
 # ivue 0.1.0
 
+- Add layer3D.surface for independent gridded reference surfaces, with face
+  opacity, optional grid lines, and lighting controls.
 - Extend the vignette with an interactive Delaunay saddle mesh and an example
   of reusing its faces in another embedding. Suggest geometry for triangulation.
 - Add layer3D.mesh for supplied triangular surfaces, with independent face and

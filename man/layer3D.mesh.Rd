@@ -71,5 +71,5 @@ if (nzchar(system.file(package = "rgl"))) {
 }
 }
 \seealso{
-\code{\link[=layer3D.edges]{layer3D.edges()}}, \code{\link[=layer3D.axes]{layer3D.axes()}}, \code{\link[=plot3D.cont]{plot3D.cont()}}
+\code{\link[=layer3D.surface]{layer3D.surface()}}, \code{\link[=layer3D.edges]{layer3D.edges()}}, \code{\link[=layer3D.axes]{layer3D.axes()}}, \code{\link[=plot3D.cont]{plot3D.cont()}}
 }

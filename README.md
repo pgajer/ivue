@@ -84,6 +84,26 @@ The complete plotting recipe is in
 [`tools/saddle-delaunay.R`](tools/saddle-delaunay.R). The mesh is a display
 overlay; it does not change any graph used for fitting or scoring.
 
+## Gridded Reference Surfaces
+
+`layer3D.surface(x, y, z)` keeps its own coordinates, independently of the
+plotted points. Here `z[i, j]` is the height at `(x[i], y[j])`:
+
+```r
+x <- y <- seq(-1, 1, length.out = 51)
+z <- outer(x, y, function(x, y) 1.2 * (x^2 - y^2))
+reference <- layer3D.surface(x, y, z, col = "lightblue", alpha = 0.3)
+plot3D.cont(X, values = X[, "z"], scale = sc,
+  layers = list(reference, layer3D.axes()), camera = camera.zup())
+```
+
+Use `edges = TRUE` for grid lines and `lit = TRUE` for lighting. Neither
+`geometry` nor a triangulation call is required. The grid is drawn as planar
+triangles; increasing its resolution approximates the smooth surface more
+closely. The same reference can be overlaid on MDS or refined coordinates
+after aligning them to the original data. No alignment or rescaling is
+performed by the plotting layer.
+
 ## Weighted Graphs
 
 ```r

@@ -102,6 +102,8 @@ layer3D.callback <- function(fun, args = list()) {
         .draw.axes.layer(layer, context)
     } else if (layer$type == "mesh") {
         .draw.mesh.layer(layer, context)
+    } else if (layer$type == "surface") {
+        .draw.mesh.layer(layer, list(X = layer$coordinates))
     } else if (layer$type == "edges") {
         .indices(as.vector(layer$edges), nrow(X), "edges")
         if (!is.null(layer$path)) .indices(layer$path, nrow(X), "path")
