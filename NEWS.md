@@ -1,5 +1,8 @@
 # ivue 0.1.0
 
+- Add layer3D.axes for origin-crossing coordinate axes with solid 3D arrowheads,
+  and camera.zup for reproducible z-up initial views. Illustrate them with an
+  area-uniform saddle sample and a blue-yellow-red scale in the vignette.
 - Treat numeric and complex NaN groups as missing while preserving literal
   "NaN" categories and accurate legend counts.
 - Use plot3D.groups as the canonical categorical plot name, without a cltrs

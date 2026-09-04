@@ -56,6 +56,19 @@ All plot functions return an ordinary htmlwidget. There are no `.widget` or
 `point.type = "sphere"` and `sphere.radius` in data units. `highlight` changes
 styling without removing rows or refitting scales. Save files separately.
 
+For coordinate axes through the origin and an initial z-up view:
+
+```r
+byr <- color.scale.cont(zs, center = 0, palette = c("blue", "yellow", "red"))
+plot3D.cont(X, values = zs, scale = byr, axes = FALSE,
+  layers = list(layer3D.axes(head.length = 0.04)),
+  camera = camera.zup(elevation = 20, turn = -135))
+```
+
+The axes and camera are independent. `turn = 0` places x horizontally to the
+right; `fov = 0` (the helper's default) gives orthographic projection. The
+vignette also shows surface-area-uniform saddle sampling and axis styling.
+
 ## Weighted Graphs
 
 ```r

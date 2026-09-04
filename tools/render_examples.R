@@ -21,6 +21,14 @@ widgets <- list(
                        layers = list(layer3D.path(path[1:5], col = "#E69F00", width = 5),
                                      layer3D.labels(path[c(1, 5)], c("Start", "End"))))
 )
+# Exercise both documented z-up orientations with the same coordinate axes.
+byr <- color.scale.cont(zs, center = 0, palette = c("blue", "yellow", "red"))
+widgets$axes <- plot3D.cont(X, zs, scale = byr,
+  point.type = "sphere", sphere.radius = 0.02, axes = FALSE,
+  layers = list(layer3D.axes()), camera = camera.zup(), legend.title = "Saddle height")
+widgets$axes.front <- plot3D.cont(X, zs, scale = byr,
+  point.type = "sphere", sphere.radius = 0.02, axes = FALSE,
+  layers = list(layer3D.axes()), camera = camera.zup(turn = 0), legend.title = "Saddle height")
 for (name in names(widgets)) {
   htmlwidgets::saveWidget(widgets[[name]], file.path("artifacts", paste0(name, ".html")),
                           selfcontained = FALSE, libdir = "lib")
