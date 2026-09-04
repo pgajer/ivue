@@ -98,6 +98,8 @@ layer3D.callback <- function(fun, args = list()) {
     X <- context$X
     if (layer$type == "callback") {
         do.call(layer$fun, c(list(context), layer$args))
+    } else if (layer$type == "axes") {
+        .draw.axes.layer(layer, context)
     } else if (layer$type == "edges") {
         .indices(as.vector(layer$edges), nrow(X), "edges")
         if (!is.null(layer$path)) .indices(layer$path, nrow(X), "path")

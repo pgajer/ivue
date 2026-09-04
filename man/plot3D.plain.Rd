@@ -83,7 +83,8 @@ it still multiplies the alpha component of the selected colors.}
 \item{aspect}{Equal data-unit scales (default), or normalized axis lengths.
 Normalization distorts relative distances when coordinate spans differ.}
 
-\item{camera}{Named list of theta, phi, fov, zoom, or a 4-by-4 userMatrix.}
+\item{camera}{Named list of theta, phi, fov, zoom, or a 4-by-4 userMatrix.
+Use \code{\link[=camera.zup]{camera.zup()}} for an initial view with z pointing upward.}
 
 \item{width, height}{Widget dimensions in pixels; NULL width fills its container.}
 

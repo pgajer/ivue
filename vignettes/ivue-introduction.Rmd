@@ -107,6 +107,72 @@ colors, are fixed when a scale is fitted, so later changes to R's `palette()`
 do not change its colors. A `color.map` callback is run at mapping time; its
 dependence on mutable external state remains the caller's responsibility.
 
+## Textbook-style axes and a z-up camera
+
+The earlier saddle sample is uniform in its horizontal parameter square, not
+in surface area. For `z = C * (x^2 - y^2)`, the surface-area factor is
+`sqrt(1 + 4*C^2*(x^2 + y^2))`. Accepting uniform-square proposals with probability
+proportional to this factor gives a surface-area-uniform sample. Batches
+accumulate until there are at least `n` accepted points; the final line retains
+exactly `n` of them.
+
+```{r area-uniform-saddle}
+set.seed(1)
+n <- 500
+C <- 0.8
+half.width <- 1
+xy <- matrix(numeric(), ncol = 2)
+while (nrow(xy) < n) {
+  proposal <- matrix(runif(4000, -half.width, half.width), ncol = 2)
+  area <- sqrt(1 + 4*C^2 * rowSums(proposal^2))
+  accept <- runif(nrow(proposal)) < area / sqrt(1 + 8*C^2*half.width^2)
+  xy <- rbind(xy, proposal[accept, , drop = FALSE])
+}
+xy <- xy[seq_len(n), , drop = FALSE]
+saddle <- cbind(x = xy[, 1], y = xy[, 2],
+                z = C * (xy[, 1]^2 - xy[, 2]^2))
+byr.scale <- color.scale.cont(saddle[, "z"], center = 0,
+                               palette = c("blue", "yellow", "red"))
+```
+
+`layer3D.axes()` adds three axes through the origin, with arrowheads at their
+positive ends. It does not rotate the data or choose a camera. Pair it with
+`camera.zup()` to put z vertically upward in the initial view:
+
+```{r saddle-coordinate-axes, eval=have.rgl}
+saddle.view <- plot3D.cont(
+  saddle, values = saddle[, "z"], scale = byr.scale,
+  point.type = "sphere", sphere.radius = 0.02,
+  legend.title = "Saddle height", axes = FALSE, aspect = "equal",
+  layers = list(layer3D.axes(head.length = 0.04, head.angle = pi/8)),
+  camera = camera.zup(elevation = 20, turn = -135, fov = 0, zoom = 0.8),
+  height = 650L
+)
+saddle.view
+```
+
+Zero is yellow; negative and positive heights move toward blue and red,
+respectively. `scale` takes a color-scale object, not a raw color vector.
+Reusing `byr.scale` and the original height values preserves observation colors
+if these points are subsequently displayed in another coordinate configuration.
+
+The axes extend beyond the data automatically. Set `origin` to move their
+intersection, or use explicit `limits`, for example
+`rbind(x = c(-1.2, 1.2), y = c(-1.2, 1.2), z = c(-1, 1))`, to fix endpoints
+across views. These limits do not clip data. `head.length` is a fraction of the
+full axis span; `head.angle` is the cone half-angle in radians. `width`, `col`,
+`cex`, and `label.offset` control the shafts, colors, label size, and label gaps.
+The heads are solid cones in data coordinates, so they keep their 3D geometry
+while the widget rotates. Use equal aspect to preserve their proportions.
+
+With `turn = -135`, positive x points down-left and positive y down-right.
+With `turn = 0`, positive x is horizontal to the right and positive y recedes.
+`elevation` changes the angle above the xy plane; `fov = 0` removes perspective.
+The helper only specifies the initial view: dragging can still tilt z, and at
+elevations of plus or minus 90 degrees z points along the viewing direction.
+Neither the axes constructor nor the camera helper needs rgl until a plot is
+actually drawn. The same layer and camera also work with `plot3D.graph()`.
+
 ## Groups and highlighting
 
 Groups need not be clusters. Factors retain their level order; other vectors
