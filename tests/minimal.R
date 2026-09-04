@@ -7,6 +7,7 @@ stopifnot(length(mapped$colors) == 4L, tail(mapped$colors, 1) == "gray80")
 groups <- color.scale.groups(c("a", "b"), c(a = "red", b = "blue"))
 stopifnot(identical(map.colors(c("b", "a"), groups)$colors, c("blue", "red")))
 stopifnot(inherits(layer3D.path(1:3), "ivue_layer"))
+stopifnot(inherits(layer3D.mesh(matrix(1:3, nrow = 1)), "ivue_layer"))
 stopifnot(inherits(layer3D.axes(), "ivue_layer"),
           identical(dim(camera.zup()$userMatrix), c(4L, 4L)),
           camera.zup()$fov == 0)

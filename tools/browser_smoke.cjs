@@ -27,7 +27,7 @@ async function pixels(page) {
   const results = [];
   try {
     for (const viewport of [{ width: 1280, height: 900 }, { width: 390, height: 844 }]) {
-      for (const name of ['saddle', 'plain', 'groups', 'graph', 'saddle-selfcontained', 'multiple', 'axes', 'axes.front']) {
+      for (const name of ['saddle', 'plain', 'groups', 'graph', 'saddle-selfcontained', 'multiple', 'axes', 'axes.front', 'mesh']) {
         const file = path.resolve('artifacts', name + '.html');
         if (!fs.existsSync(file)) throw new Error(`Missing browser fixture: ${file}`);
         const page = await browser.newPage({ viewport });
@@ -46,7 +46,7 @@ async function pixels(page) {
           if (before.colored > 100) break;
           await page.waitForTimeout(100);
         }
-        if (name.startsWith('axes')) {
+        if (name.startsWith('axes') || name === 'mesh') {
           await page.screenshot({ path: `artifacts/${name}-initial-${viewport.width}.png`, fullPage: true });
         }
         const box = await page.locator('canvas').first().boundingBox();
