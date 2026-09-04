@@ -143,12 +143,32 @@ positive ends. It does not rotate the data or choose a camera. Pair it with
 saddle.view <- plot3D.cont(
   saddle, values = saddle[, "z"], scale = byr.scale,
   point.type = "sphere", sphere.radius = 0.02,
-  legend.title = "Saddle height", axes = FALSE, aspect = "equal",
+  legend.title = "Saddle height", legend.width = 160,
+  axes = FALSE, aspect = "equal",
   layers = list(layer3D.axes(head.length = 0.04, head.angle = pi/8)),
-  camera = camera.zup(elevation = 20, turn = -135, fov = 0, zoom = 0.8),
-  height = 650L
+  camera = camera.zup(elevation = 20, turn = -135, fov = 0, zoom = 0.4),
+  height = 500L
 )
-saddle.view
+```
+
+```{r saddle-coordinate-display, eval=have.rgl, echo=FALSE}
+# Keep the enlarged scene in a 7:5 frame when the vignette column narrows.
+# Move the legend above the frame on small screens rather than hiding data.
+saddle.view$elementId <- "saddle-coordinate-example"
+htmltools::tagList(
+  htmltools::tags$style(htmltools::HTML("
+    #saddle-coordinate-example {
+      height: auto !important; aspect-ratio: 7 / 5;
+    }
+    @media (max-width: 600px) {
+      #saddle-coordinate-example { margin-top: 160px; }
+      #saddle-coordinate-example > .ivue-legend {
+        top: -155px !important; max-height: none !important;
+      }
+    }
+  ")),
+  saddle.view
+)
 ```
 
 Zero is yellow; negative and positive heights move toward blue and red,
