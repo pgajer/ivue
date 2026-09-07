@@ -17,3 +17,4 @@
 ^cran-comments\.md$
 ^RELEASE_VALIDATION\.md$
 ^private$
+^man/figures$

@@ -2,6 +2,14 @@
 
 Interactive 3D visualization of data and graphs in R.
 
+![Two synchronized rotating views of a 12,000-cell mouse retinal-development UMAP, colored by developmental stage and annotated cell type.](man/figures/readme-retinal-development.gif)
+
+The same three-dimensional UMAP coordinates are colored by developmental stage
+and annotated cell type using reusable `ivue` group scales and a synchronized
+orthographic camera. The reproducible, stratified 12,000-cell view comes from
+the 107,052-cell mouse retinal-development single-cell RNA-seq dataset of
+[Clark et al. (2019)](https://pmc.ncbi.nlm.nih.gov/articles/PMC6768831/).
+
 ## Get Started
 
 Explore point clouds and embedded graphs with numerical or categorical colors.

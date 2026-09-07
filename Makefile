@@ -1,4 +1,4 @@
-.PHONY: document build check check-cran check-minimal install
+.PHONY: document build check check-cran check-minimal install readme-retinal
 
 PKGNAME := ivue
 VERSION := $(shell sed -n 's/^Version: //p' DESCRIPTION)
@@ -6,6 +6,7 @@ TARBALL := $(PKGNAME)_$(VERSION).tar.gz
 R_ENV := env -u R_HOME -u R_LIBS -u R_LIBS_USER -u R_LIBS_SITE
 R_RUN := $(R_ENV) R
 RSCRIPT_RUN := $(R_ENV) Rscript
+NODE ?= node
 
 document:
 	$(RSCRIPT_RUN) -e 'roxygen2::roxygenise()'
@@ -25,3 +26,8 @@ check-minimal: build
 
 install: build
 	$(R_RUN) CMD INSTALL $(TARBALL)
+
+readme-retinal:
+	$(RSCRIPT_RUN) tools/render-retinal-readme.R
+	$(NODE) tools/capture-retinal-readme.cjs --animation
+	$(RSCRIPT_RUN) tools/encode-retinal-readme.R
