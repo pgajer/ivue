@@ -1,7 +1,6 @@
 #!/usr/bin/env Rscript
 
-# Build the synchronized ivue scenes used by the retinal-development README
-# animation. Run from the ivue repository root.
+# Build synchronized ivue views of the retinal-development sKNN graph.
 options(rgl.useNULL = TRUE)
 
 if (!file.exists("DESCRIPTION")) {
@@ -18,31 +17,27 @@ for (package in c("htmltools", "jsonlite", "rgl")) {
 
 pkgload::load_all(".", quiet = TRUE, export_all = FALSE, helpers = FALSE)
 
-default.data <- path.expand(paste0(
-    "~/current_projects/retinal_development/data/",
-    "10x_Mouse_retina_pData_umap2_CellType_annot_w_horiz.csv"
-))
-data.file <- Sys.getenv("IVUE_RETINAL_DATA", default.data)
-if (!file.exists(data.file)) {
-    stop("Retinal metadata not found. Set IVUE_RETINAL_DATA to the source CSV path.")
-}
-
 out <- file.path("artifacts", "retinal-readme")
 dir.create(out, recursive = TRUE, showWarnings = FALSE)
 dir.create(file.path("man", "figures"), recursive = TRUE, showWarnings = FALSE)
 
-retina <- utils::read.csv(data.file, check.names = FALSE,
-                          stringsAsFactors = FALSE)
-needed <- c("age", "umap_coord1", "umap_coord2", "umap_coord3",
-            "umap2_CellType")
-if (!all(needed %in% names(retina))) {
-    stop("The retinal metadata is missing one or more required columns: ",
-         paste(setdiff(needed, names(retina)), collapse = ", "))
+layout.file <- Sys.getenv(
+    "IVUE_RETINAL_LAYOUT",
+    file.path(out, "retinal-sknn-layout.rds")
+)
+if (!file.exists(layout.file)) {
+    stop("Prepared retinal graph not found. Run tools/prepare-retinal-readme.R first.")
 }
-retina <- retina[, needed]
-names(retina) <- c("age", "x", "y", "z", "cell.type")
-if (any(!stats::complete.cases(retina))) {
-    stop("The README source data must have complete coordinates and labels.")
+retinal <- readRDS(layout.file)
+needed <- c("coordinates", "graph", "metadata", "k.selection", "input", "layout")
+if (!all(needed %in% names(retinal))) {
+    stop("The prepared retinal graph is missing required fields.")
+}
+sampled <- retinal$metadata
+X <- retinal$coordinates
+if (!is.matrix(X) || ncol(X) != 3L || nrow(X) != nrow(sampled) ||
+    any(!is.finite(X))) {
+    stop("Prepared retinal coordinates must be a finite n-by-3 matrix.")
 }
 
 age.levels <- c("E11", "E12", "E14", "E16", "E18",
@@ -53,56 +48,15 @@ cell.levels <- c(
     "Photoreceptor Precursors", "Cones", "Rods", "Bipolar Cells",
     "Muller Glia"
 )
-if (!setequal(unique(retina$age), age.levels)) {
+if (!setequal(unique(sampled$age), age.levels)) {
     stop("Developmental-stage labels differ from the expected source data.")
 }
-if (!setequal(unique(retina$cell.type), cell.levels)) {
+if (!setequal(unique(sampled$cell.type), cell.levels)) {
     stop("Cell-type labels differ from the expected source data.")
 }
-retina$age <- factor(retina$age, levels = age.levels)
-retina$cell.type <- factor(retina$cell.type, levels = cell.levels)
-
-allocate.stratified <- function(groups, target, minimum = 20L) {
-    members <- split(seq_along(groups), groups, drop = TRUE)
-    sizes <- vapply(members, length, integer(1L))
-    if (target >= sum(sizes)) return(sizes)
-
-    allocation <- pmin(sizes, minimum)
-    remaining <- target - sum(allocation)
-    if (remaining < 0L) {
-        stop("Sampling target is too small for the requested stratum minimum.")
-    }
-    capacity <- sizes - allocation
-    if (remaining > 0L) {
-        ideal <- remaining * capacity / sum(capacity)
-        extra <- pmin(capacity, floor(ideal))
-        allocation <- allocation + extra
-        left <- target - sum(allocation)
-        if (left > 0L) {
-            eligible <- which(allocation < sizes)
-            order.remainder <- eligible[order(ideal[eligible] - extra[eligible],
-                                               decreasing = TRUE)]
-            allocation[utils::head(order.remainder, left)] <-
-                allocation[utils::head(order.remainder, left)] + 1L
-        }
-    }
-    allocation
-}
-
-sample.size <- 12000L
-strata <- interaction(retina$age, retina$cell.type, drop = TRUE,
-                      lex.order = TRUE)
-members <- split(seq_len(nrow(retina)), strata, drop = TRUE)
-allocation <- allocate.stratified(strata, sample.size)
-set.seed(20190619)
-selected <- unlist(Map(function(rows, n) sample(rows, n), members, allocation),
-                   use.names = FALSE)
-sampled <- retina[selected, , drop = FALSE]
-sampled <- sampled[sample(seq_len(nrow(sampled))), , drop = FALSE]
-stopifnot(nrow(sampled) == sample.size)
-
-X <- as.matrix(sampled[, c("x", "y", "z")])
-X <- sweep(X, 2L, colMeans(X), "-")
+sampled$age <- factor(sampled$age, levels = age.levels)
+sampled$cell.type <- factor(sampled$cell.type, levels = cell.levels)
+sample.size <- nrow(sampled)
 
 age.colors <- stats::setNames(c(
     "#512A84", "#4148A4", "#2E68B4", "#1686B7", "#009FA8",
@@ -114,17 +68,24 @@ cell.colors <- stats::setNames(c(
     "#8F9D44"
 ), cell.levels)
 
-camera <- camera.zup(elevation = 18, turn = -28, fov = 0, zoom = 0.57)
-common <- list(point.size = 2.2, alpha = 0.78, axes = FALSE,
+camera <- camera.zup(elevation = 18, turn = -28, fov = 0, zoom = 0.64)
+common <- list(point.size = 2.1, alpha = 0.84, axes = FALSE,
                aspect = "equal", camera = camera, width = 520L,
-               height = 360L, background.color = "white")
+               height = 360L, background.color = "white",
+               edge.col = "#59687324", edge.width = 1)
 age.scale <- color.scale.groups(sampled$age, colors = age.colors)
 cell.scale <- color.scale.groups(sampled$cell.type, colors = cell.colors)
 views <- list(
-    do.call(plot3D.groups, c(list(X = X, groups = sampled$age,
-                                 scale = age.scale, legend.show = FALSE), common)),
-    do.call(plot3D.groups, c(list(X = X, groups = sampled$cell.type,
-                                 scale = cell.scale, legend.show = FALSE), common))
+    do.call(plot3D.graph, c(list(
+        graph = retinal$graph, X = X, vertices = rownames(X),
+        weight.type = "distance",
+        groups = sampled$age, scale = age.scale, legend.show = FALSE
+    ), common)),
+    do.call(plot3D.graph, c(list(
+        graph = retinal$graph, X = X, vertices = rownames(X),
+        weight.type = "distance",
+        groups = sampled$cell.type, scale = cell.scale, legend.show = FALSE
+    ), common))
 )
 views[[1]]$elementId <- "retina-age"
 views[[2]]$elementId <- "retina-cell-type"
@@ -202,18 +163,18 @@ css <- "
 
 page <- htmltools::tags$html(
     htmltools::tags$head(
-        htmltools::tags$title("Mouse retinal development in 3D"),
+        htmltools::tags$title("Mouse retinal development as a 3D graph"),
         htmltools::tags$meta(charset = "utf-8"),
         htmltools::tags$style(htmltools::HTML(css))
     ),
     htmltools::tags$body(
         htmltools::tags$main(id = "hero",
             htmltools::tags$header(
-                htmltools::tags$h1("Mouse retinal development in 3D"),
+                htmltools::tags$h1("Mouse retinal development as a 3D graph"),
                 htmltools::tags$p(sprintf(
-                    "%s-cell stratified sample from %s single-cell transcriptomes",
+                    "%s-cell sample | symmetric %d-NN | weighted-GRIP + edge-KK",
                     format(sample.size, big.mark = ","),
-                    format(nrow(retina), big.mark = ",")
+                    retinal$k.selection$selected
                 ))
             ),
             htmltools::tags$div(id = "panels",
@@ -236,10 +197,17 @@ page <- htmltools::tags$html(
 html.file <- file.path(out, "retinal-development.html")
 htmltools::save_html(page, html.file, libdir = "retinal-libs")
 writeLines(c(
+    "Input: first 20 PCs of log10(CPT + 1) for the published 3,290 high-variance genes",
+    "Graph: Euclidean symmetric kNN via dgraphs; graph topology is not computed from UMAP coordinates",
+    paste("k selection:", retinal$k.selection$rule),
+    paste("Selected k:", retinal$k.selection$selected),
+    paste("Graph edges:", nrow(retinal$graph$edge.matrix)),
+    paste("Layout:", retinal$layout$method),
+    paste("Zero-length edges floored for layout:", retinal$layout$zero.edge.count),
     "Generated by: Rscript tools/render-retinal-readme.R",
-    paste("Source:", normalizePath(data.file)),
-    paste("Source MD5:", unname(tools::md5sum(data.file))),
-    paste("Source rows:", nrow(retina)),
+    paste("Prepared graph:", normalizePath(layout.file)),
+    paste("PCA fitting rows:", retinal$input$cells),
+    paste("Retained retinal rows:", retinal$input$retained.cells),
     paste("Sample rows:", sample.size),
     "Sampling: age-by-cell-type strata; minimum 20 cells per nonempty stratum; seed 20190619",
     paste("ivue:", as.character(utils::packageVersion("ivue"))),

@@ -2,12 +2,18 @@
 
 Interactive 3D visualization of data and graphs in R.
 
-![Two synchronized rotating views of a 12,000-cell mouse retinal-development UMAP, colored by developmental stage and annotated cell type.](man/figures/readme-retinal-development.gif)
+![Two synchronized rotating views of a 12,000-cell mouse retinal-development symmetric k-nearest-neighbor graph, colored by developmental stage and annotated cell type.](man/figures/readme-retinal-development.gif)
 
-The same three-dimensional UMAP coordinates are colored by developmental stage
-and annotated cell type using reusable `ivue` group scales and a synchronized
-orthographic camera. The reproducible, stratified 12,000-cell view comes from
-the 107,052-cell mouse retinal-development single-cell RNA-seq dataset of
+The same embedded graph is colored by developmental stage and annotated cell
+type using reusable `ivue` group scales and a synchronized orthographic camera.
+For a reproducible, stratified 12,000-cell sample, `dgraphs` builds a symmetric
+3-nearest-neighbor graph on the first 20 PCs reconstructed from the exact 3,290
+high-variance genes, 120,804-cell fitting population, and `log10(CPT + 1)`
+representation used upstream of the published UMAP. `grip` computes a
+weighted-GRIP layout followed by edge-KK refinement; `ivue` renders the points
+and edges. The graph uses Euclidean distances, as supported by `dgraphs`, and
+is not constructed from UMAP coordinates. Displayed cells come from the
+107,052-cell retained mouse retinal-development dataset of
 [Clark et al. (2019)](https://pmc.ncbi.nlm.nih.gov/articles/PMC6768831/).
 
 ## Get Started

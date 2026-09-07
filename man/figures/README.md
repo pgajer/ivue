@@ -11,18 +11,55 @@ ignored `artifacts/retinal-readme/node` directory. It uses Google Chrome from
 the standard macOS application path when available. Set `CHROME_PATH`, `NODE`,
 or `NPM` when those programs are installed elsewhere.
 
-The animation is a new `ivue` rendering of the three-dimensional UMAP
-coordinates from Clark et al. (2019), *Single-Cell RNA-Seq Analysis of Retinal
-Development Identifies NFI Factors as Regulating Mitotic Exit and Late-Born
-Cell Specification*, Neuron 102:1111-1126.e5, PMCID
+The preparation stage requires the R packages `Matrix`, `readxl`, `irlba`,
+`dgraphs`, and `grip`. These are documentation-build dependencies only and are
+not dependencies of the CRAN package.
+
+The animation is a new graph analysis and `ivue` rendering of data from Clark
+et al. (2019), *Single-Cell RNA-Seq Analysis of Retinal Development Identifies
+NFI Factors as Regulating Mitotic Exit and Late-Born Cell Specification*,
+Neuron 102:1111-1126.e5, PMCID
 [PMC6768831](https://pmc.ncbi.nlm.nih.gov/articles/PMC6768831/), BioProject
 [PRJNA486209](https://www.ncbi.nlm.nih.gov/bioproject/486209).
 
-The generator reads the project's local annotated coordinate table from
-`~/current_projects/retinal_development` by default. Set `IVUE_RETINAL_DATA`
-to use another location. It selects 12,000 cells reproducibly across nonempty
-developmental-stage-by-cell-type strata. The rendered assets contain no cell
-barcodes, sample identifiers, expression measurements, or clinical metadata.
+The preparation stage reconstructs the representation reported as input to the
+published UMAP: the first 20 centered, unscaled principal components of
+`log10(CPT + 1)` for the 3,290 high-variance genes in Supplementary Table S4.
+PCA is fitted to all 120,804 cells in the pre-filter GEO aggregate matrix, the
+same fitting population reported for the UMAP. The preparation verifies that
+every count-matrix row sum equals the corresponding GEO cell-table
+`Total_mRNAs` value. It then matches the 107,052 retained retinal cells into
+that PC matrix by exact row identifier. The symmetric kNN graph is therefore
+built from the same expression representation, never from UMAP coordinates or
+the downstream scCoGAPS pattern weights. The original UMAP used Canberra
+distance; the graph uses the Euclidean distance currently implemented by
+`dgraphs`.
+
+The generator selects 12,000 cells reproducibly across nonempty
+developmental-stage-by-cell-type strata. It considers `k = 2:12` in ascending
+order and stops after finding the smallest `k` whose native sKNN graph remains
+connected for three consecutive candidates. `dgraphs` constructs the graph,
+`grip` computes a weighted-GRIP initialization and edge-KK refinement, and
+`ivue` renders the same graph twice. Any zero-length edges between identical PC
+coordinates are given a recorded numerical floor for the layout objective only;
+graph topology and PC coordinates are unchanged.
+
+The full aggregate Matrix Market file, cell table, and feature table are
+available from
+[GEO accession GSE118614](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE118614).
+By default, place them at `artifacts/retinal-readme/raw/` using their GEO names:
+[`GSE118614_10x_aggregate.mtx.gz`](https://ftp.ncbi.nlm.nih.gov/geo/series/GSE118nnn/GSE118614/suppl/GSE118614_10x_aggregate.mtx.gz),
+[`GSE118614_barcodes.tsv.gz`](https://ftp.ncbi.nlm.nih.gov/geo/series/GSE118nnn/GSE118614/suppl/GSE118614_barcodes.tsv.gz), and
+[`GSE118614_genes.tsv.gz`](https://ftp.ncbi.nlm.nih.gov/geo/series/GSE118nnn/GSE118614/suppl/GSE118614_genes.tsv.gz).
+The annotated retained-cell metadata and Supplementary Table S4 default to
+`~/current_projects/retinal_development`.
+Override any source with `IVUE_RETINAL_COUNTS`, `IVUE_RETINAL_FEATURES`,
+`IVUE_RETINAL_CELLS`, `IVUE_RETINAL_DATA`, or
+`IVUE_RETINAL_HIGH_VARIANCE`. The source data, cached PCs, and prepared graph
+stay under ignored `artifacts/` paths.
+
+The rendered assets contain no cell barcodes, sample identifiers, expression
+measurements, or clinical metadata.
 
 The GIF, poster, scripts, and this provenance note are repository documentation
 and are excluded from the CRAN source package.

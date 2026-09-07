@@ -1,4 +1,4 @@
-.PHONY: document build check check-cran check-minimal install readme-retinal
+.PHONY: document build check check-cran check-minimal install readme-retinal readme-retinal-layout
 
 PKGNAME := ivue
 VERSION := $(shell sed -n 's/^Version: //p' DESCRIPTION)
@@ -31,7 +31,10 @@ check-minimal: build
 install: build
 	$(R_RUN) CMD INSTALL $(TARBALL)
 
-readme-retinal:
+readme-retinal-layout:
+	$(RSCRIPT_RUN) tools/prepare-retinal-readme.R
+
+readme-retinal: readme-retinal-layout
 	$(RSCRIPT_RUN) tools/render-retinal-readme.R
 	@test -f $(RETINAL_PLAYWRIGHT)/package.json || \
 		$(NPM) install --prefix $(RETINAL_NODE_DIR) --no-save --no-package-lock \

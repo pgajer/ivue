@@ -51,11 +51,18 @@ async function canvasPixels(canvas) {
     const hero = page.locator('#hero');
     const canvases = page.locator('#hero canvas');
     const frameCount = await page.evaluate(() => window.retinalHero.frameCount);
+    const heroBox = await hero.boundingBox();
+    if (!heroBox) throw new Error('Retinal hero has no visible bounding box.');
+
+    async function screenshot(outputPath) {
+      await page.screenshot({ path: outputPath, clip: heroBox });
+    }
 
     async function frame(index) {
       await page.evaluate(value => window.retinalHero.setFrame(value), index);
       await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() =>
         requestAnimationFrame(resolve))));
+      await page.waitForTimeout(120);
       await page.evaluate(() => {
         const matrices = window.retinalHero.scenes.map(scene =>
           Array.from(scene.getObj(scene.scene.rootSubscene).par3d.userMatrix.getAsArray()));
@@ -73,13 +80,12 @@ async function canvasPixels(canvas) {
     }
 
     fs.mkdirSync(path.join('man', 'figures'), { recursive: true });
-    await hero.screenshot({ path: path.join('man', 'figures',
-      'readme-retinal-development.png') });
+    await screenshot(path.join('man', 'figures', 'readme-retinal-development.png'));
 
     for (const index of [Math.floor(frameCount / 4), Math.floor(frameCount / 2),
       Math.floor(3 * frameCount / 4)]) {
       await frame(index);
-      await hero.screenshot({ path: path.join(out, `quarter-${index}.png`) });
+      await screenshot(path.join(out, `quarter-${index}.png`));
     }
 
     if (process.argv.includes('--animation')) {
@@ -87,8 +93,8 @@ async function canvasPixels(canvas) {
       fs.mkdirSync(frames, { recursive: true });
       for (let i = 0; i < frameCount; i++) {
         await frame(i);
-        await hero.screenshot({ path: path.join(frames,
-          `frame-${String(i).padStart(3, '0')}.png`) });
+        await screenshot(path.join(frames,
+          `frame-${String(i).padStart(3, '0')}.png`));
         if (i % 12 === 0) console.log(`Captured ${i + 1}/${frameCount} frames`);
       }
     }
