@@ -6,9 +6,10 @@
 make readme-retinal
 ```
 
-The capture step requires Playwright and a Chromium browser. Set
-`PLAYWRIGHT_MODULE`, `CHROME_PATH`, or `NODE` when those dependencies are not
-available from their default locations.
+On first use, the target installs its pinned Playwright dependency under the
+ignored `artifacts/retinal-readme/node` directory. It uses Google Chrome from
+the standard macOS application path when available. Set `CHROME_PATH`, `NODE`,
+or `NPM` when those programs are installed elsewhere.
 
 The animation is a new `ivue` rendering of the three-dimensional UMAP
 coordinates from Clark et al. (2019), *Single-Cell RNA-Seq Analysis of Retinal

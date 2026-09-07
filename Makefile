@@ -7,6 +7,10 @@ R_ENV := env -u R_HOME -u R_LIBS -u R_LIBS_USER -u R_LIBS_SITE
 R_RUN := $(R_ENV) R
 RSCRIPT_RUN := $(R_ENV) Rscript
 NODE ?= node
+NPM ?= npm
+PLAYWRIGHT_VERSION ?= 1.62.1
+RETINAL_NODE_DIR := artifacts/retinal-readme/node
+RETINAL_PLAYWRIGHT := $(RETINAL_NODE_DIR)/node_modules/playwright
 
 document:
 	$(RSCRIPT_RUN) -e 'roxygen2::roxygenise()'
@@ -29,5 +33,9 @@ install: build
 
 readme-retinal:
 	$(RSCRIPT_RUN) tools/render-retinal-readme.R
-	$(NODE) tools/capture-retinal-readme.cjs --animation
+	@test -f $(RETINAL_PLAYWRIGHT)/package.json || \
+		$(NPM) install --prefix $(RETINAL_NODE_DIR) --no-save --no-package-lock \
+		playwright@$(PLAYWRIGHT_VERSION)
+	PLAYWRIGHT_MODULE=$(CURDIR)/$(RETINAL_PLAYWRIGHT) \
+		$(NODE) tools/capture-retinal-readme.cjs --animation
 	$(RSCRIPT_RUN) tools/encode-retinal-readme.R
