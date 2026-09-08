@@ -77,6 +77,13 @@ display subsampling. Their metrics differ: UMAP uses Canberra, while sKNN uses
 Euclidean distance. The point-only sKNN animation is the README hero, while the
 matched UMAP comparison appears later.
 
+The comparison GIF holds each of its 72 frames for 200 milliseconds, giving a
+14.4-second full rotation. Both panels receive the identical camera matrix at
+each frame. The original 7.2-second sequence was slowed by changing frame
+delays only: decoded pixels, dimensions, frame count, and file size are
+unchanged. The sKNN hero retains its 7.2-second rotation. Slower playback adds
+viewing time, not intermediate views; the angular step remains 5 degrees.
+
 The full aggregate Matrix Market file, cell table, and feature table are
 available from
 [GEO accession GSE118614](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE118614).

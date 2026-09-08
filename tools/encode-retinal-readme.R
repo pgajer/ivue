@@ -25,7 +25,9 @@ frames <- magick::image_read(paths)
 frames <- magick::image_scale(frames, "960x")
 frames <- magick::image_quantize(frames, max = 128L, colorspace = "sRGB",
                                  dither = TRUE)
-animation <- magick::image_animate(frames, fps = 10L, loop = 0,
+# Hold the same comparison frames longer without adding image data.
+fps <- if (view == "comparison") 5L else 10L
+animation <- magick::image_animate(frames, fps = fps, loop = 0,
                                    optimize = TRUE)
 gif <- file.path("man", "figures", paste0("readme-retinal-", view, ".gif"))
 magick::image_write(animation, gif)

@@ -157,7 +157,7 @@ views[[1]]$elementId <- "retina-age"
 views[[2]]$elementId <- "retina-cell-type"
 
 frame.count <- 72L
-fps <- 10L
+fps <- if (view == "comparison") 5L else 10L
 angles <- (seq_len(frame.count) - 1L) * 360 / frame.count
 matrices <- lapply(angles, function(angle) as.vector(
     camera.zup(elevation = 18, turn = -28 + angle,
