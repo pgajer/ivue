@@ -1,7 +1,17 @@
 #!/usr/bin/env Rscript
 
-# Build synchronized ivue views of the retinal-development sKNN graph.
+# Build synchronized ivue views of one retinal-development representation.
 options(rgl.useNULL = TRUE)
+
+args <- commandArgs(trailingOnly = TRUE)
+view.arg <- grep("^--view=", args, value = TRUE)
+if (length(view.arg) != 1L) {
+    stop("Supply exactly one of --view=sknn or --view=umap.")
+}
+view <- sub("^--view=", "", view.arg)
+if (!view %in% c("sknn", "umap")) {
+    stop("Unknown retinal view: ", view)
+}
 
 if (!file.exists("DESCRIPTION")) {
     stop("Run this script from the ivue repository root.")
@@ -29,15 +39,46 @@ if (!file.exists(layout.file)) {
     stop("Prepared retinal graph not found. Run tools/prepare-retinal-readme.R first.")
 }
 retinal <- readRDS(layout.file)
-needed <- c("coordinates", "graph", "metadata", "k.selection", "input", "layout")
+needed <- c(
+    "coordinates", "graph", "metadata", "k.selection", "input", "layout",
+    "source.paths"
+)
 if (!all(needed %in% names(retinal))) {
     stop("The prepared retinal graph is missing required fields.")
 }
 sampled <- retinal$metadata
-X <- retinal$coordinates
+if (view == "sknn") {
+    X <- retinal$coordinates
+} else {
+    metadata.file <- Sys.getenv(
+        "IVUE_RETINAL_DATA", retinal$source.paths[["metadata"]]
+    )
+    if (!file.exists(metadata.file)) {
+        stop("Retinal UMAP metadata not found: ", metadata.file)
+    }
+    source <- utils::read.csv(
+        metadata.file, row.names = 1L, check.names = FALSE,
+        stringsAsFactors = FALSE
+    )
+    columns <- c("umap_coord1", "umap_coord2", "umap_coord3")
+    if (!all(columns %in% names(source))) {
+        stop("Retinal metadata does not contain the published 3D UMAP coordinates.")
+    }
+    selected <- match(rownames(sampled), rownames(source))
+    if (anyNA(selected) || anyDuplicated(selected)) {
+        stop("Prepared graph cells do not map uniquely to the UMAP metadata.")
+    }
+    if (!identical(source$age[selected], as.character(sampled$age)) ||
+        !identical(source$umap2_CellType[selected], as.character(sampled$cell.type))) {
+        stop("UMAP labels do not match the prepared graph sample.")
+    }
+    X <- as.matrix(source[selected, columns, drop = FALSE])
+    X <- sweep(X, 2L, colMeans(X), "-")
+    rownames(X) <- rownames(sampled)
+}
 if (!is.matrix(X) || ncol(X) != 3L || nrow(X) != nrow(sampled) ||
     any(!is.finite(X))) {
-    stop("Prepared retinal coordinates must be a finite n-by-3 matrix.")
+    stop("Retinal coordinates must be a finite n-by-3 matrix.")
 }
 
 age.levels <- c("E11", "E12", "E14", "E16", "E18",
@@ -68,25 +109,30 @@ cell.colors <- stats::setNames(c(
     "#8F9D44"
 ), cell.levels)
 
+point.size <- if (view == "sknn") 2.1 else 2.2
+alpha <- if (view == "sknn") 0.84 else 0.78
 camera <- camera.zup(elevation = 18, turn = -28, fov = 0, zoom = 0.64)
-common <- list(point.size = 2.1, alpha = 0.84, axes = FALSE,
+common <- list(point.size = point.size, alpha = alpha, axes = FALSE,
                aspect = "equal", camera = camera, width = 520L,
-               height = 360L, background.color = "white",
-               edge.col = "#59687324", edge.width = 1)
+               height = 360L, background.color = "white")
 age.scale <- color.scale.groups(sampled$age, colors = age.colors)
 cell.scale <- color.scale.groups(sampled$cell.type, colors = cell.colors)
-views <- list(
-    do.call(plot3D.graph, c(list(
-        graph = retinal$graph, X = X, vertices = rownames(X),
-        weight.type = "distance",
-        groups = sampled$age, scale = age.scale, legend.show = FALSE
-    ), common)),
-    do.call(plot3D.graph, c(list(
-        graph = retinal$graph, X = X, vertices = rownames(X),
-        weight.type = "distance",
-        groups = sampled$cell.type, scale = cell.scale, legend.show = FALSE
-    ), common))
-)
+make.view <- function(groups, scale) {
+    plot.args <- list(
+        X = X, groups = groups, scale = scale, legend.show = FALSE
+    )
+    if (view == "sknn") {
+        plot.args <- c(list(
+            graph = retinal$graph, vertices = rownames(X),
+            weight.type = "distance", edge.col = "#59687324", edge.width = 1
+        ), plot.args)
+        do.call(plot3D.graph, c(plot.args, common))
+    } else {
+        do.call(plot3D.groups, c(plot.args, common))
+    }
+}
+views <- list(make.view(sampled$age, age.scale),
+              make.view(sampled$cell.type, cell.scale))
 views[[1]]$elementId <- "retina-age"
 views[[2]]$elementId <- "retina-cell-type"
 
@@ -161,21 +207,34 @@ css <- "
   .legend-item b { overflow: hidden; text-overflow: ellipsis; font-weight: 520; }
 "
 
+page.title <- if (view == "sknn") {
+    "Mouse retinal development as a 3D graph"
+} else {
+    "Mouse retinal development as a 3D point cloud"
+}
+page.subtitle <- if (view == "sknn") {
+    sprintf(
+        "%s-cell sample | symmetric %d-NN | weighted-GRIP + edge-KK",
+        format(sample.size, big.mark = ","), retinal$k.selection$selected
+    )
+} else {
+    sprintf(
+        "%s-cell sample | published 3D UMAP coordinates",
+        format(sample.size, big.mark = ",")
+    )
+}
+
 page <- htmltools::tags$html(
     htmltools::tags$head(
-        htmltools::tags$title("Mouse retinal development as a 3D graph"),
+        htmltools::tags$title(page.title),
         htmltools::tags$meta(charset = "utf-8"),
         htmltools::tags$style(htmltools::HTML(css))
     ),
     htmltools::tags$body(
         htmltools::tags$main(id = "hero",
             htmltools::tags$header(
-                htmltools::tags$h1("Mouse retinal development as a 3D graph"),
-                htmltools::tags$p(sprintf(
-                    "%s-cell sample | symmetric %d-NN | weighted-GRIP + edge-KK",
-                    format(sample.size, big.mark = ","),
-                    retinal$k.selection$selected
-                ))
+                htmltools::tags$h1(page.title),
+                htmltools::tags$p(page.subtitle)
             ),
             htmltools::tags$div(id = "panels",
                 htmltools::tags$section(
@@ -194,17 +253,26 @@ page <- htmltools::tags$html(
     )
 )
 
-html.file <- file.path(out, "retinal-development.html")
+html.file <- file.path(out, paste0("retinal-", view, ".html"))
 htmltools::save_html(page, html.file, libdir = "retinal-libs")
-writeLines(c(
+view.provenance <- if (view == "sknn") c(
     "Input: first 20 PCs of log10(CPT + 1) for the published 3,290 high-variance genes",
-    "Graph: Euclidean symmetric kNN via dgraphs; graph topology is not computed from UMAP coordinates",
+    "Graph: Euclidean symmetric kNN via dgraphs; topology is not computed from UMAP coordinates",
     paste("k selection:", retinal$k.selection$rule),
     paste("Selected k:", retinal$k.selection$selected),
     paste("Graph edges:", nrow(retinal$graph$edge.matrix)),
     paste("Layout:", retinal$layout$method),
-    paste("Zero-length edges floored for layout:", retinal$layout$zero.edge.count),
-    "Generated by: Rscript tools/render-retinal-readme.R",
+    paste("Zero-length edges floored for layout:", retinal$layout$zero.edge.count)
+) else c(
+    "Input: published three-dimensional UMAP coordinates",
+    paste("Source metadata:", normalizePath(metadata.file)),
+    "Rendering: ivue point cloud; no graph edges"
+)
+writeLines(c(
+    paste("View:", view),
+    view.provenance,
+    paste("Generated by: Rscript tools/render-retinal-readme.R --view=", view,
+          sep = ""),
     paste("Prepared graph:", normalizePath(layout.file)),
     paste("PCA fitting rows:", retinal$input$cells),
     paste("Retained retinal rows:", retinal$input$retained.cells),
@@ -214,5 +282,5 @@ writeLines(c(
     paste("rgl:", as.character(utils::packageVersion("rgl"))),
     sprintf("Animation: %d frames; %d fps; %.1f seconds; synchronized orthographic cameras",
             frame.count, fps, frame.count / fps)
-), file.path(out, "provenance.txt"))
+), file.path(out, paste0("provenance-", view, ".txt")))
 message("Wrote ", html.file)

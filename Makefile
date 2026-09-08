@@ -1,4 +1,6 @@
-.PHONY: document build check check-cran check-minimal install readme-retinal readme-retinal-layout
+.PHONY: document build check check-cran check-minimal install readme-retinal \
+	readme-retinal-layout readme-retinal-deps readme-retinal-sknn \
+	readme-retinal-umap
 
 PKGNAME := ivue
 VERSION := $(shell sed -n 's/^Version: //p' DESCRIPTION)
@@ -34,11 +36,21 @@ install: build
 readme-retinal-layout:
 	$(RSCRIPT_RUN) tools/prepare-retinal-readme.R
 
-readme-retinal: readme-retinal-layout
-	$(RSCRIPT_RUN) tools/render-retinal-readme.R
+readme-retinal-deps:
 	@test -f $(RETINAL_PLAYWRIGHT)/package.json || \
 		$(NPM) install --prefix $(RETINAL_NODE_DIR) --no-save --no-package-lock \
 		playwright@$(PLAYWRIGHT_VERSION)
+
+readme-retinal-sknn: readme-retinal-layout readme-retinal-deps
+	$(RSCRIPT_RUN) tools/render-retinal-readme.R --view=sknn
 	PLAYWRIGHT_MODULE=$(CURDIR)/$(RETINAL_PLAYWRIGHT) \
-		$(NODE) tools/capture-retinal-readme.cjs --animation
-	$(RSCRIPT_RUN) tools/encode-retinal-readme.R
+		$(NODE) tools/capture-retinal-readme.cjs --view=sknn --animation
+	$(RSCRIPT_RUN) tools/encode-retinal-readme.R --view=sknn
+
+readme-retinal-umap: readme-retinal-layout readme-retinal-deps
+	$(RSCRIPT_RUN) tools/render-retinal-readme.R --view=umap
+	PLAYWRIGHT_MODULE=$(CURDIR)/$(RETINAL_PLAYWRIGHT) \
+		$(NODE) tools/capture-retinal-readme.cjs --view=umap --animation
+	$(RSCRIPT_RUN) tools/encode-retinal-readme.R --view=umap
+
+readme-retinal: readme-retinal-sknn readme-retinal-umap

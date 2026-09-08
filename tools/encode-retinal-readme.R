@@ -4,10 +4,21 @@ if (!requireNamespace("magick", quietly = TRUE)) {
     stop("Package 'magick' is required to encode the README animation.")
 }
 
+args <- commandArgs(trailingOnly = TRUE)
+view.arg <- grep("^--view=", args, value = TRUE)
+if (length(view.arg) != 1L) {
+    stop("Supply exactly one of --view=sknn or --view=umap.")
+}
+view <- sub("^--view=", "", view.arg)
+if (!view %in% c("sknn", "umap")) {
+    stop("Unknown retinal view: ", view)
+}
+
 out <- file.path("artifacts", "retinal-readme")
-paths <- file.path(out, "frames", sprintf("frame-%03d.png", 0:71))
+paths <- file.path(out, paste0("frames-", view),
+                   sprintf("frame-%03d.png", 0:71))
 if (!all(file.exists(paths))) {
-    stop("Retinal animation frames are missing. Run capture-retinal-readme.cjs --animation first.")
+    stop("Retinal ", view, " animation frames are missing.")
 }
 
 frames <- magick::image_read(paths)
@@ -16,6 +27,6 @@ frames <- magick::image_quantize(frames, max = 128L, colorspace = "sRGB",
                                  dither = TRUE)
 animation <- magick::image_animate(frames, fps = 10L, loop = 0,
                                    optimize = TRUE)
-gif <- file.path("man", "figures", "readme-retinal-development.gif")
+gif <- file.path("man", "figures", paste0("readme-retinal-", view, ".gif"))
 magick::image_write(animation, gif)
 message("Wrote ", gif, " (", format(file.info(gif)$size, big.mark = ","), " bytes)")

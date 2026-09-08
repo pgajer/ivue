@@ -21,8 +21,13 @@ async function canvasPixels(canvas) {
 }
 
 (async () => {
+  const viewArg = process.argv.find(value => value.startsWith('--view='));
+  const view = viewArg ? viewArg.slice('--view='.length) : '';
+  if (!['sknn', 'umap'].includes(view)) {
+    throw new Error('Supply exactly one of --view=sknn or --view=umap.');
+  }
   const out = path.resolve('artifacts', 'retinal-readme');
-  const html = path.join(out, 'retinal-development.html');
+  const html = path.join(out, `retinal-${view}.html`);
   if (!fs.existsSync(html)) throw new Error(`Missing rendered page: ${html}`);
 
   const systemChrome = process.platform === 'darwin' ?
@@ -80,16 +85,16 @@ async function canvasPixels(canvas) {
     }
 
     fs.mkdirSync(path.join('man', 'figures'), { recursive: true });
-    await screenshot(path.join('man', 'figures', 'readme-retinal-development.png'));
+    await screenshot(path.join('man', 'figures', `readme-retinal-${view}.png`));
 
     for (const index of [Math.floor(frameCount / 4), Math.floor(frameCount / 2),
       Math.floor(3 * frameCount / 4)]) {
       await frame(index);
-      await screenshot(path.join(out, `quarter-${index}.png`));
+      await screenshot(path.join(out, `quarter-${view}-${index}.png`));
     }
 
     if (process.argv.includes('--animation')) {
-      const frames = path.join(out, 'frames');
+      const frames = path.join(out, `frames-${view}`);
       fs.mkdirSync(frames, { recursive: true });
       for (let i = 0; i < frameCount; i++) {
         await frame(i);
@@ -100,7 +105,8 @@ async function canvasPixels(canvas) {
     }
 
     if (errors.length) throw new Error(errors.join('\n'));
-    console.log(`Verified two nonblank synchronized scenes; ${frameCount} camera frames.`);
+    console.log(`Verified ${view} as two nonblank synchronized scenes; ` +
+      `${frameCount} camera frames.`);
   } finally {
     await browser.close();
   }

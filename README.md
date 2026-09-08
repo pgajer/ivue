@@ -2,7 +2,7 @@
 
 Interactive 3D visualization of data and graphs in R.
 
-![Two synchronized rotating views of a 12,000-cell mouse retinal-development symmetric k-nearest-neighbor graph, colored by developmental stage and annotated cell type.](man/figures/readme-retinal-development.gif)
+![Two synchronized rotating views of a 12,000-cell mouse retinal-development symmetric k-nearest-neighbor graph, colored by developmental stage and annotated cell type.](man/figures/readme-retinal-sknn.gif)
 
 The same embedded graph is colored by developmental stage and annotated cell
 type using reusable `ivue` group scales and a synchronized orthographic camera.
@@ -47,6 +47,17 @@ Graph construction, shortest-path computation, and gradient-flow analysis
 remain with their respective analysis packages. `ivue` accepts their results
 as coordinates, values, groups, and geometric layers. Optional graph layout
 uses existing igraph algorithms with explicit weight semantics.
+
+## The Same Cells as a Point Cloud
+
+![Two synchronized rotating views of the same 12,000 retinal cells in the published three-dimensional UMAP coordinates, colored by developmental stage and annotated cell type.](man/figures/readme-retinal-umap.gif)
+
+This secondary view renders the same sampled cell identities using the
+published three-dimensional UMAP coordinates and no edges. `ivue` supplies the
+point-cloud rendering, shared group scales, and synchronized camera; it does
+not compute the UMAP. Keeping the point-cloud and graph views separate makes
+their coordinate provenance explicit while demonstrating both primary plotting
+families.
 
 ## Saddle Example
 
