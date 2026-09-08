@@ -1,6 +1,14 @@
 # ivue
 
-Interactive 3D visualization of data and graphs in R.
+**ivue** is an R package for interactive three-dimensional visualization of data
+and embedded graphs. It turns 3D coordinates into explorable scenes, combining
+point clouds and graph edges with continuous or categorical colors, labels,
+paths, and geometric overlays. Reusable color scales and explicit camera
+controls help make comparisons consistent across views. Built on `rgl` and
+`htmlwidgets`, ivue displays plots in RStudio or a web browser and exports them
+as interactive HTML. It works with coordinates from your chosen analysis or
+embedding method, keeping visualization independent of how those coordinates
+were computed.
 
 ![Two synchronized point-only views of 12,000 retinal cells extracted after fitting a symmetric 4-nearest-neighbor graph layout on all 120,804 cells, colored by developmental stage and annotated cell type.](https://raw.githubusercontent.com/pgajer/ivue/ef09e0a15df7c5772fcf3b468e7e40f488b50fe3/man/figures/readme-retinal-sknn.gif)
 
