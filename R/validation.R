@@ -71,7 +71,10 @@
 
 .fixed.colors <- function(col, n = length(col), name = "colors") {
     col <- .colors(col, n, name)
-    if (!is.numeric(col)) return(col)
-    rgba <- grDevices::col2rgb(col, alpha = TRUE) / 255
-    stats::setNames(grDevices::rgb(rgba[1, ], rgba[2, ], rgba[3, ], rgba[4, ]), names(col))
+    index <- if (is.numeric(col)) seq_along(col) else
+        which(!is.na(suppressWarnings(as.numeric(col))))
+    if (!length(index)) return(col)
+    rgba <- grDevices::col2rgb(col[index], alpha = TRUE) / 255
+    col[index] <- grDevices::rgb(rgba[1, ], rgba[2, ], rgba[3, ], rgba[4, ])
+    col
 }

@@ -134,6 +134,10 @@ test_that("animation colors are fixed at construction, including background and 
     expect_identical(unname(info$col), c("#FF0000FF", "#0000FFFF", "#00FF00FF"))
     expect_identical(unname(info$edge.col), c("#00FF00FF", "#FF0000FF"))
     expect_identical(unname(info$background.color), "#FFFFFFFF")
+    text.colors <- animate.frames(d$frames, d$edges, col = c("2", "4", "3"),
+        edge.col = c("3", "2"), background.color = "1")
+    styles <- c("col", "edge.col", "background.color")
+    expect_identical(attr(text.colors, "ivue.animation")[styles], info[styles])
     grDevices::palette(c("black", "cyan", "magenta", "yellow"))
     expect_identical(attr(w, "ivue.animation"), info)
 

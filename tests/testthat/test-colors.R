@@ -67,3 +67,18 @@ test_that("explicit binned settings reproduce the source saddle colors", {
     groups <- color.scale.groups(old$groups, old$group.colors)
     expect_equal(map.colors(old$groups, groups)$colors, unname(old$group.colors[old$groups]))
 })
+test_that("fixed colors resolve text palette indices without altering explicit colors", {
+    old <- grDevices::palette(); on.exit(grDevices::palette(old))
+    grDevices::palette(c("black", "red", "green", "blue"))
+    colors <- c(a = "2", b = "#00FF0080", c = "transparent", d = "blue")
+    fixed <- .fixed.colors(colors)
+    expect_identical(fixed, c(a = "#FF0000FF", b = "#00FF0080",
+                              c = "transparent", d = "blue"))
+    scale <- color.scale.groups(c("a", "b"), colors = c(a = "2", b = "3"))
+    cont <- color.scale.cont(0:1, palette = c("2", "3"))
+    before <- map.colors(0:1, cont)
+    grDevices::palette(c("black", "cyan", "magenta", "yellow"))
+    expect_identical(unname(map.colors(c("a", "b"), scale)$colors),
+                     c("#FF0000FF", "#00FF00FF"))
+    expect_identical(map.colors(0:1, cont), before)
+})

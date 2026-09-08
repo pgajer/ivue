@@ -2,6 +2,8 @@
 
 - Resolve animation point, edge, and background palette indices at widget
   creation, preserving colors in GIF exports after session palette changes.
+- Resolve character-form palette indices in retained colors and fitted scales
+  while preserving explicit colors and alpha.
 - Add animate.frames for recorded 2D and 3D coordinate sequences, with browser
   playback, timeline and speed controls, fixed viewing bounds, and inactive
   vertex/edge handling. Keep coordinates unchanged and support explicit frame

@@ -14,7 +14,7 @@ Examples and tests guard optional packages and do not launch a browser.
 ## Checks
 
 - macOS arm64, R-devel 4.7.0 (2026-06-24 r90190): full `--as-cran` check,
-  0 errors, 0 warnings, 1 NOTE. All 709 assertions, examples, vignette
+  0 errors, 0 warnings, 1 NOTE. Examples, vignette
   rebuilding, and PDF/HTML manuals passed.
 
 The only NOTE is `New submission`.
