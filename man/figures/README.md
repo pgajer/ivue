@@ -77,10 +77,10 @@ display subsampling. Their metrics differ: UMAP uses Canberra, while sKNN uses
 Euclidean distance. The point-only sKNN animation is the README hero, while the
 matched UMAP comparison appears later.
 
-The comparison GIF holds each of its 72 frames for 200 milliseconds, giving a
+Both README GIFs hold each of their 72 frames for 200 milliseconds, giving a
 14.4-second full rotation. Both panels receive the identical camera matrix at
 each frame. Slower playback adds viewing time, not intermediate views; the
-angular step remains 5 degrees. The sKNN hero retains its 7.2-second rotation.
+angular step remains 5 degrees.
 
 Before rendering the comparison, each displayed cloud is centered and rigidly
 rotated so that the vector from its overall centroid to its P14 centroid points
