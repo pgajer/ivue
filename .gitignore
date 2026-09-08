@@ -11,6 +11,7 @@ Rplots.pdf
 *.dll
 *.dylib
 artifacts/
+/build/
 
 # Internal working records belong in ~/.codex/private/ivue/.
 /MIGRATION.md

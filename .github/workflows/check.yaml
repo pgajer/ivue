@@ -49,7 +49,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest' && matrix.r == 'release'
         with:
           name: source-tarball-r-release
-          path: ivue_*.tar.gz
+          path: build/ivue_*.tar.gz
 
   browser:
     runs-on: ubuntu-latest

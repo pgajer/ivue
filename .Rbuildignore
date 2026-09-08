@@ -11,6 +11,7 @@
 ^ivue\.Rcheck$
 ^Rplots\.pdf$
 ^artifacts$
+^build$
 ^tools$
 ^\.github$
 ^CRAN-SUBMISSION-CHECKLIST\.md$

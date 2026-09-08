@@ -5,7 +5,8 @@
 
 PKGNAME := ivue
 VERSION := $(shell sed -n 's/^Version: //p' DESCRIPTION)
-TARBALL := $(PKGNAME)_$(VERSION).tar.gz
+ARCHIVE := $(PKGNAME)_$(VERSION).tar.gz
+TARBALL := build/$(ARCHIVE)
 R_ENV := env -u R_HOME -u R_LIBS -u R_LIBS_USER -u R_LIBS_SITE
 R_RUN := $(R_ENV) R
 RSCRIPT_RUN := $(R_ENV) Rscript
@@ -18,8 +19,19 @@ RETINAL_PLAYWRIGHT := $(RETINAL_NODE_DIR)/node_modules/playwright
 document:
 	$(RSCRIPT_RUN) -e 'roxygen2::roxygenise()'
 
+# Publish only a successful build; refresh the browsable vignettes with it.
+# build/ is excluded from Git and source builds to prevent recursive packaging.
 build: document
-	$(R_RUN) CMD build .
+	mkdir -p build
+	@set -eu; \
+	stage=$$(mktemp -d "$(CURDIR)/build/.stage.XXXXXX"); \
+	trap 'rm -rf "$$stage"' EXIT HUP INT TERM; \
+	(cd "$$stage" && RGL_USE_NULL=TRUE $(R_RUN) CMD build "$(CURDIR)"); \
+	tar -xzf "$$stage/$(ARCHIVE)" -C "$$stage" "$(PKGNAME)/inst/doc"; \
+	rm -f build/$(PKGNAME)_*.tar.gz; \
+	mv "$$stage/$(ARCHIVE)" "$(TARBALL)"; \
+	rm -rf build/vignettes; \
+	mv "$$stage/$(PKGNAME)/inst/doc" build/vignettes
 
 check: build
 	RGL_USE_NULL=TRUE $(R_RUN) CMD check --no-manual $(TARBALL)
