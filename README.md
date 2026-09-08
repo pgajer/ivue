@@ -10,7 +10,7 @@ as interactive HTML. It works with coordinates from your chosen analysis or
 embedding method, keeping visualization independent of how those coordinates
 were computed.
 
-![Two synchronized point-only views of 12,000 retinal cells extracted after fitting a symmetric 4-nearest-neighbor graph layout on all 120,804 cells, colored by developmental stage and annotated cell type.](https://raw.githubusercontent.com/pgajer/ivue/ef09e0a15df7c5772fcf3b468e7e40f488b50fe3/man/figures/readme-retinal-sknn.gif)
+![Two synchronized point-only views of 12,000 retinal cells extracted after fitting a symmetric 4-nearest-neighbor graph layout on all 120,804 cells, colored by developmental stage and annotated cell type.](https://raw.githubusercontent.com/pgajer/ivue/302f7095c6e513e4ea1fd1d48099c8c7885f1d19/man/figures/readme-retinal-sknn.gif)
 
 The same embedded point cloud is colored by developmental stage and annotated cell
 type using reusable `ivue` group scales and a synchronized orthographic camera.
