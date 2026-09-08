@@ -69,5 +69,10 @@ stay under ignored `artifacts/` paths.
 The rendered assets contain no cell barcodes, sample identifiers, expression
 measurements, or clinical metadata.
 
+`tools/generate-retinal-vignette-data.R` records the matched visualization
+values under `inst/extdata/` with synthetic cell IDs for the package case-study
+vignette. It omits expression values, PCs, source row identifiers, and local
+paths.
+
 The GIFs, posters, scripts, and this provenance note are repository documentation
 and are excluded from the CRAN source package.

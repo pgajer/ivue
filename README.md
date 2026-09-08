@@ -57,7 +57,9 @@ published three-dimensional UMAP coordinates and no edges. `ivue` supplies the
 point-cloud rendering, shared group scales, and synchronized camera; it does
 not compute the UMAP. Keeping the point-cloud and graph views separate makes
 their coordinate provenance explicit while demonstrating both primary plotting
-families.
+families. See the retinal-development case study with
+`vignette("retinal-development", package = "ivue")` for the complete plotting
+workflow and provenance.
 
 ## Saddle Example
 

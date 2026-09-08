@@ -1,6 +1,6 @@
 .PHONY: document build check check-cran check-minimal install readme-retinal \
 	readme-retinal-layout readme-retinal-deps readme-retinal-sknn \
-	readme-retinal-umap
+	readme-retinal-umap retinal-vignette retinal-vignette-data
 
 PKGNAME := ivue
 VERSION := $(shell sed -n 's/^Version: //p' DESCRIPTION)
@@ -54,3 +54,11 @@ readme-retinal-umap: readme-retinal-layout readme-retinal-deps
 	$(RSCRIPT_RUN) tools/encode-retinal-readme.R --view=umap
 
 readme-retinal: readme-retinal-sknn readme-retinal-umap
+
+retinal-vignette-data: readme-retinal-layout
+	$(RSCRIPT_RUN) tools/generate-retinal-vignette-data.R
+
+retinal-vignette: readme-retinal retinal-vignette-data
+	mkdir -p vignettes/figures
+	cp man/figures/readme-retinal-umap.png vignettes/figures/retinal-umap.png
+	cp man/figures/readme-retinal-sknn.png vignettes/figures/retinal-sknn.png

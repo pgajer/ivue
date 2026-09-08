@@ -1,0 +1,23 @@
+test_that("retinal case-study data preserve cross-view identities", {
+    path <- system.file("extdata", "retinal-development.rds", package = "ivue")
+    expect_true(nzchar(path))
+    retina <- readRDS(path)
+
+    expect_named(retina, c("coordinates", "graph", "annotations", "provenance"))
+    expect_named(retina$coordinates, c("umap", "sknn"))
+    expect_equal(dim(retina$coordinates$umap), c(12000L, 3L))
+    expect_equal(dim(retina$coordinates$sknn), c(12000L, 3L))
+    expect_equal(nrow(retina$graph$edges), 27631L)
+    expect_identical(rownames(retina$coordinates$umap), retina$annotations$id)
+    expect_identical(rownames(retina$coordinates$sknn), retina$annotations$id)
+    expect_identical(retina$graph$vertices, retina$annotations$id)
+    expect_false(any(grepl("barcode", names(retina$annotations), ignore.case = TRUE)))
+    expect_true(all(is.finite(retina$coordinates$umap)))
+    expect_true(all(is.finite(retina$coordinates$sknn)))
+
+    graph <- prepare.graph(retina$graph)
+    expect_s3_class(graph, "ivue_graph")
+    expect_identical(graph$weight.type, "distance")
+    expect_equal(nrow(graph$vertices), 12000L)
+    expect_equal(nrow(graph$edges), 27631L)
+})
