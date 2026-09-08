@@ -383,9 +383,23 @@ Weights do not automatically control edge width or color. The example chooses
 exposed by `prepare.graph()` before rendering; matrix/list inputs use one copy of each
 undirected edge in vertex-row order. Table inputs retain their supplied order.
 
-Supplying `X` does not construct an igraph object or compute a layout for table,
-list, or matrix inputs. To compute geometry instead, supply `layout`, not `X`.
-These optional layout algorithms require `igraph`:
+ivue can display coordinates produced by `dgraphs`, `grip`, `igraph`,
+[`graphlayouts`](https://schochastics.github.io/graphlayouts/), or other
+embedding tools. Choose a method that returns three-dimensional coordinates,
+then supply them through `X`; ivue renders the result without recomputing the
+layout. Examples include spectral embeddings from `dgraphs`, multiscale layouts
+from `grip`, and three-dimensional stress layouts from
+[`graphlayouts::layout_with_stress3D()`](https://schochastics.github.io/graphlayouts/reference/layout_stress3D.html).
+Not every layout in these packages supports three dimensions. The coordinate
+matrix must have three columns, with rows matched to graph vertices as
+described above. For table, list, or matrix graph inputs, supplying `X` also
+avoids constructing an igraph object.
+
+Alternatively, let ivue compute coordinates by supplying `layout` instead of
+`X`. The built-in choices `"kk"` and `"fr"` require `igraph`. A custom layout
+function can use another package: it receives ivue's normalized graph and
+must return an `n x 3` coordinate matrix in vertex order. The examples below
+use the built-in adapters:
 
 ```{r optional-layout, eval=have.rgl && requireNamespace("igraph", quietly=TRUE)}
 layout.widget <- plot3D.graph(adjacency, layout = "kk", weight.type = "distance",
