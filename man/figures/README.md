@@ -79,10 +79,23 @@ matched UMAP comparison appears later.
 
 The comparison GIF holds each of its 72 frames for 200 milliseconds, giving a
 14.4-second full rotation. Both panels receive the identical camera matrix at
-each frame. The original 7.2-second sequence was slowed by changing frame
-delays only: decoded pixels, dimensions, frame count, and file size are
-unchanged. The sKNN hero retains its 7.2-second rotation. Slower playback adds
-viewing time, not intermediate views; the angular step remains 5 degrees.
+each frame. Slower playback adds viewing time, not intermediate views; the
+angular step remains 5 degrees. The sKNN hero retains its 7.2-second rotation.
+
+Before rendering the comparison, each displayed cloud is centered and rigidly
+rotated so that the vector from its overall centroid to its P14 centroid points
+toward the viewer at frame zero. This uses all 873 displayed P14 cells and a
+minimum-angle proper rotation, with no reflection, scaling, deformation, or
+refitting. It is a label-based display orientation, not an alignment of the two
+geometries; dispersed P14 cells need not all lie in front of every other cell.
+The shared camera then rotates both oriented clouds together. The original
+coordinate files are unchanged, as are all within-cloud pairwise distances.
+
+`tools/retinal-view-orientation.R` implements this display transform, with
+rotation matrices and initial camera-space centroid offsets recorded in the
+ignored `artifacts/retinal-readme/orientation-comparison.json`. Run
+`Rscript tools/test-retinal-view-orientation.R` to check distance preservation,
+front-facing centroids, and parallel/antiparallel rotation cases.
 
 The full aggregate Matrix Market file, cell table, and feature table are
 available from

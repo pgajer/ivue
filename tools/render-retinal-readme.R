@@ -121,6 +121,18 @@ cell.colors <- stats::setNames(c(
 point.size <- if (view == "sknn") 2.1 else 2.2
 alpha <- if (view == "sknn") 0.84 else 0.78
 camera <- camera.zup(elevation = 18, turn = -28, fov = 0, zoom = 0.64)
+if (view == "comparison") {
+    source("tools/retinal-view-orientation.R")
+    orientation <- list(
+        umap = orient.retinal.stage(X, sampled$age, camera),
+        sknn = orient.retinal.stage(sknn.X, sampled$age, camera)
+    )
+    X <- orientation$umap$coordinates
+    sknn.X <- orientation$sknn$coordinates
+    jsonlite::write_json(lapply(orientation, function(value)
+        value[setdiff(names(value), "coordinates")]),
+        file.path(out, "orientation-comparison.json"), pretty = TRUE, digits = 15)
+}
 common <- list(point.size = point.size, alpha = alpha, axes = FALSE,
                aspect = "equal", camera = camera, width = 520L,
                height = 360L, background.color = "white")
@@ -306,7 +318,9 @@ view.provenance <- if (view == "sknn") c(
     "Left input: published three-dimensional UMAP coordinates (Canberra distance)",
     "Right input: weighted-GRIP plus edge-KK coordinates for the Euclidean symmetric kNN graph",
     paste("Source metadata:", normalizePath(metadata.file)),
-    "Rendering: matched ivue point clouds; no graph edges"
+    "Rendering: matched ivue point clouds; no graph edges",
+    "Initial orientation: each cloud rigidly rotated to face its P14 centroid toward the viewer",
+    "Orientation anchor: cloud centroid to P14 centroid; minimum-angle proper rotation; no reflection or refit"
 ) else c(
     "Input: published three-dimensional UMAP coordinates",
     paste("Source metadata:", normalizePath(metadata.file)),
