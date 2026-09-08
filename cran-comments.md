@@ -14,10 +14,15 @@ Examples and tests guard optional packages and do not launch a browser.
 ## Checks
 
 - macOS arm64, R-devel 4.7.0 (2026-06-24 r90190): full `--as-cran` check,
-  0 errors, 0 warnings, 1 NOTE. Examples, vignette
+  0 errors, 0 warnings, 1 NOTE. All 713 assertions, examples, vignette
   rebuilding, and PDF/HTML manuals passed.
+- Linux R-release/devel/4.1.3, Windows R-release/devel, and macOS R-release:
+  Status OK in CI (`--as-cran --no-manual`, incoming checks disabled).
+  R-devel CI used September 7, 2026 r90504.
+- Dependency-only checks on Linux R-release and macOS R-devel: Status OK.
 
-The only NOTE is `New submission`.
+The source archive was built with R 4.6.1 on Linux and checked unchanged on
+macOS R-devel. The only NOTE is `New submission`.
 
 The retinal case-study vignette uses bundled coordinates and static posters;
 its large rendering and upstream data-processing recipes are not evaluated
