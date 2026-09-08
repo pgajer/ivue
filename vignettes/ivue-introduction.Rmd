@@ -14,24 +14,6 @@ have.rgl <- nzchar(system.file(package = "rgl"))
 have.geometry <- requireNamespace("geometry", quietly = TRUE)
 ```
 
-## Installation and output
-
-`ivue` returns interactive browser widgets. Plotting requires the separately
-installed `rgl` package; color scales, mapping, and `prepare.graph()` do not.
-The two-package CRAN installation command is `install.packages(c("ivue", "rgl"))`.
-For development builds, install ivue from its repository and install
-`rgl` separately. Printing a widget displays it in RStudio's Viewer or an
-interactive R console's browser. Assigning it to a variable defers viewing.
-Optional graph layouts and igraph inputs require
-`igraph`, and sparse matrix inputs require `Matrix`.
-
-The plotting functions initialize a private null device before loading `rgl`.
-They do not open a native graphics window, save files, or launch a browser.
-The private device is closed after scene capture, including on errors, and
-caller options and any surviving previous device are restored. An `rgl`
-namespace that another package already initialized unsuccessfully may require
-a fresh R session.
-
 ## A sample from a saddle
 
 The input is an `n x 3` numeric matrix, or an all-numeric data frame. Each row
@@ -45,6 +27,12 @@ ys <- runif(250, -1, 1)
 zs <- 1.2 * (xs^2 - ys^2)
 X <- cbind(x = xs, y = ys, z = zs)
 ```
+
+`plot3D.plain()` uses `rgl` to create an interactive browser widget. Assigning
+the result to `plain` defers viewing; the final `plain` expression displays it
+in this vignette, in RStudio's Viewer, or in a browser from an interactive R
+console. Scene creation uses an off-screen device, so no native graphics
+window is needed.
 
 ```{r saddle-plain, eval=have.rgl}
 plain <- plot3D.plain(X, col = "#197A68", point.size = 5,
@@ -66,7 +54,8 @@ it changes relative geometric distances.
 
 Continuous interpolation is the default. Here zero has a scientific meaning,
 so we specify both a center and a diverging palette. Automatic limits become
-symmetric around that center.
+symmetric around that center. Creating a scale and inspecting its color and
+legend mappings do not require `rgl` or open a plot.
 
 ```{r height-scale}
 height.scale <- color.scale.cont(zs, center = 0,
@@ -319,7 +308,9 @@ plot3D.graph(graph, X = coords, values = values, edge.col = "gray50",
 ```
 
 The other accepted formats are paired `adj.list`/`weight.list` lists, dense or
-sparse adjacency matrices, and igraph objects. For the same graph:
+sparse adjacency matrices, and igraph objects. Sparse matrix inputs require
+`Matrix`; igraph inputs require `igraph`. Preparing a graph with
+`prepare.graph()` does not require `rgl`. For the same graph:
 
 ```{r adjacency-list}
 adjacency <- list(
@@ -343,7 +334,8 @@ exposed by `prepare.graph()` before rendering; matrix/list inputs use one copy o
 undirected edge in vertex-row order. Table inputs retain their supplied order.
 
 Supplying `X` does not construct an igraph object or compute a layout for table,
-list, or matrix inputs. To compute geometry instead, supply `layout`, not `X`:
+list, or matrix inputs. To compute geometry instead, supply `layout`, not `X`.
+These optional layout algorithms require `igraph`:
 
 ```{r optional-layout, eval=have.rgl && requireNamespace("igraph", quietly=TRUE)}
 layout.widget <- plot3D.graph(adjacency, layout = "kk", weight.type = "distance",
@@ -372,11 +364,19 @@ The widget's metadata describes the captured R scene. Reusing its initial camera
 keeps related plots comparable. Rotating a widget in the browser does not update
 this R-side camera metadata.
 
-```{r camera-export, eval=have.rgl}
+```{r camera-comparison, eval=have.rgl}
 camera <- attr(colored, "ivue")$camera
 comparison <- plot3D.plain(X, camera = camera)
 stopifnot(identical(attr(comparison, "ivue")$row.ids, seq_len(nrow(X))))
+comparison
+```
 
+Creating or displaying a widget does not save a file. To share the colored
+saddle plot, export `colored` explicitly with `htmlwidgets::saveWidget()`.
+This example writes a temporary HTML file and removes it and its dependencies
+after checking that the export succeeded:
+
+```{r html-export, eval=have.rgl}
 out <- tempfile(fileext = ".html")
 htmlwidgets::saveWidget(colored, out, selfcontained = FALSE)
 stopifnot(file.exists(out))
