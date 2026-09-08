@@ -153,7 +153,7 @@ saddle.view <- plot3D.cont(
 saddle.view$elementId <- "saddle-coordinate-example"
 htmltools::tagList(
   htmltools::tags$style(htmltools::HTML("
-    #saddle-coordinate-example, #saddle-mesh-example {
+    #saddle-coordinate-example, #saddle-mesh-example, #saddle-mesh-groups-example {
       height: auto !important; aspect-ratio: 7 / 5;
     }
     @media (max-width: 600px) {
@@ -161,6 +161,10 @@ htmltools::tagList(
       #saddle-coordinate-example > .ivue-legend,
       #saddle-mesh-example > .ivue-legend {
         top: -155px !important; max-height: none !important;
+      }
+      #saddle-mesh-groups-example { margin-top: 100px; }
+      #saddle-mesh-groups-example > .ivue-legend {
+        top: -95px !important; max-height: none !important;
       }
     }
   ")),
@@ -267,6 +271,9 @@ the literal group `"NA"`. Empty strings remain valid groups. Legends quote
 group labels when needed to distinguish an empty label or a group called
 `"Missing"` from the missing-value entry.
 
+First, color and highlight the original 250-point sample. Then reuse the same
+group scale on the mesh-backed saddle below.
+
 ```{r group-scale}
 groups <- factor(ifelse(zs < 0, "Negative", "Nonnegative"),
                  levels = c("Negative", "Nonnegative"))
@@ -287,6 +294,43 @@ IDs and the color scale is not refitted. Legends describe the base color scale
 and global `alpha`, not the per-highlight overrides. Scale colors can include
 alpha, and global `alpha` multiplies it. A highlight-style `alpha` overrides
 the global multiplier for that subset, while preserving its color's alpha.
+
+### Groups on the mesh-backed saddle
+
+`plot3D.groups()` accepts the same sphere, mesh, axis, and camera controls as
+`plot3D.cont()`. To color the preceding mesh-backed saddle by group, replace
+the continuous `values` and `byr.scale` with group labels and `group.scale`.
+Derive the labels from `saddle`, which has 500 rows, rather than reusing the
+250 labels associated with `X`:
+
+```{r saddle-mesh-group-labels}
+saddle.groups <- factor(ifelse(saddle[, "z"] < 0, "Negative", "Nonnegative"),
+                        levels = c("Negative", "Nonnegative"))
+```
+
+```{r saddle-mesh-groups, eval=have.rgl && have.geometry}
+saddle.mesh.groups <- plot3D.groups(
+  saddle, groups = saddle.groups, scale = group.scale,
+  point.type = "sphere", sphere.radius = 0.02,
+  legend.title = "Height group", legend.width = 160,
+  axes = FALSE, aspect = "equal",
+  layers = list(surface, layer3D.axes()),
+  camera = camera.zup(elevation = 20, turn = -135, fov = 0, zoom = 0.4),
+  height = 500L
+)
+```
+
+```{r saddle-mesh-groups-display, eval=have.rgl && have.geometry, echo=FALSE}
+saddle.mesh.groups$elementId <- "saddle-mesh-groups-example"
+saddle.mesh.groups
+```
+
+Negative-height spheres are pink and nonnegative-height spheres are green,
+using the same named colors as the simpler example. The gray surface, mesh
+connectivity, sphere radii, axes, and camera are unchanged from `saddle.mesh`;
+only the point coloring and legend differ. Here all points retain their group
+colors, without highlighting. Reusing `surface` does not require another
+triangulation.
 
 ## Weighted graphs and geometric layers
 
