@@ -21,8 +21,8 @@ Examples and tests guard optional packages and do not launch a browser.
   R-devel CI used September 7, 2026 r90504.
 - Dependency-only checks on Linux R-release and macOS R-devel: Status OK.
 
-The source archive was built with R 4.6.1 on Linux and checked unchanged on
-macOS R-devel. The only NOTE is `New submission`.
+The source archive was checked unchanged on macOS R-devel.
+The only NOTE is `New submission`.
 
 The retinal case-study vignette uses bundled coordinates and static posters;
 its large rendering and upstream data-processing recipes are not evaluated
