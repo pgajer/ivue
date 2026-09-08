@@ -59,7 +59,7 @@ uses existing igraph algorithms with explicit weight semantics.
 
 ## Two Embeddings of Retinal Development
 
-![Synchronized rotating vertex-only views of the same 12,000 retinal cells in published three-dimensional UMAP coordinates and the symmetric-kNN graph layout, both colored by developmental stage.](https://raw.githubusercontent.com/pgajer/ivue/d159b4409774c9da33079ace392a7ff139c1c8ce/man/figures/readme-retinal-comparison.gif)
+![Synchronized rotating vertex-only views of the same 12,000 retinal cells in published three-dimensional UMAP coordinates and the symmetric-kNN graph layout, both colored by developmental stage and initially oriented with their P14 centroids toward the viewer.](https://raw.githubusercontent.com/pgajer/ivue/bfcc4460bff200e7d66c80e2319455d260e3f973/man/figures/readme-retinal-comparison.gif)
 
 This animation compares the published UMAP coordinates with the
 weighted-GRIP plus edge-KK coordinates of the symmetric 4-nearest-neighbor graph.
@@ -69,8 +69,11 @@ Both embeddings were fitted on 120,804 cells before extracting these same
 including their distance metrics. Both panels
 show only vertices, so visible differences reflect the embeddings rather than
 the graph's edge layer. Cell identities, developmental colors, point styling,
-projection, and camera motion are held fixed. Both panels complete one rotation
-in 14.4 seconds using identical camera angles at each frame. `ivue` renders the comparison; it
+projection, and camera motion are held fixed. Each embedding is independently
+oriented so that its **P14 centroid faces the viewer at the start**. These are
+rigid display rotations, not refits or deformations. Both panels then complete
+one rotation in 14.4 seconds using identical camera angles at each frame.
+`ivue` renders the comparison; it
 does not compute either embedding. See the retinal-development case study with
 `vignette("retinal-development", package = "ivue")` for the complete plotting
 workflow and provenance.
