@@ -84,7 +84,12 @@ it still multiplies the alpha component of the selected colors.}
 Normalization distorts relative distances when coordinate spans differ.}
 
 \item{camera}{Named list of theta, phi, fov, zoom, or a 4-by-4 userMatrix.
-Use \code{\link[=camera.zup]{camera.zup()}} for an initial view with z pointing upward.}
+With no orientation supplied, defaults to \code{\link[=camera.zup]{camera.zup()}}: z upward,
+elevation 20 degrees, turn -135 degrees, orthographic projection, and
+zoom 0.8. A list containing only fov or zoom retains this orientation.
+Explicit theta, phi, or userMatrix selects an rgl camera instead; omitted
+controls then retain the previous defaults theta = 35, phi = 20,
+fov = 30, and zoom = 0.8. Use \code{\link[=camera.zup]{camera.zup()}} to customize a z-up view.}
 
 \item{width, height}{Widget dimensions in pixels; NULL width fills its container.}
 

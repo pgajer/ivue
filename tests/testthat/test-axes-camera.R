@@ -20,6 +20,45 @@ test_that("z-up cameras are proper rotations with documented directions", {
         expect_error(do.call(camera.zup, a), "finite numeric")
 })
 
+test_that("all plotting families default to the same z-up camera", {
+    skip_if(!nzchar(system.file(package = "rgl")), "Rendering tests require rgl")
+    x <- rbind(c(-1, -1, 0), c(1, 0, 1), c(0, 1, -1))
+    widgets <- list(
+        plot3D.plain(x),
+        plot3D.cont(x, x[, 3]),
+        plot3D.groups(x, c("a", "a", "b")),
+        plot3D.graph(data.frame(from = 1:2, to = 2:3, weight = 1),
+                     vertices = 1:3, X = x))
+    expected <- camera.zup()
+    for (w in widgets) {
+        expect_equal(attr(w, "ivue")$camera[names(expected)], expected,
+                     tolerance = 1e-7)
+        expect_equal(unname(attr(w, "ivue")$X), x)
+    }
+    adjusted <- plot3D.plain(x, camera = list(zoom = 0.5, fov = 45))
+    expected$zoom <- 0.5
+    expected$fov <- 45
+    expect_equal(attr(adjusted, "ivue")$camera[names(expected)], expected,
+                 tolerance = 1e-7)
+})
+
+test_that("explicit camera orientations keep their existing defaults", {
+    skip_if(!nzchar(system.file(package = "rgl")), "Rendering tests require rgl")
+    x <- rbind(c(-1, -1, 0), c(1, 0, 1), c(0, 1, -1))
+    for (override in list(list(theta = 12), list(phi = -15),
+                         list(userMatrix = diag(4)))) {
+        full <- utils::modifyList(list(theta = 35, phi = 20, fov = 30, zoom = 0.8),
+                                  override)
+        actual <- plot3D.plain(x, camera = override)
+        explicit <- plot3D.plain(x, camera = full)
+        expect_equal(attr(actual, "ivue")$camera, attr(explicit, "ivue")$camera)
+        expect_equal(attr(actual, "ivue")$camera$fov, 30)
+    }
+    custom <- camera.zup(elevation = 35, turn = 40, zoom = 0.6)
+    w <- plot3D.plain(x, camera = custom)
+    expect_equal(attr(w, "ivue")$camera[names(custom)], custom, tolerance = 1e-7)
+})
+
 test_that("axis geometry has correct endpoints, solid heads, and label gaps", {
     x <- rbind(c(-1, -2, -3), c(1, 2, 3))
     a <- layer3D.axes(padding = 0.2)

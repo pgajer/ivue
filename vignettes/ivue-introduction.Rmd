@@ -34,6 +34,11 @@ in this vignette, in RStudio's Viewer, or in a browser from an interactive R
 console. Scene creation uses an off-screen device, so no native graphics
 window is needed.
 
+All `plot3D` functions start with z pointing upward and x and y in the
+horizontal data plane. The default is `camera.zup(elevation = 20, turn = -135,
+fov = 0, zoom = 0.8)`: an orthographic view with positive x down-left and
+positive y down-right on screen. Dragging the widget can change this orientation.
+
 ```{r saddle-plain, eval=have.rgl}
 plain <- plot3D.plain(X, col = "#197A68", point.size = 5,
                      axes = TRUE, xlab = "x", ylab = "y", zlab = "z")
@@ -126,8 +131,9 @@ byr.scale <- color.scale.cont(saddle[, "z"], center = 0,
 ```
 
 `layer3D.axes()` adds three axes through the origin, with arrowheads at their
-positive ends. It does not rotate the data or choose a camera. Pair it with
-`camera.zup()` to put z vertically upward in the initial view:
+positive ends. It does not rotate the data or choose a camera. The example
+below keeps the default z-up orientation and uses `zoom = 0.4` to leave room
+for the origin-crossing axes and legend:
 
 ```{r saddle-coordinate-axes, eval=have.rgl}
 saddle.view <- plot3D.cont(

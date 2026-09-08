@@ -87,7 +87,10 @@
     do.call(rgl::plot3d, c(list(x = X, type = "n", axes = axes,
                              xlab = xlab, ylab = ylab, zlab = zlab), bounds))
     if (aspect == "equal") rgl::aspect3d("iso") else rgl::aspect3d(1, 1, 1)
-    camera <- utils::modifyList(list(theta = 35, phi = 20, fov = 30, zoom = 0.8), camera)
+    # Do not let a default userMatrix override explicitly supplied rgl angles.
+    camera.defaults <- if (any(c("theta", "phi", "userMatrix") %in% names(camera)))
+        list(theta = 35, phi = 20, fov = 30, zoom = 0.8) else camera.zup()
+    camera <- utils::modifyList(camera.defaults, camera)
     do.call(rgl::view3d, camera)
     ids <- rbind(.draw.points(X, which(!highlight), colors, other.style),
                  .draw.points(X, which(highlight), colors, selected.style))

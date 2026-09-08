@@ -23,7 +23,12 @@
 #' @param aspect Equal data-unit scales (default), or normalized axis lengths.
 #'   Normalization distorts relative distances when coordinate spans differ.
 #' @param camera Named list of theta, phi, fov, zoom, or a 4-by-4 userMatrix.
-#'   Use [camera.zup()] for an initial view with z pointing upward.
+#'   With no orientation supplied, defaults to [camera.zup()]: z upward,
+#'   elevation 20 degrees, turn -135 degrees, orthographic projection, and
+#'   zoom 0.8. A list containing only fov or zoom retains this orientation.
+#'   Explicit theta, phi, or userMatrix selects an rgl camera instead; omitted
+#'   controls then retain the previous defaults theta = 35, phi = 20,
+#'   fov = 30, and zoom = 0.8. Use [camera.zup()] to customize a z-up view.
 #' @param width,height Widget dimensions in pixels; NULL width fills its container.
 #' @param background.color Canvas background color.
 #' @param layers List of layer3D specifications, evaluated before widget capture.

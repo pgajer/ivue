@@ -1,5 +1,7 @@
 # ivue 0.1.0
 
+- Default all plot3D families to an orthographic z-up camera, retaining explicit
+  camera orientations and allowing zoom or field-of-view overrides on their own.
 - Resolve animation point, edge, and background palette indices at widget
   creation, preserving colors in GIF exports after session palette changes.
 - Resolve character-form palette indices in retained colors and fitted scales
