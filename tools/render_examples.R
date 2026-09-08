@@ -58,3 +58,15 @@ if (rmarkdown::pandoc_available()) {
   htmlwidgets::saveWidget(widgets$saddle, "artifacts/saddle-selfcontained.html", selfcontained = TRUE)
 }
 cat("Created saddle, plain, groups, and graph browser examples in artifacts/.\n")
+
+triangle <- rbind(c(0, 0), c(1, 0), c(0, 1))
+first <- triangle; first[3, ] <- NA_real_
+animations <- list(
+  animate.frames(list(first, triangle, triangle * 1.5),
+    rbind(c(1, 2), c(2, 3)), fps = 2, col = c(2, 3, 4), edge.col = 3,
+    point.size = 12, height = 320),
+  animate.frames(list(X, sweep(X, 2, c(1, 1, -1), "*"), X * 1.5),
+    fps = 2, col = "#197A6880", point.size = 5, height = 320)
+)
+htmltools::save_html(htmltools::tagList(animations),
+                    "artifacts/animation.html", libdir = "lib")

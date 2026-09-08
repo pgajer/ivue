@@ -14,15 +14,28 @@ Examples and tests guard optional packages and do not launch a browser.
 ## Checks
 
 - macOS arm64, R-devel 4.7.0 (2026-06-24 r90190): full `--as-cran` check,
-  0 errors, 0 warnings, 1 NOTE. All 686 assertions, examples, vignette
+  0 errors, 0 warnings, 1 NOTE. All 709 assertions, examples, vignette
   rebuilding, and PDF/HTML manuals passed.
-- Linux R-release/devel/4.1.3, Windows R-release/devel, and macOS R-release:
-  Status OK in CI (`--as-cran --no-manual`, incoming checks disabled).
-- Dependency-only checks on Linux R-release and macOS R-devel: Status OK.
 
-The source archive was built with R 4.6.1 on Linux and checked unchanged on
-macOS R-devel. The only NOTE is `New submission`.
+The only NOTE is `New submission`.
 
 The retinal case-study vignette uses bundled coordinates and static posters;
 its large rendering and upstream data-processing recipes are not evaluated
 during checking. Other vignettes and tests exercise the rendering functions.
+
+## Retinal Example: Source Terms
+
+The retinal example contains a subset of published numerical coordinates and
+cell annotations from Clark et al. (2019),
+DOI:10.1016/j.neuron.2019.04.010, associated with GEO GSE118614, together with
+graph-layout coordinates computed for this package. The original sources are
+credited in the package.
+
+The upstream repository makes the data publicly available. Its stated
+prepublication consent restriction applied before January 1, 2019; we found
+no separate dataset license. We disclose these circumstances explicitly and
+would appreciate guidance if CRAN requires additional documentation for
+inclusion of this example.
+
+Upstream source and use agreement:
+https://github.com/gofflab/developing_mouse_retina_scRNASeq#use-agreement

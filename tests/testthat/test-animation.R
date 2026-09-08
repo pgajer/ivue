@@ -122,3 +122,51 @@ test_that("GIF projection preserves relative motion and uses a single camera", {
     expect_equal(p$frames[[2]][, 2] - p$frames[[1]][, 2], rep(2, 2))
     expect_equal(p$frames[[2]][, 1] - p$frames[[1]][, 1], rep(0, 2))
 })
+
+test_that("animation colors are fixed at construction, including background and alpha", {
+    skip_if(!nzchar(system.file(package = "rgl")))
+    old <- grDevices::palette(); on.exit(grDevices::palette(old))
+    grDevices::palette(c("white", "red", "green", "blue"))
+    d <- animation.fixture()
+    w <- animate.frames(d$frames, d$edges, col = c(2, 4, 3),
+                         edge.col = c(3, 2), background.color = 1)
+    info <- attr(w, "ivue.animation")
+    expect_identical(unname(info$col), c("#FF0000FF", "#0000FFFF", "#00FF00FF"))
+    expect_identical(unname(info$edge.col), c("#00FF00FF", "#FF0000FF"))
+    expect_identical(unname(info$background.color), "#FFFFFFFF")
+    grDevices::palette(c("black", "cyan", "magenta", "yellow"))
+    expect_identical(attr(w, "ivue.animation"), info)
+
+    w <- animate.frames(d$frames, d$edges,
+        col = c("#FF000040", "transparent", "#0000FF80"),
+        edge.col = c("#00FF0020", "#FF0000A0"), background.color = "#FFFFFF80")
+    info <- attr(w, "ivue.animation")
+    expect_identical(info$col, c("#FF000040", "transparent", "#0000FF80"))
+    expect_identical(info$edge.col, c("#00FF0020", "#FF0000A0"))
+    expect_identical(info$background.color, "#FFFFFF80")
+    expect_equal(w$append[[1]]$x$actions[[1]]$values[3, 10:12],
+                 c(64, 0, 128) / 255, ignore_attr = TRUE)
+    expect_equal(w$append[[1]]$x$actions[[2]]$values[3, 13:16],
+                 rep(c(32, 160) / 255, each = 2), ignore_attr = TRUE)
+})
+
+test_that("decoded GIF colors do not depend on later session palette changes", {
+    skip_if(!nzchar(system.file(package = "rgl")))
+    skip_if_not_installed("magick")
+    old <- grDevices::palette(); on.exit(grDevices::palette(old))
+    paths <- vapply(1:2, function(i) tempfile(fileext = ".gif"), "")
+    on.exit(unlink(paths), add = TRUE)
+    grDevices::palette(c("white", "red", "green", "blue"))
+    d <- animation.fixture()
+    w <- animate.frames(d$frames, d$edges, col = c(2, 4, 3),
+                         edge.col = c(3, 2), background.color = 1)
+    write.animation.gif(w, paths[1], width = 180, height = 160, labels = FALSE)
+    grDevices::palette(c("black", "cyan", "magenta", "yellow"))
+    write.animation.gif(w, paths[2], width = 180, height = 160, labels = FALSE)
+    before <- magick::image_coalesce(magick::image_read(paths[1]))
+    after <- magick::image_coalesce(magick::image_read(paths[2]))
+    expect_length(after, length(before))
+    for (i in seq_along(before)) {
+        expect_identical(magick::image_data(after[i]), magick::image_data(before[i]))
+    }
+})

@@ -39,5 +39,24 @@ Rscript tools/generate-retinal-vignette-data.R
 ```
 
 The source data are from Clark et al. (2019), Neuron 102:1111-1126.e5,
-doi:10.1016/j.neuron.2019.04.010, GEO GSE118614. The README figure provenance
-in `man/figures/README.md` records the full preparation workflow.
+doi:10.1016/j.neuron.2019.04.010, GEO GSE118614. The
+[README figure provenance](https://github.com/pgajer/ivue/blob/main/man/figures/README.md)
+records the full preparation workflow.
+
+### Source terms
+
+Published UMAP coordinates and annotations come from the Goff lab's
+[cellular phenotype data](https://github.com/gofflab/developing_mouse_retina_scRNASeq#cellular-phenotype-data),
+the March 11, 2021 update including horizontal cells. The source table's MD5
+checksum is retained in `provenance$source.md5`. Graph coordinates and edge
+weights were computed for this example from the GEO expression data.
+
+The upstream data are publicly available. The repository's
+[use agreement](https://github.com/gofflab/developing_mouse_retina_scRNASeq/blob/3bfeea29ecc957d59e4a156229449b060ffda0a8/README.md#use-agreement)
+states a prepublication consent restriction tied to January 1, 2019.
+No separate dataset license was found in the repository reviewed on
+September 8, 2026. Public availability and the elapsed embargo date are not
+assertions of public-domain status or a new permission grant. The package's
+GPL declaration covers its code; it does not itself establish third-party
+rights in these source values. These available terms and the remaining
+uncertainty are disclosed in the CRAN submission comments for assessment.

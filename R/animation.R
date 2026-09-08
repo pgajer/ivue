@@ -36,7 +36,9 @@
 #'   represent solver wall time. Bounds are fitted once to all original frames,
 #'   including omitted frames. Inactive rows may appear or disappear at any
 #'   step; missing positions are never interpolated. Supplied colors retain
-#'   their association with vertex rows and edge rows.
+#'   their association with vertex rows and edge rows. Numeric point, edge,
+#'   and background palette indices are resolved when the widget is created,
+#'   so later palette changes do not alter playback or GIF export.
 #'
 #'   Large traces increase widget size approximately with the product of frame
 #'   count and the number of vertices plus edge endpoints. Use max.frames or
@@ -68,8 +70,9 @@ animate.frames <- function(frames, edges = NULL, labels = NULL,
     .flag(loop, "loop")
     .scalar(point.size, "point.size", .Machine$double.eps)
     .scalar(edge.width, "edge.width", .Machine$double.eps)
-    info$col <- .colors(col, nrow(info$frames[[1]]), "col")
-    info$edge.col <- .colors(edge.col, nrow(info$edges), "edge.col")
+    info$col <- .fixed.colors(col, nrow(info$frames[[1]]), "col")
+    info$edge.col <- .fixed.colors(edge.col, nrow(info$edges), "edge.col")
+    background.color <- .fixed.colors(background.color, 1L, "background.color")
     if (is.null(camera)) camera <- if (info$dimension == 2L)
         camera.zup(elevation = 90, turn = 0) else camera.zup()
     first <- .animation.positions(info$frames[[1]], info$limits)

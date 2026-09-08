@@ -1,5 +1,7 @@
 # ivue 0.1.0
 
+- Resolve animation point, edge, and background palette indices at widget
+  creation, preserving colors in GIF exports after session palette changes.
 - Add animate.frames for recorded 2D and 3D coordinate sequences, with browser
   playback, timeline and speed controls, fixed viewing bounds, and inactive
   vertex/edge handling. Keep coordinates unchanged and support explicit frame

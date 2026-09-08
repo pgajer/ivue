@@ -99,6 +99,20 @@ case.study <- list(
         graph.selection = retinal$k.selection,
         graph.layout = retinal$layout,
         fitting.graph = retinal$fitting.graph,
+        source.urls = c(
+            annotations = "https://github.com/gofflab/developing_mouse_retina_scRNASeq#cellular-phenotype-data",
+            expression = "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE118614",
+            use.agreement = paste0(
+                "https://github.com/gofflab/developing_mouse_retina_scRNASeq/blob/",
+                "3bfeea29ecc957d59e4a156229449b060ffda0a8/README.md#use-agreement"
+            )
+        ),
+        source.terms = paste(
+            "Publicly available coordinates and annotations, March 11, 2021 update.",
+            "Prepublication consent restriction tied to January 1, 2019;",
+            "no separate dataset license found on September 8, 2026.",
+            "No public-domain status or new permission is asserted."
+        ),
         source.md5 = retinal$source.md5,
         generator = "tools/generate-retinal-vignette-data.R",
         package.versions = retinal$package.versions

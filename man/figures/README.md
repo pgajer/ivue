@@ -25,6 +25,21 @@ Neuron 102:1111-1126.e5, PMCID
 [PMC6768831](https://pmc.ncbi.nlm.nih.gov/articles/PMC6768831/), BioProject
 [PRJNA486209](https://www.ncbi.nlm.nih.gov/bioproject/486209).
 
+The original UMAP coordinates and annotations are the Goff lab's
+[March 11, 2021 cellular phenotype data](https://github.com/gofflab/developing_mouse_retina_scRNASeq#cellular-phenotype-data).
+The repository's [use agreement](https://github.com/gofflab/developing_mouse_retina_scRNASeq/blob/3bfeea29ecc957d59e4a156229449b060ffda0a8/README.md#use-agreement)
+contains a prepublication consent restriction tied to January 1, 2019.
+No separate dataset license was found on September 8, 2026. These publicly
+available data are not claimed to be public domain or newly licensed by ivue;
+the available terms and remaining uncertainty are documented in the
+[bundled-data provenance](https://github.com/pgajer/ivue/blob/main/inst/extdata/README.md#source-terms)
+and disclosed for CRAN's assessment.
+
+The main README uses commit-pinned public GIF URLs so its images resolve from
+the source archive as well as GitHub, without bundling the GIFs. When replacing
+the animations, publish the assets first, then update those URLs to their new
+commit. The packaged retinal vignette retains static posters for offline use.
+
 The preparation stage reconstructs the representation reported as input to the
 published UMAP: the first 20 centered, unscaled principal components of
 `log10(CPT + 1)` for the 3,290 high-variance genes in Supplementary Table S4.

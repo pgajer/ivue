@@ -77,7 +77,9 @@ frames have equal duration, even after subsampling; the timeline does not
 represent solver wall time. Bounds are fitted once to all original frames,
 including omitted frames. Inactive rows may appear or disappear at any
 step; missing positions are never interpolated. Supplied colors retain
-their association with vertex rows and edge rows.
+their association with vertex rows and edge rows. Numeric point, edge,
+and background palette indices are resolved when the widget is created,
+so later palette changes do not alter playback or GIF export.
 
 Large traces increase widget size approximately with the product of frame
 count and the number of vertices plus edge endpoints. Use max.frames or

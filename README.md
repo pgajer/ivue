@@ -2,7 +2,7 @@
 
 Interactive 3D visualization of data and graphs in R.
 
-![Two synchronized point-only views of 12,000 retinal cells extracted after fitting a symmetric 4-nearest-neighbor graph layout on all 120,804 cells, colored by developmental stage and annotated cell type.](man/figures/readme-retinal-sknn.gif)
+![Two synchronized point-only views of 12,000 retinal cells extracted after fitting a symmetric 4-nearest-neighbor graph layout on all 120,804 cells, colored by developmental stage and annotated cell type.](https://raw.githubusercontent.com/pgajer/ivue/ef09e0a15df7c5772fcf3b468e7e40f488b50fe3/man/figures/readme-retinal-sknn.gif)
 
 The same embedded point cloud is colored by developmental stage and annotated cell
 type using reusable `ivue` group scales and a synchronized orthographic camera.
@@ -51,7 +51,7 @@ uses existing igraph algorithms with explicit weight semantics.
 
 ## Compare With Published UMAP
 
-![Synchronized rotating vertex-only views of the same 12,000 retinal cells in published three-dimensional UMAP coordinates and the symmetric-kNN graph layout, both colored by developmental stage.](man/figures/readme-retinal-comparison.gif)
+![Synchronized rotating vertex-only views of the same 12,000 retinal cells in published three-dimensional UMAP coordinates and the symmetric-kNN graph layout, both colored by developmental stage.](https://raw.githubusercontent.com/pgajer/ivue/ef09e0a15df7c5772fcf3b468e7e40f488b50fe3/man/figures/readme-retinal-comparison.gif)
 
 This secondary animation compares the published UMAP coordinates with the
 weighted-GRIP plus edge-KK coordinates of the symmetric 4-nearest-neighbor graph.
@@ -113,7 +113,7 @@ For the saddle, `geometry::delaunayn(X[, c("x", "y")])` constructs faces in
 the original parameter plane. `geometry` is an add-on package, listed in
 `Suggests` for the vignette; mesh rendering itself does not require it.
 The complete plotting recipe is in
-[`tools/saddle-delaunay.R`](tools/saddle-delaunay.R). The mesh is a display
+[`tools/saddle-delaunay.R`](https://github.com/pgajer/ivue/blob/main/tools/saddle-delaunay.R). The mesh is a display
 overlay; it does not change any graph used for fitting or scoring.
 
 ## Gridded Reference Surfaces
