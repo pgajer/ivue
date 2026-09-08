@@ -16,8 +16,7 @@ have.magick <- requireNamespace("magick", quietly = TRUE)
 
 `animate.frames()` turns recorded coordinates into a browser player.
 `write.animation.gif()` exports the same retained frames to a GIF for a
-README, presentation, or website. `ivue` draws the frames; the package or
-simulation producing them remains responsible for their computation.
+README, presentation, or website.
 
 Playback requires `rgl`. GIF export additionally requires `magick`:
 
