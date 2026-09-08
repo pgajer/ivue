@@ -15,7 +15,9 @@ library(ivue)
 This case study shows the same 12,000 mouse retinal-development cells in two
 three-dimensional representations. The first is a published UMAP point cloud.
 The second is a symmetric k-nearest-neighbor graph with an independently
-computed graph layout. Holding cell identities, annotations, colors, and camera
+computed graph layout. Both embeddings are fitted on 120,804 cells before
+extracting the same 12,000 cells for display. UMAP uses Canberra distance;
+the symmetric-kNN graph uses Euclidean distance. Holding cell identities, annotations, colors, and camera
 motion fixed makes the representational change visible without implying that
 the two geometries are equivalent.
 
@@ -125,7 +127,7 @@ knitr::include_graphics("figures/retinal-umap.png")
 
 Before drawing graph topology, render the symmetric-kNN layout coordinates
 with the same point function used for UMAP. This isolates the change in
-geometry from the visual effect of 27,631 edges.
+geometry from the visual effect of an edge overlay.
 
 ```{r sknn-points-code, eval=FALSE}
 sknn.points.by.age <- plot3D.groups(
@@ -151,11 +153,16 @@ are held fixed, differences in this comparison come from the coordinates.
 ## Add the symmetric kNN graph
 
 For the graph view, `dgraphs` constructed Euclidean symmetric kNN graphs from
-the same 20-PC representation used upstream of UMAP. Candidate values were
-considered from low to high; the selected value, 3, was the smallest whose
-graph was connected for three consecutive candidates. `grip` then computed a
-weighted-GRIP initialization followed by edge-KK refinement. The graph was not
-constructed from UMAP coordinates.
+the same 20-PC representation used upstream of UMAP, using all 120,804 cells.
+The connected `k = 4` reference was selected after reviewing a response series
+(`k = 3, 4, 6, 8, 12, 16, 29`) and three layout seeds at `k = 3` and `k = 4`.
+`grip` fitted weighted-GRIP followed by edge-KK refinement to the full graph
+with 374,597 edges, before extracting the displayed cells. Connectivity alone
+does not establish geometric fidelity.
+
+The bundled edge table contains only original edges whose endpoints both occur
+in the display sample. This induced subgraph can be disconnected even though
+the full fitting graph is connected. No layout is refitted on the induced graph.
 
 `prepare.graph()` validates the bundled edge table without loading `rgl` or
 recomputing a layout. The weights are declared as distances, but visual edge
@@ -184,6 +191,9 @@ graph.by.age <- plot3D.graph(
 )
 graph.by.age
 ```
+
+The README preview shows the extracted coordinates without edges; the code
+above adds the induced graph's edge overlay.
 
 ```{r graph-poster, echo=FALSE}
 knitr::include_graphics("figures/retinal-sknn.png")
@@ -244,7 +254,7 @@ That analysis belongs to graph construction; this vignette focuses on how
 The README animations use the same bundled visualization values but are
 captured as synchronized 72-frame rotations. In the source repository,
 `make readme-retinal` reconstructs the upstream PC matrix and graph layout,
-renders the graph hero and vertex-only comparison, verifies their WebGL
+renders the point-cloud hero and UMAP comparison, verifies their WebGL
 canvases, and encodes the GIFs.
 The animations, case-study object, and vignette posters are regenerated with:
 
@@ -260,5 +270,6 @@ and layout.
 retina$provenance[c("citation", "sample", "umap")]
 retina$provenance$graph.input
 retina$provenance$graph.selection$selected
+retina$provenance$fitting.graph
 retina$provenance$graph.layout$method
 ```

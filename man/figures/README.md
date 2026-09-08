@@ -14,7 +14,8 @@ the standard macOS application path when available. Set `CHROME_PATH`, `NODE`,
 or `NPM` when those programs are installed elsewhere.
 
 The preparation stage requires the R packages `Matrix`, `readxl`, `irlba`,
-`dgraphs`, and `grip`. These are documentation-build dependencies only and are
+`dgraphs` with `create.sknn.graphs()` and `graph.detail` support (source commit
+`4c5eb6e` or later), and `grip` with `edge.kk()`. These are documentation-build dependencies only and are
 not dependencies of the CRAN package.
 
 The animations are new `ivue` renderings of data from Clark
@@ -37,12 +38,16 @@ the downstream scCoGAPS pattern weights. The original UMAP used Canberra
 distance; the graph uses the Euclidean distance currently implemented by
 `dgraphs`.
 
-The generator selects 12,000 cells reproducibly across nonempty
-developmental-stage-by-cell-type strata. It considers `k = 2:12` in ascending
-order and stops after finding the smallest `k` whose native sKNN graph remains
-connected for three consecutive candidates. `dgraphs` constructs the graph,
-`grip` computes a weighted-GRIP initialization and edge-KK refinement, and
-`ivue` renders the same graph twice. Any zero-length edges between identical PC
+The generator constructs the graph and fits the layout on all 120,804 cells
+before extracting 12,000 cells selected reproducibly across nonempty
+developmental-stage-by-cell-type strata. A single cached nearest-neighbor search
+supplies the `k = 3, 4, 6, 8, 12, 16, 29` response series. The selected `k = 4`
+is a connected reference chosen after reviewing this series and three layout
+seeds at `k = 3` and `k = 4`; connectivity is not treated as proof of geometric
+fidelity. The full `k = 4` graph has 374,597 edges.
+`grip` computes weighted-GRIP initialization and edge-KK refinement on the full
+graph; `ivue` renders the extracted coordinates twice, without edges.
+Any zero-length edges between identical PC
 coordinates are given a recorded numerical floor for the layout objective only;
 graph topology and PC coordinates are unchanged.
 
@@ -52,8 +57,10 @@ same row order, matched by retained-cell identifier to the published
 published UMAP coordinates and its right panel uses the weighted-GRIP plus
 edge-KK coordinates, with no edges in either panel. It is rendered afresh by
 `ivue`; it does not reuse image frames from the source repository's `Age.gif`
-or `CellType.gif`. The edge-bearing symmetric-kNN animation remains the README
-hero, while the matched vertex-only comparison appears later.
+or `CellType.gif`. Both pipelines use the 120,804-cell fitting population before
+display subsampling. Their metrics differ: UMAP uses Canberra, while sKNN uses
+Euclidean distance. The point-only sKNN animation is the README hero, while the
+matched UMAP comparison appears later.
 
 The full aggregate Matrix Market file, cell table, and feature table are
 available from
@@ -74,7 +81,10 @@ measurements, or clinical metadata.
 
 `tools/generate-retinal-vignette-data.R` records the matched visualization
 values under `inst/extdata/` with synthetic cell IDs for the package case-study
-vignette. It omits expression values, PCs, source row identifiers, and local
+vignette. Its edge table is the induced subgraph on displayed cells: only edges
+of the original full graph with both endpoints displayed are retained. It is
+not a newly fitted 12,000-cell graph; the README animations omit this edge
+overlay. It omits expression values, PCs, source row identifiers, and local
 paths.
 
 The GIFs, posters, scripts, and this provenance note are repository documentation

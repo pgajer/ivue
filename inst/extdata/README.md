@@ -25,6 +25,10 @@ R/ and src/ directories must be clean when recording provenance.
 retinal-development case study: published 3D UMAP coordinates, an independently
 computed symmetric-kNN graph layout, a weighted edge table, categorical age and
 cell-type annotations, and scientific provenance for the same 12,000 cells.
+Both embeddings were fitted on all 120,804 cells before display subsampling:
+published UMAP uses Canberra distance, and the symmetric 4-nearest-neighbor
+graph uses Euclidean distance with weighted-GRIP plus edge-KK. The edge table
+is the induced subgraph on the displayed cells, not a new sample-fitted graph.
 Cell identifiers are synthetic. The object contains no expression or PC matrix,
 barcodes, sample identifiers, or local paths.
 

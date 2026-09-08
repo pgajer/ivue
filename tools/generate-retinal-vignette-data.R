@@ -18,7 +18,7 @@ if (!file.exists(layout.file)) {
 retinal <- readRDS(layout.file)
 needed <- c(
     "coordinates", "graph", "metadata", "k.selection", "input", "layout",
-    "source.paths", "source.md5", "package.versions"
+    "source.paths", "source.md5", "package.versions", "fitting.graph"
 )
 if (!all(needed %in% names(retinal))) {
     stop("The prepared retinal graph is missing required fields.")
@@ -92,12 +92,13 @@ case.study <- list(
             "minimum 20 per nonempty stratum; seed 20190619"
         ),
         umap = paste(
-            "Published three-dimensional UMAP coordinates for the matched",
-            "retained cells; Canberra distance was used upstream"
+            "Published three-dimensional UMAP fitted on 120,804 cells, then",
+            "subsetted to the matched display cells; Canberra distance"
         ),
         graph.input = retinal$input,
         graph.selection = retinal$k.selection,
         graph.layout = retinal$layout,
+        fitting.graph = retinal$fitting.graph,
         source.md5 = retinal$source.md5,
         generator = "tools/generate-retinal-vignette-data.R",
         package.versions = retinal$package.versions

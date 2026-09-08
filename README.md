@@ -2,17 +2,18 @@
 
 Interactive 3D visualization of data and graphs in R.
 
-![Two synchronized rotating views of a 12,000-cell mouse retinal-development symmetric k-nearest-neighbor graph, colored by developmental stage and annotated cell type.](man/figures/readme-retinal-sknn.gif)
+![Two synchronized point-only views of 12,000 retinal cells extracted after fitting a symmetric 4-nearest-neighbor graph layout on all 120,804 cells, colored by developmental stage and annotated cell type.](man/figures/readme-retinal-sknn.gif)
 
-The same embedded graph is colored by developmental stage and annotated cell
+The same embedded point cloud is colored by developmental stage and annotated cell
 type using reusable `ivue` group scales and a synchronized orthographic camera.
-For a reproducible, stratified 12,000-cell sample, `dgraphs` builds a symmetric
-3-nearest-neighbor graph on the first 20 PCs reconstructed from the exact 3,290
-high-variance genes, 120,804-cell fitting population, and `log10(CPT + 1)`
-representation used upstream of the published UMAP. `grip` computes a
-weighted-GRIP layout followed by edge-KK refinement; `ivue` renders the points
-and edges. The graph uses Euclidean distances, as supported by `dgraphs`, and
-is not constructed from UMAP coordinates. Displayed cells come from the
+`dgraphs` builds a symmetric 4-nearest-neighbor graph on all **120,804 cells**,
+using the first 20 PCs reconstructed from the published 3,290 high-variance
+genes and `log10(CPT + 1)` representation. `grip` fits weighted-GRIP followed
+by edge-KK refinement to this full graph. Only afterward are the same
+stratified 12,000 cells selected for display, matching the published UMAP's
+fitting population and the cell identities in the comparison below.
+**The published UMAP uses Canberra distance; the sKNN graph uses Euclidean
+distance.** `ivue` renders the resulting coordinates as points. Displayed cells come from the
 107,052-cell retained mouse retinal-development dataset of
 [Clark et al. (2019)](https://pmc.ncbi.nlm.nih.gov/articles/PMC6768831/).
 
@@ -48,12 +49,16 @@ remain with their respective analysis packages. `ivue` accepts their results
 as coordinates, values, groups, and geometric layers. Optional graph layout
 uses existing igraph algorithms with explicit weight semantics.
 
-## The Same Cells Without Edges
+## Compare With Published UMAP
 
 ![Synchronized rotating vertex-only views of the same 12,000 retinal cells in published three-dimensional UMAP coordinates and the symmetric-kNN graph layout, both colored by developmental stage.](man/figures/readme-retinal-comparison.gif)
 
 This secondary animation compares the published UMAP coordinates with the
-weighted-GRIP plus edge-KK coordinates of the symmetric-kNN graph. Both panels
+weighted-GRIP plus edge-KK coordinates of the symmetric 4-nearest-neighbor graph.
+Both embeddings were fitted on 120,804 cells before extracting these same
+12,000 cells for display. UMAP uses **Canberra distance**, whereas sKNN uses
+**Euclidean distance**, so this compares two complete embedding pipelines,
+including their distance metrics. Both panels
 show only vertices, so visible differences reflect the embeddings rather than
 the graph's edge layer. Cell identities, developmental colors, point styling,
 projection, and camera motion are held fixed. `ivue` renders the comparison; it

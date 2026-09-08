@@ -211,49 +211,50 @@ selected <- selected[sample(seq_along(selected))]
 if (length(selected) != sample.size || anyDuplicated(selected)) {
     stop("Stratified sampling did not produce the requested unique cells.")
 }
-input <- cached.pca$scores[retained.index[selected], , drop = FALSE]
+input <- cached.pca$scores
+if (!"create.sknn.graphs" %in% getNamespaceExports("dgraphs") ||
+    !"graph.detail" %in% names(formals(dgraphs::create.sknn.graph))) {
+    stop("Install dgraphs with create.sknn.graphs() and graph.detail support (source commit 4c5eb6e or later).")
+}
 
-k.values <- 2:12
-graphs <- vector("list", length(k.values))
+k.values <- c(3L, 4L, 6L, 8L, 12L, 16L, 29L)
+message("Building full-population symmetric kNN graphs from one cached search...")
+graphs <- dgraphs::create.sknn.graphs(
+    input, k.values = k.values, graph.detail = "minimal",
+    connect.components = FALSE
+)$graphs
 diagnostics <- data.frame(
     k = integer(), components = integer(),
     largest.component.fraction = numeric(), edges = integer(),
     min.degree = integer()
 )
-message("Evaluating low-k symmetric kNN graphs...")
 for (i in seq_along(k.values)) {
-    graph <- dgraphs::create.sknn.graph(
-        input, k = k.values[[i]], neighbor.method = "ann",
-        connect.components = FALSE
-    )
+    graph <- graphs[[i]]
     component.sizes <- tabulate(graph$component_id_before)
     diagnostics <- rbind(diagnostics, data.frame(
         k = k.values[[i]],
         components = graph$n_components_before,
-        largest.component.fraction = max(component.sizes) / sample.size,
+        largest.component.fraction = max(component.sizes) / nrow(input),
         edges = graph$n_edges,
         min.degree = min(lengths(graph$adj_list))
     ))
-    graphs[[i]] <- graph
     message(sprintf(
         "  k = %d: %d component(s), %.3f%% in the largest, %s edges",
         k.values[[i]], graph$n_components_before,
         100 * diagnostics$largest.component.fraction[[i]],
         format(graph$n_edges, big.mark = ",")
     ))
-    if (i >= 3L && all(utils::tail(diagnostics$components, 3L) == 1L)) break
 }
 
-if (nrow(diagnostics) < 3L ||
-    !all(utils::tail(diagnostics$components, 3L) == 1L)) {
-    stop("No candidate k is connected for three consecutive values.")
-}
-selected.index <- nrow(diagnostics) - 2L
-k.selected <- diagnostics$k[[selected.index]]
+k.selected <- 4L
+selected.index <- match(k.selected, k.values)
 graph <- graphs[[selected.index]]
+if (graph$n_components_before != 1L) {
+    stop("The preselected full-population k = 4 graph is not connected.")
+}
 rm(graphs)
 message("Selected k = ", k.selected,
-        ": the smallest value connected for three consecutive candidates.")
+        ": connected full-population reference from the k-response and seed review.")
 
 layout.weights <- graph$edge_weight
 positive <- layout.weights[layout.weights > 0]
@@ -265,7 +266,7 @@ layout.weights[layout.weights == 0] <- zero.edge.floor
 message("Computing weighted-GRIP initialization and edge-KK refinement...")
 fit <- grip::edge.kk(
     edges = graph$edge_matrix,
-    n = sample.size,
+    n = nrow(input),
     edge_weights = layout.weights,
     dim = 3L,
     init = "weighted_grip",
@@ -279,26 +280,33 @@ fit <- grip::edge.kk(
     density_mix_schedule = c(0, 0.5, 1),
     density_n = 512L,
     return_trace = FALSE,
+    diagnostics = FALSE,
     seed = 20190619L
 )
-coordinates <- sweep(fit$coords, 2L, colMeans(fit$coords), "-")
+display.index <- retained.index[selected]
+coordinates <- fit$coords[display.index, , drop = FALSE]
+coordinates <- sweep(coordinates, 2L, colMeans(coordinates), "-")
 coordinates <- coordinates / max(sqrt(rowSums(coordinates^2)))
 rownames(coordinates) <- rownames(metadata)[selected]
+
+# Preserve only original edges whose endpoints both occur in the display sample.
+display.map <- rep(NA_integer_, nrow(input))
+display.map[display.index] <- seq_len(sample.size)
+display.edges <- matrix(display.map[graph$edge_matrix], ncol = 2L)
+keep.edges <- rowSums(is.na(display.edges)) == 0L
 
 result <- list(
     coordinates = coordinates,
     graph = list(
-        adj.list = graph$adj_list,
-        weight.list = graph$weight_list,
-        edge.matrix = graph$edge_matrix,
-        edge.weight = graph$edge_weight
+        edge.matrix = display.edges[keep.edges, , drop = FALSE],
+        edge.weight = graph$edge_weight[keep.edges]
     ),
     metadata = metadata[selected, c("barcode", "age", "cell.type"), drop = FALSE],
     selected.rows = selected,
     k.selection = list(
         rule = paste(
-            "smallest k whose native sKNN graph is connected for",
-            "three consecutive candidate values"
+            "k = 4 connected full-population reference after k-response and",
+            "three-seed review; connectivity alone is not a geometry criterion"
         ),
         candidates = diagnostics,
         selected = k.selected
@@ -310,6 +318,12 @@ result <- list(
         cells = nrow(full.cells),
         retained.cells = nrow(metadata),
         sampled.cells = sample.size
+    ),
+    fitting.graph = list(
+        vertices = nrow(input), edges = graph$n_edges,
+        components = graph$n_components_before,
+        displayed.edges = sum(keep.edges),
+        display.rule = "induced subgraph; layout fitted before display subsampling"
     ),
     layout = list(
         method = "grip::edge.kk(init = 'weighted_grip')",

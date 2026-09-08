@@ -41,10 +41,14 @@ if (!file.exists(layout.file)) {
 retinal <- readRDS(layout.file)
 needed <- c(
     "coordinates", "graph", "metadata", "k.selection", "input", "layout",
-    "source.paths"
+    "source.paths", "fitting.graph"
 )
 if (!all(needed %in% names(retinal))) {
     stop("The prepared retinal graph is missing required fields.")
+}
+if (retinal$fitting.graph$vertices != 120804L ||
+    retinal$k.selection$selected != 4L) {
+    stop("Rebuild the full-population k = 4 layout before rendering these views.")
 }
 sampled <- retinal$metadata
 sknn.X <- retinal$coordinates
@@ -141,11 +145,11 @@ if (view == "comparison") {
         make.view(X, sampled$age, age.scale),
         make.view(sknn.X, sampled$age, age.scale)
     )
-    panel.titles <- c("Published 3D UMAP", "sKNN graph layout, vertices only")
+    panel.titles <- c("Published 3D UMAP (Canberra)", "sKNN k = 4 (Euclidean)")
 } else {
     views <- list(
-        make.view(X, sampled$age, age.scale, edges = view == "sknn"),
-        make.view(X, sampled$cell.type, cell.scale, edges = view == "sknn")
+        make.view(X, sampled$age, age.scale),
+        make.view(X, sampled$cell.type, cell.scale)
     )
     panel.titles <- c("Developmental stage", "Annotated cell type")
 }
@@ -225,7 +229,7 @@ css <- "
 "
 
 page.title <- if (view == "sknn") {
-    "Mouse retinal development as a 3D graph"
+    "Whole-population retinal graph layout"
 } else if (view == "comparison") {
     "The same retinal cells in two 3D embeddings"
 } else {
@@ -233,12 +237,12 @@ page.title <- if (view == "sknn") {
 }
 page.subtitle <- if (view == "sknn") {
     sprintf(
-        "%s-cell sample | symmetric %d-NN | weighted-GRIP + edge-KK",
+        "120,804-cell fit | %s displayed | symmetric %d-NN | weighted-GRIP + edge-KK",
         format(sample.size, big.mark = ","), retinal$k.selection$selected
     )
 } else if (view == "comparison") {
     sprintf(
-        "%s-cell sample | vertices only | developmental stage",
+        "120,804-cell fitting population | %s displayed | vertices only",
         format(sample.size, big.mark = ",")
     )
 } else {
@@ -294,10 +298,12 @@ view.provenance <- if (view == "sknn") c(
     paste("k selection:", retinal$k.selection$rule),
     paste("Selected k:", retinal$k.selection$selected),
     paste("Graph edges:", nrow(retinal$graph$edge.matrix)),
+    paste("Full fitting graph edges:", retinal$fitting.graph$edges),
+    "Rendering: vertices only; layout fitted before display subsampling",
     paste("Layout:", retinal$layout$method),
     paste("Zero-length edges floored for layout:", retinal$layout$zero.edge.count)
 ) else if (view == "comparison") c(
-    "Left input: published three-dimensional UMAP coordinates",
+    "Left input: published three-dimensional UMAP coordinates (Canberra distance)",
     "Right input: weighted-GRIP plus edge-KK coordinates for the Euclidean symmetric kNN graph",
     paste("Source metadata:", normalizePath(metadata.file)),
     "Rendering: matched ivue point clouds; no graph edges"
