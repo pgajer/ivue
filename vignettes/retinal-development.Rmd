@@ -121,7 +121,34 @@ umap.by.age
 knitr::include_graphics("figures/retinal-umap.png")
 ```
 
-## Symmetric kNN graph and independent layout
+## Compare the embeddings without edges
+
+Before drawing graph topology, render the symmetric-kNN layout coordinates
+with the same point function used for UMAP. This isolates the change in
+geometry from the visual effect of 27,631 edges.
+
+```{r sknn-points-code, eval=FALSE}
+sknn.points.by.age <- plot3D.groups(
+  retina$coordinates$sknn,
+  groups = retina$annotations$age,
+  scale = age.scale,
+  point.size = 2.2,
+  alpha = 0.78,
+  axes = FALSE,
+  aspect = "equal",
+  camera = camera
+)
+sknn.points.by.age
+```
+
+```{r comparison-poster, echo=FALSE}
+knitr::include_graphics("figures/retinal-comparison.png")
+```
+
+Because cell identities, stage colors, point styling, projection, and camera
+are held fixed, differences in this comparison come from the coordinates.
+
+## Add the symmetric kNN graph
 
 For the graph view, `dgraphs` constructed Euclidean symmetric kNN graphs from
 the same 20-PC representation used upstream of UMAP. Candidate values were
@@ -217,7 +244,8 @@ That analysis belongs to graph construction; this vignette focuses on how
 The README animations use the same bundled visualization values but are
 captured as synchronized 72-frame rotations. In the source repository,
 `make readme-retinal` reconstructs the upstream PC matrix and graph layout,
-renders both HTML scenes, verifies their WebGL canvases, and encodes the GIFs.
+renders the graph hero and vertex-only comparison, verifies their WebGL
+canvases, and encodes the GIFs.
 The animations, case-study object, and vignette posters are regenerated with:
 
 ```{r regeneration, eval=FALSE}

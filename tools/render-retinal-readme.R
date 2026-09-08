@@ -6,10 +6,10 @@ options(rgl.useNULL = TRUE)
 args <- commandArgs(trailingOnly = TRUE)
 view.arg <- grep("^--view=", args, value = TRUE)
 if (length(view.arg) != 1L) {
-    stop("Supply exactly one of --view=sknn or --view=umap.")
+    stop("Supply exactly one of --view=sknn, --view=umap, or --view=comparison.")
 }
 view <- sub("^--view=", "", view.arg)
-if (!view %in% c("sknn", "umap")) {
+if (!view %in% c("sknn", "umap", "comparison")) {
     stop("Unknown retinal view: ", view)
 }
 
@@ -47,8 +47,9 @@ if (!all(needed %in% names(retinal))) {
     stop("The prepared retinal graph is missing required fields.")
 }
 sampled <- retinal$metadata
+sknn.X <- retinal$coordinates
 if (view == "sknn") {
-    X <- retinal$coordinates
+    X <- sknn.X
 } else {
     metadata.file <- Sys.getenv(
         "IVUE_RETINAL_DATA", retinal$source.paths[["metadata"]]
@@ -76,9 +77,13 @@ if (view == "sknn") {
     X <- sweep(X, 2L, colMeans(X), "-")
     rownames(X) <- rownames(sampled)
 }
-if (!is.matrix(X) || ncol(X) != 3L || nrow(X) != nrow(sampled) ||
-    any(!is.finite(X))) {
-    stop("Retinal coordinates must be a finite n-by-3 matrix.")
+valid.coordinates <- function(X) {
+    is.matrix(X) && ncol(X) == 3L && nrow(X) == nrow(sampled) &&
+        all(is.finite(X))
+}
+if (!valid.coordinates(X) ||
+    (view == "comparison" && !valid.coordinates(sknn.X))) {
+    stop("Every retinal coordinate set must be a finite n-by-3 matrix.")
 }
 
 age.levels <- c("E11", "E12", "E14", "E16", "E18",
@@ -117,11 +122,11 @@ common <- list(point.size = point.size, alpha = alpha, axes = FALSE,
                height = 360L, background.color = "white")
 age.scale <- color.scale.groups(sampled$age, colors = age.colors)
 cell.scale <- color.scale.groups(sampled$cell.type, colors = cell.colors)
-make.view <- function(groups, scale) {
+make.view <- function(X, groups, scale, edges = FALSE) {
     plot.args <- list(
         X = X, groups = groups, scale = scale, legend.show = FALSE
     )
-    if (view == "sknn") {
+    if (edges) {
         plot.args <- c(list(
             graph = retinal$graph, vertices = rownames(X),
             weight.type = "distance", edge.col = "#59687324", edge.width = 1
@@ -131,8 +136,19 @@ make.view <- function(groups, scale) {
         do.call(plot3D.groups, c(plot.args, common))
     }
 }
-views <- list(make.view(sampled$age, age.scale),
-              make.view(sampled$cell.type, cell.scale))
+if (view == "comparison") {
+    views <- list(
+        make.view(X, sampled$age, age.scale),
+        make.view(sknn.X, sampled$age, age.scale)
+    )
+    panel.titles <- c("Published 3D UMAP", "sKNN graph layout, vertices only")
+} else {
+    views <- list(
+        make.view(X, sampled$age, age.scale, edges = view == "sknn"),
+        make.view(X, sampled$cell.type, cell.scale, edges = view == "sknn")
+    )
+    panel.titles <- c("Developmental stage", "Annotated cell type")
+}
 views[[1]]$elementId <- "retina-age"
 views[[2]]$elementId <- "retina-cell-type"
 
@@ -200,6 +216,7 @@ css <- "
     margin: 1px auto 0; color: #35414a; }
   .legend-age { grid-template-columns: repeat(5, max-content); justify-content: center; }
   .legend-cell { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .legend-shared { margin-top: 4px; }
   .legend-item { display: inline-flex; align-items: center; min-width: 0;
     font-size: 12px; line-height: 1.2; white-space: nowrap; }
   .legend-item i { display: inline-block; width: 10px; height: 10px;
@@ -209,6 +226,8 @@ css <- "
 
 page.title <- if (view == "sknn") {
     "Mouse retinal development as a 3D graph"
+} else if (view == "comparison") {
+    "The same retinal cells in two 3D embeddings"
 } else {
     "Mouse retinal development as a 3D point cloud"
 }
@@ -217,11 +236,35 @@ page.subtitle <- if (view == "sknn") {
         "%s-cell sample | symmetric %d-NN | weighted-GRIP + edge-KK",
         format(sample.size, big.mark = ","), retinal$k.selection$selected
     )
+} else if (view == "comparison") {
+    sprintf(
+        "%s-cell sample | vertices only | developmental stage",
+        format(sample.size, big.mark = ",")
+    )
 } else {
     sprintf(
         "%s-cell sample | published 3D UMAP coordinates",
         format(sample.size, big.mark = ",")
     )
+}
+
+panel.legends <- if (view == "comparison") {
+    list(NULL, NULL)
+} else {
+    list(legend.tags(age.colors, "legend-age"),
+         legend.tags(cell.colors, "legend-cell"))
+}
+sections <- Map(function(title, widget, legend) {
+    htmltools::tags$section(
+        htmltools::tags$h2(title),
+        htmltools::tags$div(class = "scene", widget),
+        legend
+    )
+}, panel.titles, views, panel.legends)
+shared.legend <- if (view == "comparison") {
+    legend.tags(age.colors, "legend-age legend-shared")
+} else {
+    NULL
 }
 
 page <- htmltools::tags$html(
@@ -236,18 +279,8 @@ page <- htmltools::tags$html(
                 htmltools::tags$h1(page.title),
                 htmltools::tags$p(page.subtitle)
             ),
-            htmltools::tags$div(id = "panels",
-                htmltools::tags$section(
-                    htmltools::tags$h2("Developmental stage"),
-                    htmltools::tags$div(class = "scene", views[[1]]),
-                    legend.tags(age.colors, "legend-age")
-                ),
-                htmltools::tags$section(
-                    htmltools::tags$h2("Annotated cell type"),
-                    htmltools::tags$div(class = "scene", views[[2]]),
-                    legend.tags(cell.colors, "legend-cell")
-                )
-            )
+            htmltools::tags$div(id = "panels", htmltools::tagList(sections)),
+            shared.legend
         ),
         htmltools::tags$script(htmltools::HTML(adapter))
     )
@@ -263,6 +296,11 @@ view.provenance <- if (view == "sknn") c(
     paste("Graph edges:", nrow(retinal$graph$edge.matrix)),
     paste("Layout:", retinal$layout$method),
     paste("Zero-length edges floored for layout:", retinal$layout$zero.edge.count)
+) else if (view == "comparison") c(
+    "Left input: published three-dimensional UMAP coordinates",
+    "Right input: weighted-GRIP plus edge-KK coordinates for the Euclidean symmetric kNN graph",
+    paste("Source metadata:", normalizePath(metadata.file)),
+    "Rendering: matched ivue point clouds; no graph edges"
 ) else c(
     "Input: published three-dimensional UMAP coordinates",
     paste("Source metadata:", normalizePath(metadata.file)),

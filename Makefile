@@ -1,6 +1,7 @@
 .PHONY: document build check check-cran check-minimal install readme-retinal \
 	readme-retinal-layout readme-retinal-deps readme-retinal-sknn \
-	readme-retinal-umap retinal-vignette retinal-vignette-data
+	readme-retinal-umap readme-retinal-comparison retinal-vignette \
+	retinal-vignette-data
 
 PKGNAME := ivue
 VERSION := $(shell sed -n 's/^Version: //p' DESCRIPTION)
@@ -50,15 +51,22 @@ readme-retinal-sknn: readme-retinal-layout readme-retinal-deps
 readme-retinal-umap: readme-retinal-layout readme-retinal-deps
 	$(RSCRIPT_RUN) tools/render-retinal-readme.R --view=umap
 	PLAYWRIGHT_MODULE=$(CURDIR)/$(RETINAL_PLAYWRIGHT) \
-		$(NODE) tools/capture-retinal-readme.cjs --view=umap --animation
-	$(RSCRIPT_RUN) tools/encode-retinal-readme.R --view=umap
+		$(NODE) tools/capture-retinal-readme.cjs --view=umap
 
-readme-retinal: readme-retinal-sknn readme-retinal-umap
+readme-retinal-comparison: readme-retinal-layout readme-retinal-deps
+	$(RSCRIPT_RUN) tools/render-retinal-readme.R --view=comparison
+	PLAYWRIGHT_MODULE=$(CURDIR)/$(RETINAL_PLAYWRIGHT) \
+		$(NODE) tools/capture-retinal-readme.cjs --view=comparison --animation
+	$(RSCRIPT_RUN) tools/encode-retinal-readme.R --view=comparison
+
+readme-retinal: readme-retinal-sknn readme-retinal-comparison
 
 retinal-vignette-data: readme-retinal-layout
 	$(RSCRIPT_RUN) tools/generate-retinal-vignette-data.R
 
-retinal-vignette: readme-retinal retinal-vignette-data
+retinal-vignette: readme-retinal readme-retinal-umap retinal-vignette-data
 	mkdir -p vignettes/figures
 	cp man/figures/readme-retinal-umap.png vignettes/figures/retinal-umap.png
 	cp man/figures/readme-retinal-sknn.png vignettes/figures/retinal-sknn.png
+	cp man/figures/readme-retinal-comparison.png \
+		vignettes/figures/retinal-comparison.png

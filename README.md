@@ -48,16 +48,16 @@ remain with their respective analysis packages. `ivue` accepts their results
 as coordinates, values, groups, and geometric layers. Optional graph layout
 uses existing igraph algorithms with explicit weight semantics.
 
-## The Same Cells as a Point Cloud
+## The Same Cells Without Edges
 
-![Two synchronized rotating views of the same 12,000 retinal cells in the published three-dimensional UMAP coordinates, colored by developmental stage and annotated cell type.](man/figures/readme-retinal-umap.gif)
+![Synchronized rotating vertex-only views of the same 12,000 retinal cells in published three-dimensional UMAP coordinates and the symmetric-kNN graph layout, both colored by developmental stage.](man/figures/readme-retinal-comparison.gif)
 
-This secondary view renders the same sampled cell identities using the
-published three-dimensional UMAP coordinates and no edges. `ivue` supplies the
-point-cloud rendering, shared group scales, and synchronized camera; it does
-not compute the UMAP. Keeping the point-cloud and graph views separate makes
-their coordinate provenance explicit while demonstrating both primary plotting
-families. See the retinal-development case study with
+This secondary animation compares the published UMAP coordinates with the
+weighted-GRIP plus edge-KK coordinates of the symmetric-kNN graph. Both panels
+show only vertices, so visible differences reflect the embeddings rather than
+the graph's edge layer. Cell identities, developmental colors, point styling,
+projection, and camera motion are held fixed. `ivue` renders the comparison; it
+does not compute either embedding. See the retinal-development case study with
 `vignette("retinal-development", package = "ivue")` for the complete plotting
 workflow and provenance.
 

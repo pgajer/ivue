@@ -7,10 +7,10 @@ if (!requireNamespace("magick", quietly = TRUE)) {
 args <- commandArgs(trailingOnly = TRUE)
 view.arg <- grep("^--view=", args, value = TRUE)
 if (length(view.arg) != 1L) {
-    stop("Supply exactly one of --view=sknn or --view=umap.")
+    stop("Supply exactly one of --view=sknn, --view=umap, or --view=comparison.")
 }
 view <- sub("^--view=", "", view.arg)
-if (!view %in% c("sknn", "umap")) {
+if (!view %in% c("sknn", "umap", "comparison")) {
     stop("Unknown retinal view: ", view)
 }
 

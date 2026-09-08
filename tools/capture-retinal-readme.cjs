@@ -23,8 +23,10 @@ async function canvasPixels(canvas) {
 (async () => {
   const viewArg = process.argv.find(value => value.startsWith('--view='));
   const view = viewArg ? viewArg.slice('--view='.length) : '';
-  if (!['sknn', 'umap'].includes(view)) {
-    throw new Error('Supply exactly one of --view=sknn or --view=umap.');
+  if (!['sknn', 'umap', 'comparison'].includes(view)) {
+    throw new Error(
+      'Supply exactly one of --view=sknn, --view=umap, or --view=comparison.'
+    );
   }
   const out = path.resolve('artifacts', 'retinal-readme');
   const html = path.join(out, `retinal-${view}.html`);
