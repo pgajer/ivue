@@ -4,14 +4,33 @@
 .Ruserdata
 .Rproj.user/
 Rplots.pdf
+
+# Derived package builds, checks, and compiled objects (as in grip/linf/gflow).
 *.Rcheck/
 *.tar.gz
+*.zip
 *.o
 *.so
 *.dll
 *.dylib
+*.a
+*.bc
 artifacts/
 /build/
+
+# Local rendered documentation; keep vignette sources and public figure assets.
+/inst/doc/
+/doc/
+/Meta/
+/README.html
+/vignettes/*.html
+/vignettes/*.pdf
+/vignettes/*_files/
+/vignettes/*_cache/
+
+# R test output.
+tests/testthat.Rout*
+.Rout
 
 # Internal working records belong in ~/.codex/private/ivue/.
 /MIGRATION.md

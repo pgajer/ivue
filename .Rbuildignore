@@ -7,8 +7,8 @@
 ^MIGRATION\.md$
 ^MIGRATION_STATUS\.md$
 ^Makefile$
-^ivue_.*\.tar\.gz$
-^ivue\.Rcheck$
+^.*\.(tar\.gz|zip)$
+^.*\.Rcheck$
 ^Rplots\.pdf$
 ^artifacts$
 ^build$
@@ -19,3 +19,10 @@
 ^RELEASE_VALIDATION\.md$
 ^private$
 ^man/figures$
+^README\.html$
+^doc$
+^Meta$
+^vignettes/.*\.(html|pdf)$
+^vignettes/.*_(files|cache)$
+^tests/testthat\.Rout.*$
+^\.Rout$
