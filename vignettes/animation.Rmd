@@ -12,6 +12,7 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>", out.width = "100%")
 library(ivue)
 have.rgl <- nzchar(system.file(package = "rgl"))
 have.magick <- requireNamespace("magick", quietly = TRUE)
+have.grip <- requireNamespace("grip", quietly = TRUE)
 ```
 
 `animate.frames()` turns recorded coordinates into a browser player.
@@ -25,30 +26,55 @@ install.packages(c("rgl", "magick"))
 
 ## Watch a Sierpinski triangle unfold
 
-This small example is a recorded two-dimensional GRIP layout of a level-4
-Sierpinski triangle. Forty frames were selected across a longer solve. The
-coordinates are unchanged: no frame was aligned to a target shape, rotated,
-or normalized for presentation. The package includes the record so this
-vignette does not require `grip` to run.
+Generate a level-4 Sierpinski triangle graph, then record its two-dimensional
+layout with `grip::trace.grip()`. The optional `grip` package supplies both the
+graph constructor and the layout algorithm; install it with
+`install.packages("grip")` to run this example.
 
-```{r triangle-data}
-triangle <- readRDS(system.file("extdata", "sierpinski-trace.rds", package = "ivue"))
-length(triangle$frames)
-dim(triangle$frames[[1]])
-head(triangle$meta[, c("phase", "active_vertices")])
+```{r triangle-trace, eval=have.grip}
+edges <- grip::edges.sierpinski.triangle(level = 4)
+tr <- grip::trace.grip(
+  edges, n = max(edges), dim = 2, preset = "carpet", seed = 1,
+  trace = "round", trace.every = 1
+)
+length(tr$frames)
+dim(tr$frames[[1]])
+utils::packageVersion("grip")
 ```
 
-```{r triangle-player, eval=have.rgl}
-triangle.labels <- paste0("Frame ", triangle$original.frame.index,
-                           " | ", triangle$meta$phase,
-                           " | ", triangle$meta$active_vertices, " vertices")
+The trace contains coordinates after successive layout rounds, including
+rows for vertices that have not yet been introduced. Select up to 40 evenly
+spaced frames, including the first and last, to keep the player compact.
+Retain their metadata and original frame numbers for the labels:
+
+```{r triangle-frame-selection, eval=have.grip}
+frame.index <- unique(as.integer(round(seq(
+  1, length(tr$frames), length.out = min(40L, length(tr$frames))
+))))
+triangle.frames <- tr$frames[frame.index]
+triangle.meta <- tr$meta[frame.index, , drop = FALSE]
+head(triangle.meta[, c("phase", "active_vertices")])
+triangle.labels <- paste0("Frame ", frame.index,
+                           " | ", triangle.meta$phase,
+                           " | ", triangle.meta$active_vertices, " vertices")
+```
+
+No coordinates are aligned to a target shape, rotated, or normalized. The seed
+fixes the random input to the installed GRIP implementation; the resulting
+trace can change between package versions, so its version is printed above.
+
+```{r triangle-player, eval=have.grip && have.rgl}
 triangle.player <- animate.frames(
-  triangle$frames, edges = triangle$edges, labels = triangle.labels,
+  triangle.frames, edges = edges, labels = triangle.labels,
   fps = 5, col = "#C24E25", point.size = 4,
   edge.col = "#314E6ECC", edge.width = 1,
   background.color = "#FAF7F0", height = 450
 )
 triangle.player
+```
+
+```{r triangle-unavailable, echo=FALSE, results='asis'}
+if (!have.grip) cat("The GRIP example code is shown but not evaluated in this build because `grip` is unavailable. The small triangle and saddle examples below do not require it.\n\n")
 ```
 
 Press **Play** to start; the button becomes **Pause**. Drag the slider to
@@ -153,7 +179,7 @@ GIF export uses the frames retained in the player, including inactive
 vertices and edges. This example writes into R's temporary directory, leaving
 your working directory untouched. Supply your own destination to keep it.
 
-```{r gif-export, eval=have.rgl && have.magick}
+```{r gif-export, eval=have.grip && have.rgl && have.magick}
 gif.path <- tempfile(fileext = ".gif")
 write.animation.gif(triangle.player, gif.path, fps = 5,
                      width = 480, height = 480, final.hold = 2)
@@ -190,9 +216,12 @@ By default, at most 100 evenly spaced frames are retained, including the
 first and last. If this limit is exceeded, a message reports the subsampling.
 For a diagnostic inspection, choose frames explicitly or retain all of them:
 
-```{r frame-selection, eval=have.rgl}
-selected <- animate.frames(triangle$frames, triangle$edges,
-                            frame.index = c(1, 10, 20, 30, 40),
+```{r frame-selection, eval=have.grip && have.rgl}
+inspect.index <- unique(as.integer(round(seq(
+  1, length(triangle.frames), length.out = min(5L, length(triangle.frames))
+))))
+selected <- animate.frames(triangle.frames, edges,
+                            frame.index = inspect.index,
                             labels = triangle.labels, fps = 2)
 attr(selected, "ivue.animation")$frame.index
 ```
@@ -206,36 +235,6 @@ shows the order of the solve, not elapsed computation time. Widget size grows
 with both frame count and graph size; large traces benefit from an explicit
 selection. The exported GIF uses that same selection.
 
-## Use a fresh GRIP trace
-
-With a recent `grip` installation, pass its recorded matrices directly.
-This optional recipe is not evaluated when building the vignette:
-
-```{r fresh-grip, eval=FALSE}
-edges <- grip::edges.sierpinski.triangle(level = 4)
-tr <- grip::trace.grip(edges, n = max(edges), dim = 2,
-                       preset = "carpet", seed = 1,
-                       trace = "round", trace.every = 1)
-player <- ivue::animate.frames(
-  tr$frames, edges,
-  labels = paste(tr$meta$phase, "|", tr$meta$active_vertices, "vertices"),
-  max.frames = 80, fps = 6
-)
-player
-ivue::write.animation.gif(player, "grip-trace.gif")
-```
-
 The same interface accepts three-dimensional traces and frames recorded by
 other solvers. Neither `animate.frames()` nor GIF export calls `grip` or
 computes a layout.
-
-The bundled triangle's package version, source commit, settings, and selected
-indices are recorded alongside its coordinates:
-
-```{r provenance}
-triangle$provenance
-```
-
-Its generation script is `tools/generate-animation-example.R` in the ivue
-source repository. The stored record allows the vignette to keep working
-independently of future changes to GRIP's layout algorithm.

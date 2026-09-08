@@ -29,6 +29,7 @@ Imports:
     utils,
     methods
 Suggests:
+    grip,
     rgl,
     magick,
     geometry,

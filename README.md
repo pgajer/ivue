@@ -229,9 +229,15 @@ Play recorded 2D or 3D coordinates with a timeline, speed controls, and an
 interactive camera. All frames share vertex identities and viewing bounds;
 NA rows represent inactive vertices, and incident edges stay hidden.
 
+Generate a small Sierpinski layout trace with the optional `grip` package
+(`install.packages("grip")`):
+
 ```r
-example <- readRDS(system.file("extdata", "sierpinski-trace.rds", package = "ivue"))
-player <- animate.frames(example$frames, example$edges, fps = 5)
+edges <- grip::edges.sierpinski.triangle(level = 4)
+tr <- grip::trace.grip(edges, n = max(edges), dim = 2,
+                       preset = "carpet", seed = 1,
+                       trace = "round", trace.every = 1)
+player <- animate.frames(tr$frames, edges, max.frames = 40, fps = 5)
 player
 htmlwidgets::saveWidget(player, "triangle.html", selfcontained = TRUE)
 # GIF export additionally requires magick; uses the initial orthographic view.
@@ -242,4 +248,4 @@ Frames are shown without interpolation or coordinate alignment. At most 100
 frames are retained by default; use `frame.index` or `max.frames` to change
 that selection. GIF export is an orthographic diagram renderer rather than a
 WebGL screenshot. See `vignette("animation", package = "ivue")` for Sierpinski
-and saddle examples, export options, and a `grip::trace.grip()` recipe.
+and saddle examples, including trace generation, frame selection, and export.

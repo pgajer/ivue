@@ -12,8 +12,9 @@
   selection or bounded subsampling.
 - Add write.animation.gif for orthographic GIF export through optional magick,
   with frame labels, loop and final-hold controls, and overwrite protection.
-- Add an animation vignette with a provenance-recorded Sierpinski trace,
-  a changing 3D saddle, and recipes for HTML/GIF export and fresh GRIP traces.
+- Add an animation vignette that generates a Sierpinski trace with optional
+  grip, a changing 3D saddle, and recipes for HTML/GIF export. Show the graph,
+  trace, and frame-selection code instead of bundling a stored trace file.
 
 - Add layer3D.surface for independent gridded reference surfaces, with face
   opacity, optional grid lines, and lighting controls.
