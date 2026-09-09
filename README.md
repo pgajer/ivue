@@ -48,22 +48,22 @@ zoom it. No native graphics window or XQuartz setup is needed. Assign the
 returned widget to a variable to reuse it or save it with
 `htmlwidgets::saveWidget()`.
 
-## Two Embeddings of Retinal Development
+## Three Embeddings of Retinal Development
 
 The same plotting controls also let you compare coordinate systems while
 keeping observations and colors fixed. Below, the retinal cells appear in
-published UMAP coordinates and in a symmetric-kNN graph layout fitted with
-weighted-GRIP followed by edge-KK refinement.
+published UMAP coordinates, a symmetric-kNN graph layout fitted with
+weighted-GRIP followed by edge-KK refinement, and a PHATE embedding.
 
-![Synchronized rotating vertex-only views of the same 12,000 retinal cells in published three-dimensional UMAP coordinates and the symmetric-kNN graph layout, both colored by developmental stage and initially oriented with their P14 centroids toward the viewer.](https://raw.githubusercontent.com/pgajer/ivue/bfcc4460bff200e7d66c80e2319455d260e3f973/man/figures/readme-retinal-comparison.gif)
+![Three synchronized point-only views of the same 12,000 retinal cells in published UMAP, symmetric-kNN weighted-GRIP plus edge-KK, and PHATE coordinates, colored by developmental stage and initially oriented with their P14 centroids toward the viewer.](https://raw.githubusercontent.com/pgajer/ivue/a2c26a5dd60a5b110a8291a686c58c6a1f43920f/man/figures/readme-retinal-phate-comparison.gif)
 
-Both embeddings were fitted on **120,804 cells** before selecting the same
+All three embeddings were fitted on **120,804 cells** before selecting the same
 12,000 retained retinal cells for display. UMAP uses **Canberra distance**;
-the symmetric 4-nearest-neighbor graph uses **Euclidean distance**. These are
-two complete embedding pipelines, not a controlled comparison of layout
-algorithms alone. Both panels show points without edges and complete a rotation
-in 14.4 seconds, starting with their P14 centroids facing the viewer. ivue
-renders the supplied coordinates without computing either embedding.
+the symmetric 4-nearest-neighbor graph and PHATE use **Euclidean distance**.
+PHATE uses 2,000 spectral landmarks and an automatically selected diffusion
+time. All panels show points without edges and complete a rotation in
+14.4 seconds, starting with their P14 centroids facing the viewer. ivue
+renders the supplied coordinates without computing the embeddings.
 
 ## Learn More
 
