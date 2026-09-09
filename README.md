@@ -18,7 +18,7 @@ the complete example and its provenance, while the
 [introduction vignette](vignettes/ivue-introduction.Rmd) explains the plotting
 controls.
 
-![Two synchronized point-only views of 12,000 retinal cells extracted after fitting a symmetric 4-nearest-neighbor graph layout on all 120,804 cells, colored by developmental stage and annotated cell type.](https://raw.githubusercontent.com/pgajer/ivue/302f7095c6e513e4ea1fd1d48099c8c7885f1d19/man/figures/readme-retinal-sknn.gif)
+![Two synchronized point-only views of 12,000 retinal cells extracted after fitting a symmetric 4-nearest-neighbor graph layout on all 120,804 cells, colored by developmental stage and annotated cell type.](https://raw.githubusercontent.com/pgajer/ivue/d08a39e1baa4b4333dddc179fe6a4fa17c8cb132/man/figures/readme-retinal-sknn.gif)
 
 ## Get Started
 
@@ -55,7 +55,7 @@ keeping observations and colors fixed. Below, the retinal cells appear in
 published UMAP coordinates, a symmetric-kNN graph layout fitted with
 weighted-GRIP followed by edge-KK refinement, and a PHATE embedding.
 
-![Three synchronized point-only views of the same 12,000 retinal cells in published UMAP, symmetric-kNN weighted-GRIP plus edge-KK, and PHATE coordinates, colored by developmental stage and initially oriented with their P14 centroids toward the viewer.](https://raw.githubusercontent.com/pgajer/ivue/a2c26a5dd60a5b110a8291a686c58c6a1f43920f/man/figures/readme-retinal-phate-comparison.gif)
+![Three synchronized point-only views of the same 12,000 retinal cells in published UMAP, symmetric-kNN weighted-GRIP plus edge-KK, and PHATE coordinates, colored by developmental stage and initially oriented with their P14 centroids toward the viewer.](https://raw.githubusercontent.com/pgajer/ivue/d08a39e1baa4b4333dddc179fe6a4fa17c8cb132/man/figures/readme-retinal-phate-comparison.gif)
 
 All three embeddings were fitted on **120,804 cells** before selecting the same
 12,000 retained retinal cells for display. UMAP uses **Canberra distance**;
