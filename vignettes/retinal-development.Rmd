@@ -243,12 +243,6 @@ kNN topology and its weighted drawing objective. Apparent proximity in either
 view is not evidence that the other representation contains the same
 neighborhoods.
 
-A quantitative comparison of Euclidean and Canberra neighbor sets on the
-underlying 20-PC matrix is maintained as a reproducible
-[`dgraphs` methodological report](https://github.com/pgajer/dgraphs/tree/main/reports/retinal-neighbor-metric-comparison).
-That analysis belongs to graph construction; this vignette focuses on how
-`ivue` receives and renders the resulting coordinates, edges, and annotations.
-
 ## Reproduction and provenance
 
 The README animations use the same bundled visualization values but are
