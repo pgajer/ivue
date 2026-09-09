@@ -6,10 +6,10 @@ options(rgl.useNULL = TRUE)
 args <- commandArgs(trailingOnly = TRUE)
 view.arg <- grep("^--view=", args, value = TRUE)
 if (length(view.arg) != 1L) {
-    stop("Supply exactly one of --view=sknn, --view=umap, or --view=comparison.")
+    stop("Supply --view=sknn, --view=umap, --view=comparison, or --view=phate-comparison.")
 }
 view <- sub("^--view=", "", view.arg)
-if (!view %in% c("sknn", "umap", "comparison")) {
+if (!view %in% c("sknn", "umap", "comparison", "phate-comparison")) {
     stop("Unknown retinal view: ", view)
 }
 
@@ -28,12 +28,13 @@ for (package in c("htmltools", "jsonlite", "rgl")) {
 pkgload::load_all(".", quiet = TRUE, export_all = FALSE, helpers = FALSE)
 
 out <- file.path("artifacts", "retinal-readme")
+if (view == "phate-comparison") out <- file.path("artifacts", "retinal-phate", "preview")
 dir.create(out, recursive = TRUE, showWarnings = FALSE)
 dir.create(file.path("man", "figures"), recursive = TRUE, showWarnings = FALSE)
 
 layout.file <- Sys.getenv(
     "IVUE_RETINAL_LAYOUT",
-    file.path(out, "retinal-sknn-layout.rds")
+    file.path("artifacts", "retinal-readme", "retinal-sknn-layout.rds")
 )
 if (!file.exists(layout.file)) {
     stop("Prepared retinal graph not found. Run tools/prepare-retinal-readme.R first.")
@@ -86,7 +87,7 @@ valid.coordinates <- function(X) {
         all(is.finite(X))
 }
 if (!valid.coordinates(X) ||
-    (view == "comparison" && !valid.coordinates(sknn.X))) {
+    (view %in% c("comparison", "phate-comparison") && !valid.coordinates(sknn.X))) {
     stop("Every retinal coordinate set must be a finite n-by-3 matrix.")
 }
 
@@ -118,10 +119,29 @@ cell.colors <- stats::setNames(c(
     "#8F9D44"
 ), cell.levels)
 
+is.comparison <- view %in% c("comparison", "phate-comparison")
+if (view == "phate-comparison") {
+    phate.dir <- file.path("artifacts", "retinal-phate")
+    phate.result <- jsonlite::read_json(file.path(phate.dir, "full", "result.json"),
+                                       simplifyVector = TRUE)
+    phate.index <- utils::read.csv(file.path(phate.dir, "display-index.csv"))
+    phate.X <- as.matrix(utils::read.csv(file.path(phate.dir, "full",
+                                                  "display-coordinates.csv")))
+    pc <- readRDS(file.path("artifacts", "retinal-readme", "retinal-umap-input-pc20.rds"))
+    stopifnot(phate.result$status == "complete",
+              identical(as.integer(phate.result$shape), c(120804L, 20L)),
+              identical(phate.index$id, rownames(sampled)),
+              identical(pc$cells[phate.index$row.zero + 1L], rownames(sampled)),
+              identical(pc$source.md5, retinal$source.md5),
+              phate.result$input$pc.cache.md5 == unname(tools::md5sum(
+                  file.path("artifacts", "retinal-readme", "retinal-umap-input-pc20.rds"))),
+              valid.coordinates(phate.X))
+    rownames(phate.X) <- rownames(sampled)
+}
 point.size <- if (view == "sknn") 2.1 else 2.2
 alpha <- if (view == "sknn") 0.84 else 0.78
 camera <- camera.zup(elevation = 18, turn = -28, fov = 0, zoom = 0.64)
-if (view == "comparison") {
+if (is.comparison) {
     source("tools/retinal-view-orientation.R")
     orientation <- list(
         umap = orient.retinal.stage(X, sampled$age, camera),
@@ -129,6 +149,10 @@ if (view == "comparison") {
     )
     X <- orientation$umap$coordinates
     sknn.X <- orientation$sknn$coordinates
+    if (view == "phate-comparison") {
+        orientation$phate <- orient.retinal.stage(phate.X, sampled$age, camera)
+        phate.X <- orientation$phate$coordinates
+    }
     jsonlite::write_json(lapply(orientation, function(value)
         value[setdiff(names(value), "coordinates")]),
         file.path(out, "orientation-comparison.json"), pretty = TRUE, digits = 15)
@@ -152,12 +176,17 @@ make.view <- function(X, groups, scale, edges = FALSE) {
         do.call(plot3D.groups, c(plot.args, common))
     }
 }
-if (view == "comparison") {
+if (is.comparison) {
     views <- list(
         make.view(X, sampled$age, age.scale),
         make.view(sknn.X, sampled$age, age.scale)
     )
     panel.titles <- c("Published 3D UMAP (Canberra)", "sKNN k = 4 (Euclidean)")
+    if (view == "phate-comparison") {
+        views[[3]] <- make.view(phate.X, sampled$age, age.scale)
+        panel.titles <- c(panel.titles, "PHATE (Euclidean; 2,000 landmarks)")
+        views[[3]]$elementId <- "retina-phate"
+    }
 } else {
     views <- list(
         make.view(X, sampled$age, age.scale),
@@ -169,7 +198,7 @@ views[[1]]$elementId <- "retina-age"
 views[[2]]$elementId <- "retina-cell-type"
 
 frame.count <- 72L
-fps <- if (view %in% c("sknn", "comparison")) 5L else 10L
+fps <- if (view == "sknn" || is.comparison) 5L else 10L
 angles <- (seq_len(frame.count) - 1L) * 360 / frame.count
 matrices <- lapply(angles, function(angle) as.vector(
     camera.zup(elevation = 18, turn = -28 + angle,
@@ -240,9 +269,21 @@ css <- "
   .legend-item b { overflow: hidden; text-overflow: ellipsis; font-weight: 520; }
 "
 
-page.title <- if (view == "sknn") {
+if (view == "phate-comparison") css <- paste0(css, "
+  #hero { width: 1560px; max-width: 100%; }
+  #panels { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  h2 { min-height: 44px; }
+  @media (max-width: 700px) {
+    #panels { grid-template-columns: 1fr; }
+    .legend-age { grid-template-columns: repeat(3, max-content); }
+  }
+")
+
+page.title <- if (view == "phate-comparison") {
+    "The same retinal cells in three 3D embeddings"
+} else if (view == "sknn") {
     "Whole-population retinal graph layout"
-} else if (view == "comparison") {
+} else if (is.comparison) {
     "The same retinal cells in two 3D embeddings"
 } else {
     "Mouse retinal development as a 3D point cloud"
@@ -252,7 +293,7 @@ page.subtitle <- if (view == "sknn") {
         "120,804-cell fit | %s displayed | symmetric %d-NN | weighted-GRIP + edge-KK",
         format(sample.size, big.mark = ","), retinal$k.selection$selected
     )
-} else if (view == "comparison") {
+} else if (is.comparison) {
     sprintf(
         "120,804-cell fitting population | %s displayed | vertices only",
         format(sample.size, big.mark = ",")
@@ -264,8 +305,8 @@ page.subtitle <- if (view == "sknn") {
     )
 }
 
-panel.legends <- if (view == "comparison") {
-    list(NULL, NULL)
+panel.legends <- if (is.comparison) {
+    rep(list(NULL), length(views))
 } else {
     list(legend.tags(age.colors, "legend-age"),
          legend.tags(cell.colors, "legend-cell"))
@@ -277,7 +318,7 @@ sections <- Map(function(title, widget, legend) {
         legend
     )
 }, panel.titles, views, panel.legends)
-shared.legend <- if (view == "comparison") {
+shared.legend <- if (is.comparison) {
     legend.tags(age.colors, "legend-age legend-shared")
 } else {
     NULL
@@ -314,13 +355,20 @@ view.provenance <- if (view == "sknn") c(
     "Rendering: vertices only; layout fitted before display subsampling",
     paste("Layout:", retinal$layout$method),
     paste("Zero-length edges floored for layout:", retinal$layout$zero.edge.count)
-) else if (view == "comparison") c(
+) else if (is.comparison) c(
     "Left input: published three-dimensional UMAP coordinates (Canberra distance)",
     "Right input: weighted-GRIP plus edge-KK coordinates for the Euclidean symmetric kNN graph",
     paste("Source metadata:", normalizePath(metadata.file)),
     "Rendering: matched ivue point clouds; no graph edges",
     "Initial orientation: each cloud rigidly rotated to face its P14 centroid toward the viewer",
-    "Orientation anchor: cloud centroid to P14 centroid; minimum-angle proper rotation; no reflection or refit"
+    "Orientation anchor: cloud centroid to P14 centroid; minimum-angle proper rotation; no reflection or refit",
+    if (view == "phate-comparison") c(
+        "Third input: Python PHATE fitted to the same 120,804 x 20 PC matrix",
+        paste("PHATE version:", phate.result$versions$phate),
+        "PHATE: Euclidean, knn=5, decay=40, 2000 spectral landmarks, no additional PCA",
+        paste("PHATE auto-selected diffusion time:", phate.result$optimal_t),
+        "PHATE preview only: feasibility settings, not a tuned or validated biological model"
+    )
 ) else c(
     "Input: published three-dimensional UMAP coordinates",
     paste("Source metadata:", normalizePath(metadata.file)),

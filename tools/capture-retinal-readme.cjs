@@ -23,12 +23,15 @@ async function canvasPixels(canvas) {
 (async () => {
   const viewArg = process.argv.find(value => value.startsWith('--view='));
   const view = viewArg ? viewArg.slice('--view='.length) : '';
-  if (!['sknn', 'umap', 'comparison'].includes(view)) {
+  if (!['sknn', 'umap', 'comparison', 'phate-comparison'].includes(view)) {
     throw new Error(
-      'Supply exactly one of --view=sknn, --view=umap, or --view=comparison.'
+      'Supply --view=sknn, --view=umap, --view=comparison, or --view=phate-comparison.'
     );
   }
-  const out = path.resolve('artifacts', 'retinal-readme');
+  const candidate = view === 'phate-comparison';
+  const out = candidate ? path.resolve('artifacts', 'retinal-phate', 'preview') :
+    path.resolve('artifacts', 'retinal-readme');
+  const panelCount = candidate ? 3 : 2;
   const html = path.join(out, `retinal-${view}.html`);
   if (!fs.existsSync(html)) throw new Error(`Missing rendered page: ${html}`);
 
@@ -43,7 +46,7 @@ async function canvasPixels(canvas) {
     args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader']
   });
   try {
-    const page = await browser.newPage({ viewport: { width: 1120, height: 720 } });
+    const page = await browser.newPage({ viewport: { width: candidate ? 1600 : 1120, height: 720 } });
     const errors = [];
     page.on('pageerror', error => errors.push(String(error)));
     page.on('console', message => {
@@ -52,8 +55,8 @@ async function canvasPixels(canvas) {
     await page.route(/^https?:/, route => route.abort());
     await page.goto(pathToFileURL(html).href);
     await page.waitForFunction(() => document.body.dataset.ready === 'true');
-    await page.waitForFunction(() => document.querySelectorAll('#hero canvas').length === 2 &&
-      [...document.querySelectorAll('#hero canvas')].every(canvas => canvas.width > 0));
+    await page.waitForFunction(count => document.querySelectorAll('#hero canvas').length === count &&
+      [...document.querySelectorAll('#hero canvas')].every(canvas => canvas.width > 0), panelCount);
 
     const hero = page.locator('#hero');
     const canvases = page.locator('#hero canvas');
@@ -81,13 +84,14 @@ async function canvasPixels(canvas) {
 
     await frame(0);
     const pixelCounts = [];
-    for (let i = 0; i < 2; i++) pixelCounts.push(await canvasPixels(canvases.nth(i)));
+    for (let i = 0; i < panelCount; i++) pixelCounts.push(await canvasPixels(canvases.nth(i)));
     if (pixelCounts.some(result => result.colored < 1000)) {
       throw new Error(`One or more retinal scenes are blank: ${JSON.stringify(pixelCounts)}`);
     }
 
     fs.mkdirSync(path.join('man', 'figures'), { recursive: true });
-    await screenshot(path.join('man', 'figures', `readme-retinal-${view}.png`));
+    await screenshot(path.join(candidate ? out : path.join('man', 'figures'),
+      `readme-retinal-${view}.png`));
 
     for (const index of [Math.floor(frameCount / 4), Math.floor(frameCount / 2),
       Math.floor(3 * frameCount / 4)]) {
@@ -107,7 +111,7 @@ async function canvasPixels(canvas) {
     }
 
     if (errors.length) throw new Error(errors.join('\n'));
-    console.log(`Verified ${view} as two nonblank synchronized scenes; ` +
+    console.log(`Verified ${view} as ${panelCount} nonblank synchronized scenes; ` +
       `${frameCount} camera frames.`);
   } finally {
     await browser.close();
