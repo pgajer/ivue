@@ -344,7 +344,7 @@ its own coordinates. Here the original 250-point sample `X` lies on
 parameter square:
 
 ```{r reference-surface}
-grid.x <- grid.y <- seq(-1, 1, length.out = 51)
+grid.x <- grid.y <- seq(-1, 1, length.out = 31)
 grid.z <- outer(grid.x, grid.y, function(x, y) 1.2 * (x^2 - y^2))
 reference <- layer3D.surface(grid.x, grid.y, grid.z,
                               col = "lightblue", alpha = 0.3)

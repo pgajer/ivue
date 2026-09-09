@@ -22,14 +22,15 @@ controls.
 
 ## Get Started
 
-To create your own views, install ivue from GitHub. This also builds the three
-vignettes for reading from R; `knitr`, `rmarkdown`, and Pandoc are needed for
-that step. RStudio includes Pandoc.
+Once the first CRAN release is available, install ivue together with `rgl`,
+its optional plotting backend:
 
 ```r
-install.packages(c("remotes", "rgl", "knitr", "rmarkdown"))
-remotes::install_github("pgajer/ivue", build_vignettes = TRUE)
+install.packages(c("ivue", "rgl"))
 ```
+
+The release package includes the three rendered vignettes; you do not need
+`knitr`, `rmarkdown`, or Pandoc to read them.
 
 Start with a coordinate matrix, one observation per row. This sample from a
 saddle is colored by height:
