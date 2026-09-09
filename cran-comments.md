@@ -25,8 +25,10 @@ Examples and tests guard optional packages and do not launch a browser.
 
 The September 9 source archive was checked unchanged on macOS R-devel.
 Its only NOTE is `New submission`. Installed size is reported as INFO on
-current R (6.1 MB total, including 5.3 MB of documentation); R 4.1.3 reports
-the size as a NOTE (6.0 MB total, including 5.2 MB of documentation).
+current R (5.6 MB total, including 4.7 MB of documentation); R 4.1.3 reports
+the total size as a NOTE (5.5 MB total, including 4.6 MB of documentation).
+Documentation is below 5 MB; the total also includes the bundled retinal
+coordinates, package code, and help files.
 
 The retinal case-study vignette uses bundled coordinates and static posters;
 its large rendering and upstream data-processing recipes are not evaluated
