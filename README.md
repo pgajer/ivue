@@ -9,10 +9,14 @@ let you follow a changing shape or recorded layout. ivue works with coordinates
 from your chosen analysis or embedding method.
 
 The following animation shows the same 12,000 mouse retinal cells colored by
-developmental stage and annotated cell type. Shared coordinates and synchronized views let you
-explore how the two annotations relate. The data come from
+developmental stage and annotated cell type. Shared coordinates and synchronized
+views show how the two annotations relate. The data come from
 [Clark et al. (2019)](https://pmc.ncbi.nlm.nih.gov/articles/PMC6768831/);
 the layout was computed with `dgraphs` and `grip`, then rendered with ivue.
+The [retinal-development vignette](vignettes/retinal-development.Rmd) presents
+the complete example and its provenance, while the
+[introduction vignette](vignettes/ivue-introduction.Rmd) explains the plotting
+controls.
 
 ![Two synchronized point-only views of 12,000 retinal cells extracted after fitting a symmetric 4-nearest-neighbor graph layout on all 120,804 cells, colored by developmental stage and annotated cell type.](https://raw.githubusercontent.com/pgajer/ivue/302f7095c6e513e4ea1fd1d48099c8c7885f1d19/man/figures/readme-retinal-sknn.gif)
 
