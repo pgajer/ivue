@@ -87,6 +87,5 @@ vignette("retinal-development", package = "ivue")
 vignette("animation", package = "ivue")
 ```
 
-For development setup and checks, see [Contributing](CONTRIBUTING.md).
 Report problems or suggest improvements in the
 [issue tracker](https://github.com/pgajer/ivue/issues).

@@ -95,8 +95,12 @@ SGD solver, and seed 20190619. Automatic diffusion-time selection gives
 fit a dense all-cell diffusion/MDS model. The PHATE coordinates are not part
 of the bundled vignette data.
 
-Follow the [PHATE generation instructions](../../CONTRIBUTING.md#phate-comparison)
-to reproduce the fit and render it with `--view=phate-comparison`. The tools
+The [input exporter](../../tools/prepare-retinal-phate-input.R) reuses the
+existing PC cache, and the [fitting script](../../tools/fit-retinal-phate.py)
+runs PHATE with dependencies pinned in
+[retinal-phate-requirements.txt](../../tools/retinal-phate-requirements.txt).
+Render, capture, and encode the full-population result with
+`--view=phate-comparison` using the retinal rendering tools. The tools
 write the HTML, PNG, and GIF into `artifacts/retinal-phate/preview/`. The approved
 GIF and poster were copied without re-encoding into `man/figures/` as
 `readme-retinal-phate-comparison.gif` and `readme-retinal-phate-comparison.png`.
@@ -104,8 +108,8 @@ The GIF is 1440 x 506 pixels and 3,811,279 bytes; SHA-256:
 `f1e4ad51d493cd50770abe3a68688dcd079692e1003067fe9c0febbe95309b67`.
 
 PHATE remains an external analysis tool, not an ivue dependency. See the
-license information in the contributor guide before reproducing it for
-another use.
+[PHATE 2.0.0 source license](https://github.com/KrishnaswamyLab/PHATE/blob/2.0.0/LICENSE.md)
+before reproducing it for another use.
 
 ## Shared Rendering
 

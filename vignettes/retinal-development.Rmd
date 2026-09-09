@@ -271,8 +271,9 @@ make retinal-vignette
 ```
 
 The README's three-panel comparison adds the separately computed PHATE
-coordinates. Its generation steps are described in the repository's
-[contributor guide](https://github.com/pgajer/ivue/blob/main/CONTRIBUTING.md#phate-comparison).
+coordinates. The repository includes its
+[PHATE fitting script](https://github.com/pgajer/ivue/blob/main/tools/fit-retinal-phate.py)
+and [rendering script](https://github.com/pgajer/ivue/blob/main/tools/render-retinal-readme.R).
 
 The stored provenance records source checksums, graph-selection diagnostics,
 layout information, and the versions of the packages that computed the graph
