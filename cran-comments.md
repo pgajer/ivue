@@ -14,15 +14,19 @@ Examples and tests guard optional packages and do not launch a browser.
 ## Checks
 
 - macOS arm64, R-devel 4.7.0 (2026-06-24 r90190): full `--as-cran` check,
-  0 errors, 0 warnings, 1 NOTE. All 713 assertions, examples, vignette
-  rebuilding, and PDF/HTML manuals passed.
-- Linux R-release/devel/4.1.3, Windows R-release/devel, and macOS R-release:
+  0 errors, 0 warnings, 1 NOTE. All 729 assertions, examples, vignette
+  rebuilding, and PDF/HTML manuals passed with HTML Tidy 5.
+- Linux R-release/devel, Windows R-release/devel, and macOS R-release:
   Status OK in CI (`--as-cran --no-manual`, incoming checks disabled).
-  R-devel CI used September 7, 2026 r90504.
+  R-devel CI used September 8, 2026 r90509.
+- Linux R 4.1.3: 0 errors, 0 warnings, 1 installed-size NOTE in CI.
+  All six CI package jobs passed 729 assertions.
 - Dependency-only checks on Linux R-release and macOS R-devel: Status OK.
 
-The source archive was checked unchanged on macOS R-devel.
-The only NOTE is `New submission`.
+The September 9 source archive was checked unchanged on macOS R-devel.
+Its only NOTE is `New submission`. Installed size is reported as INFO on
+current R (6.1 MB total, including 5.3 MB of documentation); R 4.1.3 reports
+the size as a NOTE (6.0 MB total, including 5.2 MB of documentation).
 
 The retinal case-study vignette uses bundled coordinates and static posters;
 its large rendering and upstream data-processing recipes are not evaluated
