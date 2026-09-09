@@ -1,54 +1,31 @@
 # ivue 0.1.0
 
-- Default all plot3D families to an orthographic z-up camera, retaining explicit
-  camera orientations and allowing zoom or field-of-view overrides on their own.
-- Resolve animation point, edge, and background palette indices at widget
-  creation, preserving colors in GIF exports after session palette changes.
-- Resolve character-form palette indices in retained colors and fitted scales
-  while preserving explicit colors and alpha.
-- Add animate.frames for recorded 2D and 3D coordinate sequences, with browser
-  playback, timeline and speed controls, fixed viewing bounds, and inactive
-  vertex/edge handling. Keep coordinates unchanged and support explicit frame
-  selection or bounded subsampling.
-- Add write.animation.gif for orthographic GIF export through optional magick,
-  with frame labels, loop and final-hold controls, and overwrite protection.
-- Add an animation vignette that generates a Sierpinski trace with optional
-  grip, a changing 3D saddle, and recipes for HTML/GIF export. Show the graph,
-  trace, and frame-selection code instead of bundling a stored trace file.
+Initial release.
 
-- Add layer3D.surface for independent gridded reference surfaces, with face
-  opacity, optional grid lines, and lighting controls.
-- Extend the vignette with an interactive Delaunay saddle mesh and an example
-  of reusing its faces in another embedding. Suggest geometry for triangulation.
-- Add layer3D.mesh for supplied triangular surfaces, with independent face and
-  unique-edge opacity controls. Mesh connectivity can be reused across embeddings
-  without requiring a triangulation package.
-- Add layer3D.axes for origin-crossing coordinate axes with solid 3D arrowheads,
-  and camera.zup for reproducible z-up initial views. Illustrate them with an
-  area-uniform saddle sample and a blue-yellow-red scale in the vignette.
-- Treat numeric and complex NaN groups as missing while preserving literal
-  "NaN" categories and accurate legend counts.
-- Use plot3D.groups as the canonical categorical plot name, without a cltrs
-  alias. Add backend-free prepare.graph for inspecting and reusing graph data.
-- Align named graph values, groups, colors, and logical highlight masks by
-  exact vertex ID; reject partial, duplicate, missing, or extra names.
-- Pass color alpha and plot opacity to actual point, sphere, edge, path, and
-  label materials; retain documented highlight-style overrides.
-- Freeze numeric palette indices in fitted scales, handle empty and missing
-  factor levels, and automatically distinguish nearby legend boundaries.
-- Normalize extreme finite ranges without overflow and reject contradictory
-  explicit limits and bin boundaries.
-- Added canonical browser-first point, continuous-color, group, and weighted
-  graph plots with shared scene lifecycle and no output-name aliases.
-- Added reusable color scales, consistent legends, geometric/callback layers,
-  coordinate identity metadata, and independent HTML export.
-- Added weighted graph normalization and optional weight-aware igraph layouts.
-- Added null-device, color, graph, baseline, and browser regression checks.
-- Added an introductory saddle/graph vignette, runnable examples for every
-  export, full manual checks, and checks without suggested packages.
-- Preserve igraph's existing `id` attribute as `.igraph.id`; reject ambiguous
-  table columns and mismatched named weight lists.
-- Apply global opacity consistently to legend swatches and continuous ramps.
-- Reject invalid complex numeric controls and binned diverging centers that
-  were previously ignored; binned scales can use explicit bin colors.
-- Normalize matrix adjacency rows without repeatedly scanning all edges.
+- **3D visualization:** `plot3D.plain()`, `plot3D.cont()`,
+  `plot3D.groups()`, and `plot3D.graph()` display point clouds and embedded
+  weighted graphs with numerical or categorical colors and highlighting.
+  Browser widgets use `rgl` without requiring a native graphics window.
+
+- **Geometric layers:** edges, paths, labels, triangular meshes, gridded
+  reference surfaces, and origin-crossing coordinate axes can be combined
+  with plotted observations.
+
+- **Consistent views:** reusable continuous and categorical color scales
+  provide matching legends. Plots default to an orthographic z-up camera;
+  `camera.zup()` and explicit camera settings support reproducible views.
+
+- **Animation and sharing:** `animate.frames()` plays recorded 2D or 3D
+  coordinates with timeline and speed controls. Widgets can be saved as
+  interactive HTML, and `write.animation.gif()` exports orthographic
+  animations through the optional `magick` package.
+
+- **Graph inputs:** `prepare.graph()` accepts edge tables, paired adjacency
+  and weight lists, dense or sparse adjacency matrices, and igraph objects.
+  Vertex-ID matching keeps coordinates and annotations aligned. Supplied
+  layouts can be displayed directly; optional igraph layouts use explicit
+  distance or strength weight semantics.
+
+- **Documentation:** three vignettes introduce point-cloud and graph plotting,
+  develop a retinal-development case study, and demonstrate coordinate
+  animation and export.
