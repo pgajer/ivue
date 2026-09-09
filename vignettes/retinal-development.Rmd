@@ -246,7 +246,14 @@ neighborhoods.
 ## Reproduction and provenance
 
 The README animations use the same bundled visualization values but are
-captured as synchronized 72-frame rotations. In the source repository,
+captured as synchronized 72-frame rotations, each lasting 14.4 seconds.
+Both comparison panels use the same point
+styling, orthographic projection, and camera angles at each frame. Before
+rotation, each embedding is independently oriented so that its P14 centroid
+faces the viewer. These are rigid display rotations, not refits or
+deformations of the coordinates.
+
+In the source repository,
 `make readme-retinal` reconstructs the upstream PC matrix and graph layout,
 renders the point-cloud hero and UMAP comparison, verifies their WebGL
 canvases, and encodes the GIFs.

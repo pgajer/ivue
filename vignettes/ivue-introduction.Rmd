@@ -153,13 +153,16 @@ saddle.view <- plot3D.cont(
 saddle.view$elementId <- "saddle-coordinate-example"
 htmltools::tagList(
   htmltools::tags$style(htmltools::HTML("
-    #saddle-coordinate-example, #saddle-mesh-example, #saddle-mesh-groups-example {
+    #saddle-coordinate-example, #saddle-mesh-example, #saddle-mesh-groups-example,
+    #reference-surface-example {
       height: auto !important; aspect-ratio: 7 / 5;
     }
     @media (max-width: 600px) {
-      #saddle-coordinate-example, #saddle-mesh-example { margin-top: 160px; }
+      #saddle-coordinate-example, #saddle-mesh-example,
+      #reference-surface-example { margin-top: 160px; }
       #saddle-coordinate-example > .ivue-legend,
-      #saddle-mesh-example > .ivue-legend {
+      #saddle-mesh-example > .ivue-legend,
+      #reference-surface-example > .ivue-legend {
         top: -155px !important; max-height: none !important;
       }
       #saddle-mesh-groups-example { margin-top: 100px; }
@@ -332,6 +335,47 @@ only the point coloring and legend differ. Here all points retain their group
 colors, without highlighting. Reusing `surface` does not require another
 triangulation.
 
+## A gridded reference surface
+
+The triangular mesh above follows the plotted observations. When a surface
+is known analytically, `layer3D.surface()` can instead draw a reference with
+its own coordinates. Here the original 250-point sample `X` lies on
+`z = 1.2 * (x^2 - y^2)`; evaluate that formula on a regular grid covering its
+parameter square:
+
+```{r reference-surface}
+grid.x <- grid.y <- seq(-1, 1, length.out = 51)
+grid.z <- outer(grid.x, grid.y, function(x, y) 1.2 * (x^2 - y^2))
+reference <- layer3D.surface(grid.x, grid.y, grid.z,
+                              col = "lightblue", alpha = 0.3)
+```
+
+Entry `grid.z[i, j]` is the height at `(grid.x[i], grid.y[j])`. No
+triangulation call or `geometry` installation is needed. Overlay the
+reference beneath the sample, reusing the earlier height scale:
+
+```{r reference-surface-player, eval=have.rgl}
+reference.view <- plot3D.cont(
+  X, values = X[, "z"], scale = height.scale, point.size = 5,
+  legend.title = "Saddle height", legend.width = 160, axes = FALSE,
+  layers = list(reference, layer3D.axes()),
+  camera = camera.zup(zoom = 0.6), height = 450
+)
+```
+
+```{r reference-surface-display, eval=have.rgl, echo=FALSE}
+reference.view$elementId <- "reference-surface-example"
+reference.view
+```
+
+Set `edges = TRUE` in `layer3D.surface()` for grid lines and `lit = TRUE`
+for lighting. Faces are planar triangles; increasing grid resolution
+approximates the smooth surface more closely. Unlike the earlier mesh,
+`reference` stays fixed when reused with another set of plotting coordinates.
+To compare an MDS or refined embedding against it, first align the embedding
+to the reference coordinate system. The layer performs no alignment or
+rescaling and does not modify the graph used to compute the embedding.
+
 ## Weighted graphs and geometric layers
 
 A graph supplies topology and weights. Coordinates supply geometry; one does
@@ -382,6 +426,11 @@ Weights do not automatically control edge width or color. The example chooses
 `1 + graph$edges$weight` explicitly. Edge colors and widths follow the edge order
 exposed by `prepare.graph()` before rendering; matrix/list inputs use one copy of each
 undirected edge in vertex-row order. Table inputs retain their supplied order.
+
+Prepared graphs can be reused across plots. Vertex identities, isolates,
+weights, and vertex and edge table attributes are retained. Integer edge
+endpoints index the prepared vertex table: to change vertex order, prepare a
+new graph from vertex IDs rather than reorder that table in place.
 
 ivue can display coordinates produced by `dgraphs`, `grip`, `igraph`,
 [`graphlayouts`](https://schochastics.github.io/graphlayouts/), or other

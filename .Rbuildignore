@@ -20,6 +20,7 @@
 ^private$
 ^man/figures$
 ^README\.html$
+^CONTRIBUTING\.md$
 ^doc$
 ^Meta$
 ^vignettes/.*\.(html|pdf)$
