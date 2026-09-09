@@ -137,9 +137,10 @@ saddle.edges <- rbind(
   cbind(as.vector(ids[-side, ]), as.vector(ids[-1, ])),
   cbind(as.vector(ids[, -side]), as.vector(ids[, -1]))
 )
-height.scale <- color.scale.cont(saddle.frames[[25]][, 3], center = 0,
+final.heights <- saddle.frames[[length(saddle.frames)]][, "z"]
+height.scale <- color.scale.cont(final.heights, center = 0,
                                  palette = c("#2455A4", "#ECE6C2", "#B83232"))
-point.colors <- map.colors(saddle.frames[[25]][, 3], height.scale)$colors
+point.colors <- map.colors(final.heights, height.scale)$colors
 ```
 
 ```{r saddle-player, eval=have.rgl}
@@ -153,10 +154,47 @@ saddle.player <- animate.frames(
 saddle.player
 ```
 
-Colors describe each vertex's **final height** and remain fixed across
+Colors describe each vertex's **final saddle height** and remain fixed across
 frames. This makes identity easy to follow; they do not encode instantaneous
 height. Frame-dependent colors and animated mesh faces are outside this
 initial API. `edges` draws a wire grid without filling its faces.
+
+### From a paraboloid through a flat grid to a saddle
+
+Reuse the same grid, edges, and colors, but change the height formula to
+pass through three shapes. Let `t` run from -1 to 1 and set
+\[
+z(t) = 1.2\bigl(|t|x^2 - t y^2\bigr).
+\]
+At `t = -1` this is the upward-opening paraboloid
+`z = 1.2 * (x^2 + y^2)`. At `t = 0` all heights are zero, and at `t = 1`
+the surface is the saddle `z = 1.2 * (x^2 - y^2)`. An odd number of equally
+spaced frames places the flat grid exactly at the slider's midpoint.
+
+```{r surface-morph-frames}
+stages <- seq(-1, 1, length.out = 49)
+surface.frames <- lapply(stages, function(t) {
+  cbind(x = grid$x, y = grid$y,
+        z = 1.2 * (abs(t) * grid$x^2 - t * grid$y^2))
+})
+surface.labels <- sprintf("%s | t = %.2f",
+  ifelse(stages < 0, "Paraboloid", ifelse(stages == 0, "Flat grid", "Saddle")),
+  stages)
+```
+
+```{r surface-morph-player, eval=have.rgl}
+surface.player <- animate.frames(
+  surface.frames, edges = saddle.edges, labels = surface.labels,
+  col = point.colors, point.size = 6, edge.col = "#314E6E99",
+  camera = camera.zup(elevation = 25, turn = -130),
+  fps = 8, height = 450
+)
+surface.player
+```
+
+Move the slider to the center to inspect the flat grid (frame 25 of 49).
+Use **Pause** to hold a view and **Reverse** to change the playback direction.
+Colors still represent final saddle height, not the height in the current frame.
 
 ## Export interactive HTML
 
