@@ -123,8 +123,14 @@ animate.frames <- function(frames, edges = NULL, labels = NULL,
     player <- htmlwidgets::onRender(player, 'function(el, x, data) {
       el.setAttribute("role", "group");
       el.setAttribute("aria-label", data.description + " Playback controls");
-      var slider = el.querySelector("input[type=range]");
-      if (slider) slider.setAttribute("aria-label", data.description + " Frame");
+      function labelSlider() {
+        var slider = el.querySelector("input[type=range]");
+        if (slider) slider.setAttribute("aria-label", data.description + " Frame");
+      }
+      if (el.ivueLabelObserver) el.ivueLabelObserver.disconnect();
+      el.ivueLabelObserver = new MutationObserver(labelSlider);
+      el.ivueLabelObserver.observe(el, {childList:true, subtree:true});
+      labelSlider();
     }', data=list(description=description))
     if (!is.null(mapping)) w <- .legend(w, mapping, legend.title, "right", 12, 240)
     if (!is.null(caption)) w <- htmlwidgets::appendContent(w,
