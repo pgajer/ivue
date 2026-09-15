@@ -18,6 +18,8 @@ have.geometry <- requireNamespace("geometry", quietly = TRUE)
 For a task index, see [Finding your way around ivue](function-guide.html);
 for small reproducible inputs, see [Example data and recipes](example-data.html).
 
+**On this page:** [A sample from a saddle](#a-sample-from-a-saddle) · [Reusable numerical colors](#reusable-numerical-colors) · [Textbook-style axes and a z-up camera](#textbook-style-axes-and-a-z-up-camera) · [A triangular mesh beneath the spheres](#a-triangular-mesh-beneath-the-spheres) · [Groups and highlighting](#groups-and-highlighting) · [A gridded reference surface](#a-gridded-reference-surface) · [Weighted graphs and geometric layers](#weighted-graphs-and-geometric-layers) · [Cameras, metadata, and export](#cameras-metadata-and-export)
+
 ## A sample from a saddle
 
 ![Static orthographic view of 250 green points on a saddle, whose opposing sides curve upward and downward.](figures/saddle-points.png)

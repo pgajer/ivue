@@ -45,6 +45,9 @@ jobs:
       - name: Check without suggested packages
         if: matrix.os == 'ubuntu-latest' && matrix.r == 'release'
         run: make check-minimal R_ENV=env
+      - name: Audit the built distribution
+        if: matrix.os == 'ubuntu-latest' && matrix.r == 'release'
+        run: make -o build audit-distribution R_ENV=env
       - uses: actions/upload-artifact@v4
         if: matrix.os == 'ubuntu-latest' && matrix.r == 'release'
         with:
@@ -64,7 +67,9 @@ jobs:
       - uses: r-lib/actions/setup-pandoc@v2
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::rmarkdown
+          extra-packages: |
+            any::rmarkdown
+            any::shiny
           needs: check
       - uses: actions/setup-node@v4
         with:
@@ -74,12 +79,18 @@ jobs:
       - run: Rscript tools/render_examples.R
       - run: Rscript tools/render_audit_fixes.R
       - run: Rscript tools/render_view_controls.R
+      - run: Rscript tools/render_gif_presentation.R
       - run: npm install --prefix "$RUNNER_TEMP/ivue-browser" playwright@1.62.1
-      - run: node "$RUNNER_TEMP/ivue-browser/node_modules/playwright/cli.js" install --with-deps chromium
+      - run: node "$RUNNER_TEMP/ivue-browser/node_modules/playwright/cli.js" install --with-deps chromium firefox
       - run: PLAYWRIGHT_MODULE="$RUNNER_TEMP/ivue-browser/node_modules/playwright" node tools/browser_smoke.cjs
       - run: PLAYWRIGHT_MODULE="$RUNNER_TEMP/ivue-browser/node_modules/playwright" node tools/animation_browser.cjs
       - run: PLAYWRIGHT_MODULE="$RUNNER_TEMP/ivue-browser/node_modules/playwright" node tools/audit_fix_browser.cjs
       - run: PLAYWRIGHT_MODULE="$RUNNER_TEMP/ivue-browser/node_modules/playwright" node tools/view_controls_browser.cjs
+      - run: PLAYWRIGHT_MODULE="$RUNNER_TEMP/ivue-browser/node_modules/playwright" node tools/gif_projection_browser.cjs
+      - run: PLAYWRIGHT_MODULE="$RUNNER_TEMP/ivue-browser/node_modules/playwright" node tools/shiny_controls_browser.cjs
+      - run: IVUE_BROWSER=firefox PLAYWRIGHT_MODULE="$RUNNER_TEMP/ivue-browser/node_modules/playwright" xvfb-run -a node tools/view_controls_browser.cjs
+      - run: IVUE_BROWSER=firefox PLAYWRIGHT_MODULE="$RUNNER_TEMP/ivue-browser/node_modules/playwright" xvfb-run -a node tools/gif_projection_browser.cjs
+      - run: IVUE_BROWSER=firefox PLAYWRIGHT_MODULE="$RUNNER_TEMP/ivue-browser/node_modules/playwright" xvfb-run -a node tools/shiny_controls_browser.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:

@@ -17,7 +17,8 @@ positive x down-left and positive y down-right at positive elevation.}
 \item{fov}{Field of view in degrees, from 0 to 179. Zero gives orthographic
 projection without perspective foreshortening.}
 
-\item{zoom}{Positive magnification factor.}
+\item{zoom}{Positive rgl zoom parameter: smaller values enlarge the scene,
+larger values show a wider view. Browser and GIF export use this convention.}
 }
 \value{
 A list with userMatrix, fov, and zoom, accepted by the camera argument

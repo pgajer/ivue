@@ -1,0 +1,5 @@
+source("tools/distribution_contract.R")
+stopifnot(audit.overview.index('<a href="ivue-package.html">ivue</a>'))
+result <- tryCatch(audit.overview.index('<a href="plot3D.plain.html">Plot</a>'), error=identity)
+stopifnot(inherits(result, "error"), grepl("lacks the package overview", conditionMessage(result)))
+cat("PASS: negative missing-overview-index fixture.\n")

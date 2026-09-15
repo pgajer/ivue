@@ -9,7 +9,8 @@
 #'   positive x down-left and positive y down-right at positive elevation.
 #' @param fov Field of view in degrees, from 0 to 179. Zero gives orthographic
 #'   projection without perspective foreshortening.
-#' @param zoom Positive magnification factor.
+#' @param zoom Positive rgl zoom parameter: smaller values enlarge the scene,
+#'   larger values show a wider view. Browser and GIF export use this convention.
 #' @return A list with userMatrix, fov, and zoom, accepted by the camera argument
 #'   of every plot3D function.
 #' @details This sets the initial view, not an interactive rotation constraint.

@@ -1,5 +1,15 @@
 # ivue 0.1.0
 
+- **GIF camera correction:** smaller zoom values now enlarge both browser and
+  GIF views. GIF framing uses the retained observer and bounds. Existing GIF
+  recipes may change apparent size; check their output before reusing it.
+- **Annotated GIFs:** `write.animation.gif(..., annotations = TRUE)` draws the
+  fixed mapping legend and caption beside/below the scene. The default remains
+  unannotated; long text requires sufficient output dimensions.
+- **Guide navigation:** task links and function-help links work in installed
+  and hosted documentation, with a persistent first-export recipe.
+
+
 - Prepared graphs and color scales now print concise summaries while retaining
   full list access.
 - Point and graph views accept common framing `limits`, scene `description`,

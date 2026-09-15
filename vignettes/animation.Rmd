@@ -28,6 +28,8 @@ additionally requires `magick`:
 install.packages(c("rgl", "magick"))
 ```
 
+**On this page:** [Watch a Sierpinski triangle unfold](#watch-a-sierpinski-triangle-unfold) · [Supply your own frames](#supply-your-own-frames) · [Animate a changing 3D surface](#animate-a-changing-3d-surface) · [Export interactive HTML](#export-interactive-html) · [Export a GIF](#export-a-gif) · [Control size and preserve diagnostic meaning](#control-size-and-preserve-diagnostic-meaning)
+
 ## Watch a Sierpinski triangle unfold
 
 Generate a level-4 Sierpinski triangle graph, then record its two-dimensional
@@ -234,8 +236,10 @@ keep that folder with the HTML when sharing it.
 
 ## Export a GIF
 
-HTML captions and legends are not captured by the separate GIF renderer.
-When sharing a GIF, provide its color legend and interpretation alongside it.
+Use `annotations = TRUE` to carry the fixed color legend and plain-text
+caption into the GIF. The raster renderer reserves space beside and below the
+scene; it does not capture arbitrary HTML. Text wraps at a readable size, and
+an export that cannot fit its annotations asks for larger dimensions.
 
 GIF export uses the frames retained in the player, including inactive
 vertices and edges. This build checks the small three-frame triangle; the
@@ -255,7 +259,8 @@ local({
 
 ```{r keep-gif, eval=FALSE}
 write.animation.gif(saddle.player, "saddle.gif", fps = 8,
-                     width = 600, height = 500, final.hold = 2,
+                     width = 720, height = 560, final.hold = 2,
+                     annotations = TRUE,
                      loop = TRUE, overwrite = FALSE)
 ```
 
@@ -264,7 +269,9 @@ later in the browser. Set `camera` explicitly when constructing the player to
 choose the exported view. Export requires an orthographic camera (`fov = 0`),
 which is the animation default. It renders a diagram from the recorded
 coordinates using R graphics and `magick`; it is not a screenshot of the
-WebGL scene. Point appearance can differ slightly. Edges are painted before
+WebGL scene. Smaller `camera$zoom` values enlarge the scene in both outputs.
+Use matching dimensions and annotation layouts when comparing GIF spatial
+scale; legend and caption space reduces the scene area. Point appearance can differ slightly. Edges are painted before
 points, so complex 3D intersections do not have WebGL depth-buffer semantics.
 
 The last frame has `final.hold` additional seconds per loop. GIF frame delays

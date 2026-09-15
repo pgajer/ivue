@@ -27,7 +27,8 @@
 #' @param legend.title Title for the mapping's color legend.
 #' @param caption Optional plain-text interpretation retained below the widget
 #'   when saved as HTML; for example, 'Color: final saddle height; positions:
-#'   current frame.' HTML captions and legends are not included in GIF export.
+#'   current frame.' For GIF output, request annotations = TRUE in
+#'   [write.animation.gif()].
 #' @inheritParams plot3D.plain
 #' @param point.size Point diameter in screen pixels.
 #' @param edge.col Edge colors, length one or the number of edges.
@@ -37,7 +38,10 @@
 #' @param width,height Widget dimensions, as in [plot3D.plain()].
 #' @param background.color Canvas background color.
 #' @return An rglwidget/htmlwidget with an attached player. Save interactive
-#'   output using `htmlwidgets::saveWidget()`. `attr(widget, "ivue.animation")`
+#'   output using `htmlwidgets::saveWidget()`. In Shiny, return the complete
+#'   animation from `shiny::renderUI()` into `shiny::uiOutput()` so its separate
+#'   player and caption are included; `rgl::renderRglwidget()` returns only the
+#'   scene and is suitable for static views. `attr(widget, "ivue.animation")`
 #'   contains the retained frames, original frame indices, labels, active masks,
 #'   edges, fixed bounds, styles, fps, and initial camera for GIF export.
 #' @details Playback starts paused and steps between recorded frames. All
@@ -124,20 +128,29 @@ animate.frames <- function(frames, edges = NULL, labels = NULL,
       el.setAttribute("role", "group");
       el.setAttribute("aria-label", data.description + " Playback controls");
       function labelSlider() {
-        var slider = el.querySelector("input[type=range]");
-        if (slider) slider.setAttribute("aria-label", data.description + " Frame");
+        var slider = el.querySelector("input[type=range]"), output = el.querySelector("output");
+        if (slider) {
+          slider.setAttribute("aria-label", data.description + " Frame");
+          slider.setAttribute("aria-valuetext", data.labels[Math.round(Number(slider.value))]);
+        }
+        // output has an implicit status role. Suppress announcements on every
+        // playback tick; the focused slider reports its actual frame label.
+        if (output) output.setAttribute("aria-live", "off");
       }
       if (el.ivueLabelObserver) el.ivueLabelObserver.disconnect();
       el.ivueLabelObserver = new MutationObserver(labelSlider);
-      el.ivueLabelObserver.observe(el, {childList:true, subtree:true});
+      el.ivueLabelObserver.observe(el, {childList:true, subtree:true, characterData:true});
       labelSlider();
-    }', data=list(description=description))
+    }', data=list(description=description, labels=info$labels))
     if (!is.null(mapping)) w <- .legend(w, mapping, legend.title, "right", 12, 240)
     if (!is.null(caption)) w <- htmlwidgets::appendContent(w,
         htmltools::tags$p(class="ivue-animation-caption", caption))
     # Register the player so rgl reapplies its current frame after scene resize.
     w$x$players <- c(w$x$players, player$elementId)
     w$append <- c(list(player), w$append)
+    info$scene.limits <- matrix(attr(w, "ivue")$scene$rootSubscene$par3d$bbox,
+                                nrow = 3, byrow = TRUE)
+    info$legend.title <- legend.title
     info$mapping <- mapping
     info$caption <- caption
     info$description <- description

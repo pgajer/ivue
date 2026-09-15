@@ -1,5 +1,7 @@
 // Standalone and narrow-screen regression checks, run in the browser CI job.
-const {chromium} = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
+const playwright = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
+const {chromium}=playwright;
+const engine=process.env.IVUE_BROWSER || 'chromium';
 const fs=require('node:fs'), path=require('node:path');
 const {pathToFileURL}=require('node:url');
 const {execFileSync}=require('node:child_process');
@@ -12,7 +14,7 @@ function snapshot(page,index=0) {
 }
 function near(a,b) {assert.equal(a.length,b.length); a.forEach((v,i)=>assert.ok(Math.abs(v-b[i])<1e-5,`${v} != ${b[i]}`));}
 (async()=>{
- const browser=await chromium.launch({headless:true,args:['--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader']});
+ const browser=await playwright[engine].launch({headless:true,args:engine==='chromium'?['--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader']:[]});
  try {
   for(const width of [1280,390]) {
    const page=await browser.newPage({viewport:{width,height:950},reducedMotion:'reduce'});
@@ -72,6 +74,8 @@ function near(a,b) {assert.equal(a.length,b.length); a.forEach((v,i)=>assert.ok(
    const slider=animation.getByRole('slider',{name:'Triangle expansion Frame',exact:true});
    await slider.waitFor();assert.equal(await slider.inputValue(),'0');
    await slider.focus();await animation.keyboard.press('ArrowRight');assert.equal(await slider.inputValue(),'1');
+   assert.equal(await slider.getAttribute('aria-valuetext'),'Middle');
+   assert.equal(await animation.locator('.rglPlayer output').getAttribute('aria-live'),'off');
    await animation.keyboard.press('End');assert.equal(await slider.inputValue(),'2');
    assert.equal(await animation.getByText('Color: final height; positions: current frame.',{exact:true}).count(),1);
    await animation.getByText('Read legend as table',{exact:true}).click();
@@ -96,6 +100,7 @@ function near(a,b) {assert.equal(a.length,b.length); a.forEach((v,i)=>assert.ok(
   assert.ok((await disabled.locator('.ivue-description').innerText()).includes('Triangle expansion'));
   assert.ok(await disabled.locator('.ivue-description').isVisible());
   await disabled.close();
+  if(engine==='chromium') {
   const noGL=await chromium.launch({headless:true,args:['--disable-webgl','--disable-webgl2']});
   try {
    const fallback=await noGL.newPage();
@@ -103,6 +108,7 @@ function near(a,b) {assert.equal(a.length,b.length); a.forEach((v,i)=>assert.ok(
    assert.ok(await fallback.locator('.ivue-description').isVisible());
    assert.ok(await fallback.getByText('Color: final height; positions: current frame.',{exact:true}).isVisible());
   } finally {await noGL.close();}
+  }
   console.log('PASS: scoped keyboard controls, reset, downloadable/replayed camera, shared projection, labeled timeline, persistent caption/legend, no-script descriptions at desktop/mobile sizes.');
  } finally {await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

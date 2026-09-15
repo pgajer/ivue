@@ -74,7 +74,8 @@ not change with the frames; describe their meaning with caption.}
 
 \item{caption}{Optional plain-text interpretation retained below the widget
 when saved as HTML; for example, 'Color: final saddle height; positions:
-current frame.' HTML captions and legends are not included in GIF export.}
+current frame.' For GIF output, request annotations = TRUE in
+\code{\link[=write.animation.gif]{write.animation.gif()}}.}
 
 \item{description}{Optional plain-text scene description for readers who
 cannot see or manipulate the canvas. NULL describes the point count.
@@ -89,7 +90,10 @@ as well as settings for equal screen scale. Reset restores the initial view.}
 }
 \value{
 An rglwidget/htmlwidget with an attached player. Save interactive
-output using \code{htmlwidgets::saveWidget()}. \code{attr(widget, "ivue.animation")}
+output using \code{htmlwidgets::saveWidget()}. In Shiny, return the complete
+animation from \code{shiny::renderUI()} into \code{shiny::uiOutput()} so its separate
+player and caption are included; \code{rgl::renderRglwidget()} returns only the
+scene and is suitable for static views. \code{attr(widget, "ivue.animation")}
 contains the retained frames, original frame indices, labels, active masks,
 edges, fixed bounds, styles, fps, and initial camera for GIF export.
 }

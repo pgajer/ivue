@@ -13,7 +13,8 @@ write.animation.gif(
   final.hold = 2,
   loop = TRUE,
   labels = TRUE,
-  overwrite = FALSE
+  overwrite = FALSE,
+  annotations = FALSE
 )
 }
 \arguments{
@@ -32,6 +33,11 @@ write.animation.gif(
 \item{labels}{Draw the retained frame labels above the image.}
 
 \item{overwrite}{Allow replacing an existing destination.}
+
+\item{annotations}{Include the animation's mapping legend and plain-text
+caption. FALSE preserves the unannotated layout. TRUE reserves space beside
+and below the scene within width and height; enlarge these dimensions if
+the text does not fit. No annotation is drawn over observations.}
 }
 \value{
 The normalized output path, invisibly.
@@ -46,13 +52,18 @@ GIF export uses the widget's retained coordinates, visibility masks,
 colors, edge widths, and initial camera orientation. Camera rotations or
 speed changes made later in the browser are not returned to R. Download
 view settings and supply their camera when constructing a new animation
-to reuse its orientation. HTML legends and captions are not rasterized;
-include their interpretation separately when sharing a GIF. Create a
+to reuse its orientation and zoom. With annotations = TRUE, a raster legend
+and caption are drawn from the retained mapping and caption, including
+category counts and missing values. Arbitrary HTML is not rasterized. Create a
 widget with an explicit camera to export that view. Perspective cameras
 (fov greater than zero) are rejected; use camera.zup(fov = 0).
 
 The raster renderer projects points and straight edges orthographically,
-with fixed bounds and equal coordinate scales across all frames. Edges
+with fixed bounds and equal coordinate scales across all frames. Zoom has
+the rgl convention: smaller values enlarge the scene. The observer position
+and bounds determine its orthographic scale. Annotations reduce the available
+scene area; compare exports using the same dimensions and annotation layout.
+Text wraps at a fixed readable size; layouts that cannot fit are rejected. Edges
 are painted before points, ordered within each group from back to front.
 This is a diagram renderer, not a pixel-identical WebGL screenshot or a
 depth-buffered rendering of intersecting 3D geometry. Point sizes can

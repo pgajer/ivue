@@ -41,3 +41,6 @@ tests/testthat.Rout*
 /tools/handoffs/
 /tools/INTERACTIVITY_ROADMAP.md
 /private/
+
+# Python audit helper imports.
+__pycache__/

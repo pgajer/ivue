@@ -1,5 +1,20 @@
 /* Controls are scoped to one rgl widget, including on Shiny re-render. */
 window.ivueView = function(el, data) {
+  // Shiny may remove children before invoking this hook. Keep the focused
+  // control's identity on the persistent output element, clearing it whenever
+  // focus moves to another widget or an external input.
+  if (!window.ivueTrackFocus) {
+    document.addEventListener('focusin', function(e) {
+      var widget = e.target.closest('.rglWebGL');
+      window.ivueActiveControl = widget ? {widget:widget,
+        key:e.target.getAttribute('data-ivue-control')} : null;
+    });
+    window.ivueTrackFocus = true;
+  }
+  var previous = window.ivueActiveControl;
+  var restore = previous && previous.widget === el ? previous.key : null;
+  var expanded = el.ivueExpanded;
+  var canRestore = document.activeElement === document.body || el.contains(document.activeElement);
   Array.from(el.children).forEach(function(child) {
     if (child.classList.contains('ivue-legend') || child.classList.contains('ivue-tools')) child.remove();
   });
@@ -14,6 +29,14 @@ window.ivueView = function(el, data) {
     canvas.setAttribute('aria-label', data.description);
     canvas.textContent = data.description + ' WebGL is required for the interactive view.';
   }
+  if (el.classList.contains('shiny-bound-output')) {
+    var description = document.getElementById(el.id + '-ivue-description');
+    if (!description) {
+      description = document.createElement('p'); description.id = el.id + '-ivue-description';
+      description.className = 'ivue-description'; el.after(description);
+    }
+    description.textContent = data.description;
+  }
   if (!data.controls || !rgl) return;
   var root = rgl.scene.rootSubscene;
   function par() { return rgl.getObj(root).par3d; }
@@ -23,11 +46,13 @@ window.ivueView = function(el, data) {
   }
   var initial = camera();
   var panel = document.createElement('details'); panel.className = 'ivue-tools';
-  var summary = document.createElement('summary'); summary.textContent = 'View controls'; panel.appendChild(summary);
+  var summary = document.createElement('summary'); summary.textContent = 'View controls'; summary.setAttribute('data-ivue-control','summary'); panel.appendChild(summary);
+  panel.open = !!expanded;
+  panel.addEventListener('toggle', function() { el.ivueExpanded = panel.open; });
   var hint = document.createElement('p'); hint.textContent = 'Drag to rotate; scroll to zoom. Buttons provide keyboard alternatives. Reset restores the initial camera.'; panel.appendChild(hint);
   panel.setAttribute('aria-label', data.description + ' View controls');
   function button(label, action) {
-    var b = document.createElement('button'); b.type='button'; b.textContent=label;
+    var b = document.createElement('button'); b.type='button'; b.textContent=label; b.setAttribute('data-ivue-control',label);
     b.addEventListener('click', function(e) { e.stopPropagation(); action(); }); panel.appendChild(b); return b;
   }
   function draw() { rgl.drawScene(); }
@@ -40,7 +65,7 @@ window.ivueView = function(el, data) {
   button('Reset view', function() {
     var p=par(); p.userMatrix.load(initial.matrix); p.zoom=initial.zoom; p.FOV=initial.fov; p.observer=initial.observer.slice(); draw();
   });
-  var text = document.createElement('textarea'); text.readOnly=true; text.hidden=true;
+  var text = document.createElement('textarea'); text.readOnly=true; text.hidden=true; text.setAttribute('data-ivue-control','settings');
   text.setAttribute('aria-label', 'Current view settings as R code');
   function recipe() {
     var c=camera(), bounds=par().bbox.slice();
@@ -67,6 +92,15 @@ window.ivueView = function(el, data) {
     } catch(e) { status.textContent=e.message; }
   });
   panel.appendChild(text); panel.appendChild(status); el.appendChild(panel);
+  if (restore && canRestore) {
+    var target=Array.from(panel.querySelectorAll('[data-ivue-control]')).find(function(node) {
+      return node.getAttribute('data-ivue-control') === restore;
+    });
+    if (target) {
+      if (restore === 'settings') { text.value=recipe(); text.hidden=false; }
+      target.focus();
+    }
+  }
   // Canvas drag handlers must not consume control interactions.
   ['pointerdown','mousedown','touchstart','wheel'].forEach(function(event) {
     panel.addEventListener(event,function(e) { e.stopPropagation(); });

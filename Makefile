@@ -1,4 +1,4 @@
-.PHONY: audit-guide audit-installed site document build check check-cran check-minimal install readme-retinal \
+.PHONY: audit-guide audit-installed audit-distribution site document build check check-cran check-minimal install readme-retinal \
 	readme-retinal-layout readme-retinal-deps readme-retinal-sknn \
 	readme-retinal-umap readme-retinal-comparison retinal-vignette \
 	retinal-vignette-data
@@ -52,8 +52,13 @@ install: build
 audit-installed: build
 	$(RSCRIPT_RUN) tools/audit_installed_help.R $(TARBALL)
 
-site: audit-installed
-	python3 tools/audit_vignette_html.py build/vignettes
+# Use make -o build audit-distribution to audit an existing successful archive.
+audit-distribution: audit-installed
+	$(RSCRIPT_RUN) tools/test_distribution_audit.R
+	python3 tools/test_distribution_audit.py
+	$(RSCRIPT_RUN) tools/audit_archive_contents.R $(TARBALL)
+
+site: audit-distribution
 	$(RSCRIPT_RUN) tools/build_site.R $(TARBALL)
 	python3 tools/audit_site.py build/site
 

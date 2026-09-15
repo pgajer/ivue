@@ -2,7 +2,7 @@
 title: "Finding your way around ivue"
 output:
   rmarkdown::html_vignette:
-    toc: true
+    toc: false
 vignette: >
   %\VignetteIndexEntry{Finding your way around ivue}
   %\VignetteEngine{knitr::rmarkdown}
@@ -26,14 +26,14 @@ and the [animation guide](animation.html) covers longer recorded sequences.
 
 | Your task | Start here | Decision |
 |---|---|---|
-| Inspect a point cloud | `plot3D.plain(X)` | One color or explicit row colors; no annotation legend. |
-| Show a numerical annotation | `plot3D.cont(X, values)` | Continuous or explicitly binned colors with a matching legend. |
-| Show categories | `plot3D.groups(X, groups)` | Named groups, which need not be clusters. |
-| Inspect an embedded graph | `prepare.graph()` then `plot3D.graph()` | Check IDs and edges before adding coordinates and annotations. |
-| Compare views consistently | A reusable color scale and `camera.zup()` | Fix the meaning of colors and the initial orientation. |
-| Add geometric context | `layers = list(...)` | Supply connectivity, labels, a mesh, a reference surface, or axes. |
-| Play recorded coordinates | `animate.frames()` | Preserve row identity across all frames. |
-| Share a view | `htmlwidgets::saveWidget()` or `write.animation.gif()` | Choose interactive HTML or a fixed raster animation. |
+| [Inspect a point cloud](#point-clouds-and-annotations) | `plot3D.plain(X)` | One color or explicit row colors; no annotation legend. |
+| [Show a numerical annotation](#point-clouds-and-annotations) | `plot3D.cont(X, values)` | Continuous or explicitly binned colors with a matching legend. |
+| [Show categories](#point-clouds-and-annotations) | `plot3D.groups(X, groups)` | Named groups, which need not be clusters. |
+| [Inspect an embedded graph](#graph-preparation-and-plotting) | `prepare.graph()` then `plot3D.graph()` | Check IDs and edges before adding coordinates and annotations. |
+| [Compare views consistently](#reusable-color-scales-and-legends) | A reusable color scale and `camera.zup()` | Fix the meaning of colors and the initial orientation. |
+| [Add geometric context](#geometric-layers) | `layers = list(...)` | Supply connectivity, labels, a mesh, a reference surface, or axes. |
+| [Play recorded coordinates](#recorded-coordinate-animation-and-export) | `animate.frames()` | Preserve row identity across all frames. |
+| [Share a view](#recorded-coordinate-animation-and-export) | `htmlwidgets::saveWidget()` or `write.animation.gif()` | Choose interactive HTML or a fixed raster animation. |
 
 ## A first view
 
@@ -58,12 +58,23 @@ view <- plot3D.cont(X, values = height, scale = height.scale,
 view
 ```
 
+**Read the view:** color records height along the illustrative helix; it does
+not identify a fitted trajectory. Drag to inspect its geometry.
+
 The assignment constructs a widget on a private rgl null device. The final
 `view` expression displays it in this document; interactive printing uses
 RStudio's Viewer or a browser. Construction itself opens neither a browser
 nor a native graphics window. Saving is a third operation:
 
-```{r save-first-view, eval=have.rgl}
+```{r keep-first-view, eval=FALSE}
+htmlwidgets::saveWidget(view, "view.html", selfcontained = FALSE)
+```
+
+This leaves `view.html` and `view_files/` in your working directory. Keep them
+together when sharing; open `view.html` in a browser. A self-contained HTML
+file is another option when Pandoc is available.
+
+```{r save-first-view, eval=have.rgl, include=FALSE}
 local({
   directory <- tempfile("ivue-html-")
   dir.create(directory)
@@ -74,11 +85,13 @@ local({
 })
 ```
 
-This checks saving, then removes the temporary HTML and its dependency folder.
-Choose a persistent destination to keep your own export. If rgl is absent,
+If rgl is absent,
 the widget and save chunks are skipped; data preparation and color mapping
 still run. Reading an already rendered vignette needs neither rgl nor R,
 but interacting with its scene requires a browser with WebGL.
+
+For details: [observation identity](#keep-observations-aligned),
+[function catalog](#function-catalog), or [optional packages and help](#optional-packages-and-detailed-help).
 
 ## Keep observations aligned
 
@@ -141,9 +154,9 @@ The repository's `make audit-guide` checks catalog coverage and help aliases.
 
 | Function | Purpose | Principal input | Returned object |
 |---|---|---|---|
-| `plot3D.plain()` | Draw supplied point colors. | Finite n-by-3 `X`, scalar or row colors. | rglwidget/htmlwidget. |
-| `plot3D.cont()` | Draw numerical colors and a legend. | `X`, one numerical value per row, optional scale. | Widget with mapping metadata. |
-| `plot3D.groups()` | Draw categorical colors and a legend. | `X`, one group per row, optional scale. | Widget with mapping metadata. |
+| [`plot3D.plain()`](../html/plot3D.plain.html) | Draw supplied point colors. | Finite n-by-3 `X`, scalar or row colors. | rglwidget/htmlwidget. |
+| [`plot3D.cont()`](../html/plot3D.plain.html) | Draw numerical colors and a legend. | `X`, one numerical value per row, optional scale. | Widget with mapping metadata. |
+| [`plot3D.groups()`](../html/plot3D.plain.html) | Draw categorical colors and a legend. | `X`, one group per row, optional scale. | Widget with mapping metadata. |
 
 `attr(widget, "ivue")` records coordinates, integer `row.ids`, explicit
 `observation.ids` (or `NULL` for unnamed coordinates), mapped colors, highlight,
@@ -154,8 +167,8 @@ scene objects, not a device left open for further drawing.
 
 | Function | Purpose | Principal input | Returned object |
 |---|---|---|---|
-| `prepare.graph()` | Validate topology and expose vertex/edge order. | Graph table, lists, matrix, or igraph object. | `ivue_graph` list: vertices, edges, directedness, weight type. |
-| `plot3D.graph()` | Draw an embedded graph with optional annotations. | Graph plus exactly one of `X` or `layout`. | Widget with prepared graph metadata. |
+| [`prepare.graph()`](../html/prepare.graph.html) | Validate topology and expose vertex/edge order. | Graph table, lists, matrix, or igraph object. | `ivue_graph` list: vertices, edges, directedness, weight type. |
+| [`plot3D.graph()`](../html/plot3D.graph.html) | Draw an embedded graph with optional annotations. | Graph plus exactly one of `X` or `layout`. | Widget with prepared graph metadata. |
 
 Accepted formats are an edge data frame with `from`, `to`, `weight` and an
 explicit `vertices` argument (including isolates); a list with `edges` and
@@ -187,27 +200,24 @@ See the [weighted graph workflow](ivue-introduction.html#weighted-graphs-and-geo
 
 | Function | Purpose | Principal input | Returned object |
 |---|---|---|---|
-| `color.scale.cont()` | Fit a continuous or binned numerical scale. | Reference values, optional limits, palette, center or breaks. | `ivue_color_scale` list. |
-| `color.scale.groups()` | Fix category ordering and colors. | Reference groups/factor and optional named colors. | `ivue_color_scale` list. |
-| `map.colors()` | Apply a fitted scale without plotting. | Values/groups and their scale. | List with row-aligned colors, legend data frame, and scale. |
+| [`color.scale.cont()`](../html/color.scale.cont.html) | Fit a continuous or binned numerical scale. | Reference values, optional limits, palette, center or breaks. | `ivue_color_scale` list. |
+| [`color.scale.groups()`](../html/color.scale.cont.html) | Fix category ordering and colors. | Reference groups/factor and optional named colors. | `ivue_color_scale` list. |
+| [`map.colors()`](../html/color.scale.cont.html) | Apply a fitted scale without plotting. | Values/groups and their scale. | List with row-aligned colors, legend data frame, and scale. |
 
 Continuous scales use the reference range by default; `limits` fixes it.
 `center` requires a supplied diverging palette or `color.map` and makes automatic
 limits symmetric about it. For a palette, it places the center at the palette
 midpoint. A custom `color.map` instead receives data-unit values unchanged by
 centering; with explicit limits, `center` does not alter callback colors.
-With explicit limits, the center must lie strictly inside them. A constant
-range without a center maps to the middle color; all-missing reference values
-default to limits `c(0, 1)`.
+With explicit limits, the center must lie strictly inside them. For constant or all-missing reference inputs, see the
+[scale help](../html/color.scale.cont.html).
 
 Out-of-range values are squished to the endpoints by default. `oob = "censor"`
 uses `na.color`; `oob = "error"` rejects them. Missing values use `na.color`
 (default `"gray80"`). No default winsorization occurs. In `mode = "binned"`,
 choose uniform or quantile bins, or explicit increasing breaks; the intervals
-are right-closed, with the lowest endpoint included. Explicit limits must
-agree with outer breaks. `winsor.p` is only for uniform binned fitting, and
-`center` is only for continuous mode. Automatic legend precision distinguishes
-boundaries without changing the numerical calculations.
+are right-closed, with the lowest endpoint included. The [scale help](../html/color.scale.cont.html) gives the contracts for
+explicit breaks, winsorization, and legend precision.
 
 Factors retain level order, including unused nonmissing levels. Other group
 vectors use first-occurrence order. When plots fit a default categorical scale,
@@ -231,20 +241,20 @@ ticks have missing counts; binned/category counts describe the mapped input.
 A missing entry appears when needed. Reuse one scale across related views:
 separately autoscaled panels can give the same color to different numbers.
 The [shared-view recipe](example-data.html#share-a-scale-and-camera) checks this
-explicitly. Animation accepts the mapped colors through `col`, but does not
-add an annotation legend itself.
+explicitly. Animation accepts a `map.colors()` result through `mapping` to retain its
+legend; `caption` explains what the fixed colors mean across frames.
 
 ### Geometric layers
 
 | Function | Purpose | Principal input | Returned object |
 |---|---|---|---|
-| `layer3D.edges()` | Add straight segments. | Two-column matrix of one-based endpoint indices. | `ivue_layer` specification. |
-| `layer3D.path()` | Connect observations in a chosen order. | Ordered one-based row indices. | `ivue_layer` specification. |
-| `layer3D.labels()` | Label selected observations. | Row indices and equally many text labels. | `ivue_layer` specification. |
-| `layer3D.mesh()` | Add supplied triangular faces. | Three-column matrix of one-based vertex indices. | `ivue_layer` specification. |
-| `layer3D.surface()` | Add an independent gridded height surface. | Monotone `x`, `y`, and finite `z` matrix. | `ivue_layer` specification with its own coordinates. |
-| `layer3D.axes()` | Add axes intersecting at an origin. | Optional origin, limits, labels, and styles. | `ivue_layer` specification. |
-| `layer3D.callback()` | Run advanced rgl drawing before capture. | Function of scene context and named additional arguments. | `ivue_layer` specification. |
+| [`layer3D.edges()`](../html/layer3D.edges.html) | Add straight segments. | Two-column matrix of one-based endpoint indices. | `ivue_layer` specification. |
+| [`layer3D.path()`](../html/layer3D.edges.html) | Connect observations in a chosen order. | Ordered one-based row indices. | `ivue_layer` specification. |
+| [`layer3D.labels()`](../html/layer3D.edges.html) | Label selected observations. | Row indices and equally many text labels. | `ivue_layer` specification. |
+| [`layer3D.mesh()`](../html/layer3D.mesh.html) | Add supplied triangular faces. | Three-column matrix of one-based vertex indices. | `ivue_layer` specification. |
+| [`layer3D.surface()`](../html/layer3D.surface.html) | Add an independent gridded height surface. | Monotone `x`, `y`, and finite `z` matrix. | `ivue_layer` specification with its own coordinates. |
+| [`layer3D.axes()`](../html/layer3D.axes.html) | Add axes intersecting at an origin. | Optional origin, limits, labels, and styles. | `ivue_layer` specification. |
+| [`layer3D.callback()`](../html/layer3D.callback.html) | Run advanced rgl drawing before capture. | Function of scene context and named additional arguments. | `ivue_layer` specification. |
 
 Combine specifications with `layers = list(edge.layer, label.layer, ...)` in
 a plotting call. Edges, paths, labels, and meshes use plotting rows (aligned
@@ -276,7 +286,7 @@ when they express the intended geometry.
 
 | Function | Purpose | Principal input | Returned object |
 |---|---|---|---|
-| `camera.zup()` | Specify an initial z-up view. | Elevation, turn, field of view, zoom. | List with 4-by-4 userMatrix, fov, zoom. |
+| [`camera.zup()`](../html/camera.zup.html) | Specify an initial z-up view. | Elevation, turn, field of view, zoom. | List with 4-by-4 userMatrix, fov, zoom. |
 
 `point.size` measures screen pixels. `point.type = "sphere"` instead uses
 `sphere.radius` in coordinate units (default one percent of the largest span,
@@ -315,8 +325,8 @@ See the [common-bounds recipe](example-data.html#compare-spatial-extents).
 
 | Function | Purpose | Principal input | Returned object |
 |---|---|---|---|
-| `animate.frames()` | Play recorded positions with timeline/speed controls. | At least two identically shaped n-by-2 or n-by-3 matrices; optional fixed edges. | Widget with player and `ivue.animation` metadata. |
-| `write.animation.gif()` | Export retained animation frames. | An animation widget and `.gif` destination. | Normalized output path, invisibly. |
+| [`animate.frames()`](../html/animate.frames.html) | Play recorded positions with timeline/speed controls. | At least two identically shaped n-by-2 or n-by-3 matrices; optional fixed edges. | Widget with player and `ivue.animation` metadata. |
+| [`write.animation.gif()`](../html/write.animation.gif.html) | Export retained animation frames. | An animation widget and `.gif` destination. | Normalized output path, invisibly. |
 
 Frame rows keep stable observation identity. If row names are present, every
 frame must have the same unique, nonempty names in the same order; frames are
@@ -343,7 +353,9 @@ Camera rotation changes the view, not the recorded positions. The
 GIF controls are `fps` (0.1--100), `width`/`height` (64--8192 pixels),
 `final.hold` (0--600 additional seconds), `loop`, `labels`, and `overwrite`.
 The parent directory must exist and existing files are protected by default.
-GIF delays round to centiseconds; points and edges need not look pixel-identical
+`annotations = TRUE` adds the retained mapping legend and caption outside
+the scene; use larger dimensions for long text. Smaller camera zoom values
+enlarge both browser and GIF views. GIF delays round to centiseconds; points and edges need not look pixel-identical
 to WebGL, especially at intersections. Perspective cameras are rejected.
 `selfcontained` and `libdir` belong to `htmlwidgets::saveWidget()`, not GIF
 export. Neither export operation automatically captures later browser

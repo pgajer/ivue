@@ -4,6 +4,8 @@ entries <- function(kind) Filter(function(x) is.call(x) &&
   identical(x[[1L]], as.name(kind)), as.list(ns))
 exports <- vapply(entries("export"), function(x) as.character(x[[2L]]), "")
 guide <- readLines("vignettes/function-guide.Rmd", warn = FALSE)
+linked.guide <- guide
+guide <- gsub("\\[(`[^`]+`)\\]\\([^)]+\\)", "\\1", guide)
 rows <- grep("^\\| `[^`]+[(][)]` \\|", guide, value = TRUE)
 catalog <- sub("^\\| `([^`]+)[(][)]`.*$", "\\1", rows)
 if (anyDuplicated(catalog) || !setequal(catalog, exports)) {
@@ -23,6 +25,16 @@ rd <- lapply(list.files("man", "[.]Rd$", full.names = TRUE), tools::parse_Rd)
 aliases <- unlist(lapply(rd, function(doc) unlist(lapply(Filter(function(x)
   identical(attr(x, "Rd_tag"), "\\alias"), doc), as.character))))
 stopifnot(all(exports %in% aliases))
+# Each catalog link points to the canonical Rd topic, including shared topics.
+field <- function(doc, tag) unlist(lapply(Filter(function(x)
+  identical(attr(x, "Rd_tag"), tag), doc), as.character))
+for (doc in rd) {
+  topic <- field(doc, "\\name")
+  for (alias in intersect(exports, field(doc, "\\alias"))) {
+    expected <- paste0("| [`", alias, "()`](../html/", topic, ".html) |")
+    stopifnot(sum(startsWith(linked.guide, expected)) == 1L)
+  }
+}
 methods <- vapply(entries("S3method"), function(x)
   paste(as.character(x[[2L]]), as.character(x[[3L]]), sep="."), "")
 stopifnot(all(methods %in% definitions), all(methods %in% aliases))
