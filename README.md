@@ -29,7 +29,7 @@ its optional plotting backend:
 install.packages(c("ivue", "rgl"))
 ```
 
-The release package includes the three rendered vignettes; you do not need
+The release package includes the five rendered vignettes; you do not need
 `knitr`, `rmarkdown`, or Pandoc to read them.
 
 Start with a coordinate matrix, one observation per row. This sample from a
@@ -70,6 +70,10 @@ renders the supplied coordinates without computing the embeddings.
 
 The vignettes develop these examples and show how to adapt them to your data:
 
+- [Finding your way around ivue](vignettes/function-guide.Rmd): choose a task,
+  find its public functions, and check input and export contracts.
+- [Example data and recipes](vignettes/example-data.Rmd): prepare reproducible
+  point clouds, graphs, and frames, with shared scales and cameras.
 - [Point clouds and weighted graphs](vignettes/ivue-introduction.Rmd): colors,
   highlighting, meshes and reference surfaces, graph inputs, cameras, and HTML
   export.
@@ -83,6 +87,8 @@ The links above show the source guides on GitHub. Open the rendered guides
 from your installation with:
 
 ```r
+vignette("function-guide", package = "ivue")
+vignette("example-data", package = "ivue")
 vignette("ivue-introduction", package = "ivue")
 vignette("retinal-development", package = "ivue")
 vignette("animation", package = "ivue")

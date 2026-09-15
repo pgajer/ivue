@@ -1,0 +1,335 @@
+---
+title: "Finding your way around ivue"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{Finding your way around ivue}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+library(ivue)
+have.rgl <- nzchar(system.file(package = "rgl"))
+```
+
+ivue turns supplied coordinates and annotations into interactive views. Start
+with what you want to show, then choose an entry point. The
+[example data and recipes](example-data.html) guide supplies small, reproducible
+inputs. The [introduction](ivue-introduction.html) develops plotting controls,
+the [retinal case study](retinal-development.html) explains a real dataset,
+and the [animation guide](animation.html) covers longer recorded sequences.
+
+## Choose a starting point
+
+| Your task | Start here | Decision |
+|---|---|---|
+| Inspect a point cloud | `plot3D.plain(X)` | One color or explicit row colors; no annotation legend. |
+| Show a numerical annotation | `plot3D.cont(X, values)` | Continuous or explicitly binned colors with a matching legend. |
+| Show categories | `plot3D.groups(X, groups)` | Named groups, which need not be clusters. |
+| Inspect an embedded graph | `prepare.graph()` then `plot3D.graph()` | Check IDs and edges before adding coordinates and annotations. |
+| Compare views consistently | A reusable color scale and `camera.zup()` | Fix the meaning of colors and the initial orientation. |
+| Add geometric context | `layers = list(...)` | Supply connectivity, labels, a mesh, a reference surface, or axes. |
+| Play recorded coordinates | `animate.frames()` | Preserve row identity across all frames. |
+| Share a view | `htmlwidgets::saveWidget()` or `write.animation.gif()` | Choose interactive HTML or a fixed raster animation. |
+
+## A first view
+
+This illustrative helix uses base R and a numerical annotation: height. No
+embedding or model is fitted.
+
+```{r first-data}
+t <- seq(0, 2 * pi, length.out = 24)
+X <- cbind(x = cos(t), y = sin(t), z = seq(-1, 1, length.out = 24))
+rownames(X) <- sprintf("point-%02d", seq_len(nrow(X)))
+height <- X[, "z"]
+stopifnot(ncol(X) == 3L, all(is.finite(X)), length(height) == nrow(X))
+height.scale <- color.scale.cont(height, limits = c(-1, 1))
+head(map.colors(height, height.scale)$colors)
+```
+
+```{r first-view, eval=have.rgl}
+view <- plot3D.cont(X, values = height, scale = height.scale,
+                   legend.title = "Height", legend.width = 120,
+                   point.size = 7, height = 340,
+                   camera = camera.zup(zoom = 0.65))
+view
+```
+
+The assignment constructs a widget on a private rgl null device. The final
+`view` expression displays it in this document; interactive printing uses
+RStudio's Viewer or a browser. Construction itself opens neither a browser
+nor a native graphics window. Saving is a third operation:
+
+```{r save-first-view, eval=have.rgl}
+local({
+  directory <- tempfile("ivue-html-")
+  dir.create(directory)
+  on.exit(unlink(directory, recursive = TRUE))
+  htmlwidgets::saveWidget(view, file.path(directory, "view.html"),
+                          selfcontained = FALSE)
+  stopifnot(file.exists(file.path(directory, "view.html")))
+})
+```
+
+This checks saving, then removes the temporary HTML and its dependency folder.
+Choose a persistent destination to keep your own export. If rgl is absent,
+the widget and save chunks are skipped; data preparation and color mapping
+still run. Reading an already rendered vignette needs neither rgl nor R,
+but interacting with its scene requires a browser with WebGL.
+
+## Keep observations aligned
+
+Static plots require a numeric matrix or all-numeric data frame with **exactly
+three columns**, at least one row, and finite coordinates. Each row is an
+observation. For a planar static plot, explicitly append `z = 0` to two-column
+coordinates. Missing coordinates, `NaN`, and infinity cause errors; rows are
+never silently cleaned or dropped.
+
+Point-cloud `values`, `groups`, colors, and highlight masks follow **row
+position**, even when annotation vectors have names. Match external annotations
+to coordinate IDs yourself and check uniqueness and completeness first, as in
+[the recipes](example-data.html#construct-a-point-cloud). Missing numerical
+annotations use `na.color`; infinite annotation values are errors. Missing
+categories also use the missing color. Neither removes coordinate rows.
+Plain colors must be valid R colors with no missing entries, of length one
+or the number of rows.
+
+For graph plots, vertex IDs are unique, nonempty, nonmissing strings.
+Unnamed coordinates and annotations follow `graph$vertices$id` order. Named
+coordinate rows, `values`, `groups`, per-vertex `col`, style color vectors,
+and logical highlight masks must match that entire ID set exactly and are
+reordered to graph order. Partial, duplicate, missing, or extra names fail.
+Numeric highlight indices and all indexed layers refer to **graph vertex
+order after alignment**, not to the supplied coordinate order. Never reorder
+a prepared vertex table without remapping its integer edge endpoints.
+
+Highlighting changes styling, not membership or the fitted scale. Supply a
+logical mask without missing entries or one-based row indices; `NULL` selects
+all observations. `highlight.style` and `non.highlight.style` override point
+type, size, radius, color, or alpha. Style color vectors align to all rows.
+The legend describes the base scale with global alpha; it does not describe
+highlight overrides. See [groups and highlighting](ivue-introduction.html#groups-and-highlighting).
+
+## Function catalog
+
+This catalog covers all **18 explicit public function exports**, once each.
+ivue registers **0 S3 methods** and re-exports no functions. Dots in names such
+as `plot3D.cont` do not make them registered methods of `plot3D()` or `plot()`.
+Call these functions directly. The returned widgets use printing and knitting
+methods supplied by htmlwidgets/rgl; ivue does not add a separate widget
+printing interface. Prepared graphs, scales, and layers are lists carrying
+classes, inspected with ordinary R list operations.
+
+In an R session, every name below has help, for example
+`help("plot3D.cont", package = "ivue")`. Shared help topics describe related
+functions together. Internal dot-prefixed helpers are implementation details.
+The repository's `make audit-guide` checks catalog coverage and help aliases.
+
+### Point clouds and annotations
+
+| Function | Purpose | Principal input | Returned object |
+|---|---|---|---|
+| `plot3D.plain()` | Draw supplied point colors. | Finite n-by-3 `X`, scalar or row colors. | rglwidget/htmlwidget. |
+| `plot3D.cont()` | Draw numerical colors and a legend. | `X`, one numerical value per row, optional scale. | Widget with mapping metadata. |
+| `plot3D.groups()` | Draw categorical colors and a legend. | `X`, one group per row, optional scale. | Widget with mapping metadata. |
+
+`attr(widget, "ivue")` records coordinates, row IDs, mapped colors, highlight,
+draw IDs, aspect, camera, and the captured scene. Draw IDs describe serialized
+scene objects, not a device left open for further drawing.
+
+### Graph preparation and plotting
+
+| Function | Purpose | Principal input | Returned object |
+|---|---|---|---|
+| `prepare.graph()` | Validate topology and expose vertex/edge order. | Graph table, lists, matrix, or igraph object. | `ivue_graph` list: vertices, edges, directedness, weight type. |
+| `plot3D.graph()` | Draw an embedded graph with optional annotations. | Graph plus exactly one of `X` or `layout`. | Widget with prepared graph metadata. |
+
+Accepted formats are an edge data frame with `from`, `to`, `weight` and an
+explicit `vertices` argument (including isolates); a list with `edges` and
+`vertices`; paired `adj.list`/`weight.list` lists whose neighbors are integer
+row indices; dense square adjacency matrices; Matrix sparse adjacency
+matrices; and igraph objects. A prepared `ivue_graph` can be reused and is
+revalidated. Vertex attributes are retained. Table edges retain input order;
+reciprocal undirected list/matrix edges retain one copy from the lower vertex
+index. Edge widths and colors follow this prepared edge order.
+
+Matrices use zero for absence; use tables/lists for actual zero-weight edges.
+Explicit sparse zeros are rejected. Undirected adjacency must be reciprocal
+with equal weights. Self-loops and parallel edges are rejected, and directed
+data can be prepared but cannot be rendered in this release.
+
+With supplied `X`, ivue does not compute a layout or construct an igraph
+object for table/list/matrix inputs. Built-in `layout = "kk"` and `"fr"`
+require igraph: Kamada-Kawai uses positive **distances**, whereas
+Fruchterman-Reingold uses positive **strengths**. Declare `weight.type`
+accordingly; no inversion is performed. `"unweighted"` permits only unit or
+missing weights. Missing weights otherwise fail. Finite zero/negative weights
+can be stored and drawn with supplied coordinates, but not used by these
+layout adapters. Weights never automatically set visual edge width or color.
+A custom `layout` function receives the prepared graph and returns n-by-3
+coordinates. ivue provides no general embedding or graph-construction API.
+See the [weighted graph workflow](ivue-introduction.html#weighted-graphs-and-geometric-layers).
+
+### Reusable color scales and legends
+
+| Function | Purpose | Principal input | Returned object |
+|---|---|---|---|
+| `color.scale.cont()` | Fit a continuous or binned numerical scale. | Reference values, optional limits, palette, center or breaks. | `ivue_color_scale` list. |
+| `color.scale.groups()` | Fix category ordering and colors. | Reference groups/factor and optional named colors. | `ivue_color_scale` list. |
+| `map.colors()` | Apply a fitted scale without plotting. | Values/groups and their scale. | List with row-aligned colors, legend data frame, and scale. |
+
+Continuous scales use the reference range by default; `limits` fixes it.
+`center` requires a supplied diverging palette or `color.map`, places the
+center at the palette midpoint, and makes automatic limits symmetric about
+it. With explicit limits, the center must lie strictly inside them. A constant
+range without a center maps to the middle color; all-missing reference values
+default to limits `c(0, 1)`.
+
+Out-of-range values are squished to the endpoints by default. `oob = "censor"`
+uses `na.color`; `oob = "error"` rejects them. Missing values use `na.color`
+(default `"gray80"`). No default winsorization occurs. In `mode = "binned"`,
+choose uniform or quantile bins, or explicit increasing breaks; the intervals
+are right-closed, with the lowest endpoint included. Explicit limits must
+agree with outer breaks. `winsor.p` is only for uniform binned fitting, and
+`center` is only for continuous mode. Automatic legend precision distinguishes
+boundaries without changing the numerical calculations.
+
+Factors retain level order, including unused nonmissing levels. Other group
+vectors use first-occurrence order. Named colors must cover the reference
+levels; unknown groups error unless `unknown = "missing"`. Missing values are
+distinct from a literal `"NA"` category; empty strings are valid groups.
+Numeric palette indices are resolved when fitting scales. A `color.map`
+function runs at mapping time and must return one color per supplied value;
+its external state is the caller's responsibility. Supply it or `palette`,
+not both.
+
+`map.colors()` returns a legend with `label`, `color`, and `count`. Continuous
+ticks have missing counts; binned/category counts describe the mapped input.
+A missing entry appears when needed. Reuse one scale across related views:
+separately autoscaled panels can give the same color to different numbers.
+The [shared-view recipe](example-data.html#share-a-scale-and-camera) checks this
+explicitly. Animation accepts the mapped colors through `col`, but does not
+add an annotation legend itself.
+
+### Geometric layers
+
+| Function | Purpose | Principal input | Returned object |
+|---|---|---|---|
+| `layer3D.edges()` | Add straight segments. | Two-column matrix of one-based endpoint indices. | `ivue_layer` specification. |
+| `layer3D.path()` | Connect observations in a chosen order. | Ordered one-based row indices. | `ivue_layer` specification. |
+| `layer3D.labels()` | Label selected observations. | Row indices and equally many text labels. | `ivue_layer` specification. |
+| `layer3D.mesh()` | Add supplied triangular faces. | Three-column matrix of one-based vertex indices. | `ivue_layer` specification. |
+| `layer3D.surface()` | Add an independent gridded height surface. | Monotone `x`, `y`, and finite `z` matrix. | `ivue_layer` specification with its own coordinates. |
+| `layer3D.axes()` | Add axes intersecting at an origin. | Optional origin, limits, labels, and styles. | `ivue_layer` specification. |
+| `layer3D.callback()` | Run advanced rgl drawing before capture. | Function of scene context and named additional arguments. | `ivue_layer` specification. |
+
+Combine specifications with `layers = list(edge.layer, label.layer, ...)` in
+a plotting call. Edges, paths, labels, and meshes use plotting rows (aligned
+graph rows for graph plots). Label `offset` has three components in coordinate
+units. Mesh colors are per face and do not inherit point colors. Meshes retain
+supplied connectivity and do not repair folds or degenerate geometry.
+
+A surface has its own grid: `z[i, j]` belongs to `(x[i], y[j])`, so `z` has
+`length(x)` rows and `length(y)` columns. Both axes are strictly monotone;
+coordinates must be finite. Grid cells split into planar triangles. No
+alignment or rescaling occurs. Surface bounds contribute to the scene, but
+automatic origin-axis limits use the plotted observations. See the
+[introduction](ivue-introduction.html) for meshes and reference surfaces.
+
+`layer3D.axes()` crosses at `c(0, 0, 0)` by default, with positive arrowheads
+and no ticks. It is distinct from ordinary bounding-box axes enabled by
+`axes = TRUE`; normally use `axes = FALSE` with this layer. Its 3-by-2
+`limits` set endpoints, not clipping. The camera is unchanged.
+
+Callbacks run once during scene construction on the private rgl device,
+**before serialization**, not on later browser events. Their first argument
+contains `X`, `row.ids`, `colors`, `highlight`, and `draw.ids`; `args` supplies
+named additional arguments. They must not open, close, or switch devices.
+Captured object IDs are not live devices. Constructing the specification does
+not run the callback; drawing its plot does. Prefer ordinary layer constructors
+when they express the intended geometry.
+
+### Cameras and aspect ratios
+
+| Function | Purpose | Principal input | Returned object |
+|---|---|---|---|
+| `camera.zup()` | Specify an initial z-up view. | Elevation, turn, field of view, zoom. | List with 4-by-4 userMatrix, fov, zoom. |
+
+`point.size` measures screen pixels. `point.type = "sphere"` instead uses
+`sphere.radius` in coordinate units (default one percent of the largest span,
+with a minimum of 1e-8). Setting radius alone does not select spheres.
+Spheres carry spatial extent and can overlap; large scenes cost more to draw.
+`aspect = "equal"` preserves equal units along all axes. `"normalized"`
+stretches axes independently, changing relative distances and proportions.
+
+`fov = 0` is orthographic: distance from the camera does not shrink an object.
+Positive field of view introduces perspective foreshortening. Static plots
+default to `camera.zup(elevation = 20, turn = -135, fov = 0, zoom = 0.8)`.
+Away from the poles, positive z initially projects upward. Interactive rotation
+can tilt it; this is not an enforced rotation constraint. Explicit `theta`,
+`phi`, or `userMatrix` selects the alternative camera controls described in
+`help("plot3D.plain", package = "ivue")`. Browser rotation does not update
+R-side camera metadata or synchronize another widget.
+
+### Recorded-coordinate animation and export
+
+| Function | Purpose | Principal input | Returned object |
+|---|---|---|---|
+| `animate.frames()` | Play recorded positions with timeline/speed controls. | At least two identically shaped n-by-2 or n-by-3 matrices; optional fixed edges. | Widget with player and `ivue.animation` metadata. |
+| `write.animation.gif()` | Export retained animation frames. | An animation widget and `.gif` destination. | Normalized output path, invisibly. |
+
+Frame rows keep stable observation identity. If row names are present, every
+frame must have the same unique, nonempty names in the same order; frames are
+not automatically reordered. Each row must be entirely finite or entirely
+missing (`NA`/`NaN`), meaning inactive. Partially missing rows and infinity
+fail. Incident edges are hidden while either endpoint is inactive. An empty
+frame is allowed, but the whole sequence must contain a finite point. Two
+columns are embedded at z = 0 with a face-on default camera; three use z-up.
+
+`labels` means one string per **original frame**, not vertex labels.
+`frame.index` selects increasing original indices and overrides `max.frames`
+(default 100 evenly spaced frames, retaining endpoints). Bounds use all original
+frames, even those omitted. Retained frames have equal playback duration.
+These may represent algorithm iterations or physical measurements, but the
+player does not infer elapsed time, interpolate, or align coordinates.
+Camera rotation changes the view, not the recorded positions. The
+[animation guide](animation.html) distinguishes these operations in detail.
+
+| Output | Controls and projection | Dependencies and files |
+|---|---|---|
+| Interactive HTML | Rotation and animation controls; initial orthographic or perspective view. | `htmlwidgets::saveWidget()` writes HTML. `selfcontained = TRUE` needs Pandoc and embeds dependencies; `FALSE` writes a companion directory that must travel with the HTML. Viewing requires WebGL, not a running R session. |
+| GIF | Fixed initial orthographic camera; no interaction. Browser rotations/speed changes are not returned to R. | `write.animation.gif()` needs magick and the R animation object, not saved HTML. Writes one GIF, using a separate raster renderer rather than a WebGL screenshot. |
+
+GIF controls are `fps` (0.1--100), `width`/`height` (64--8192 pixels),
+`final.hold` (0--600 additional seconds), `loop`, `labels`, and `overwrite`.
+The parent directory must exist and existing files are protected by default.
+GIF delays round to centiseconds; points and edges need not look pixel-identical
+to WebGL, especially at intersections. Perspective cameras are rejected.
+`selfcontained` and `libdir` belong to `htmlwidgets::saveWidget()`, not GIF
+export. Neither export operation captures later browser interaction.
+
+## Optional packages and detailed help
+
+Loading ivue does not load rgl or install anything. Color scales, mapping,
+cameras, layers, and table/list/dense-matrix graph preparation work without rgl.
+Sparse inputs need Matrix; igraph inputs and built-in layouts need igraph.
+Constructing static or animation widgets needs rgl. The optional geometry
+package can create triangulations in a recipe, but ivue's mesh layer only
+needs supplied triangle indices. GRIP traces in the animation guide come
+from grip. Shiny integration uses `rgl::rglwidgetOutput()` and
+`rgl::renderRglwidget()`; these are not ivue exports.
+
+```{r finding-help, eval=FALSE}
+help(package = "ivue")
+help("ivue-package", package = "ivue")
+help("color.scale.cont", package = "ivue")
+vignette("example-data", package = "ivue")
+```
+
+The compact task index, short function descriptions, and links to detailed
+workflows take inspiration from [Hmisc's documentation](https://hbiostat.org/r/hmisc/)
+and its [overview/help organization](https://CRAN.R-project.org/package=Hmisc).
+The categories here follow ivue's smaller visualization API.

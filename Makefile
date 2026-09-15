@@ -1,4 +1,4 @@
-.PHONY: document build check check-cran check-minimal install readme-retinal \
+.PHONY: audit-guide document build check check-cran check-minimal install readme-retinal \
 	readme-retinal-layout readme-retinal-deps readme-retinal-sknn \
 	readme-retinal-umap readme-retinal-comparison retinal-vignette \
 	retinal-vignette-data
@@ -16,12 +16,15 @@ PLAYWRIGHT_VERSION ?= 1.62.1
 RETINAL_NODE_DIR := artifacts/retinal-readme/node
 RETINAL_PLAYWRIGHT := $(RETINAL_NODE_DIR)/node_modules/playwright
 
+audit-guide:
+	$(RSCRIPT_RUN) tools/audit_api_guide.R
+
 document:
 	$(RSCRIPT_RUN) -e 'roxygen2::roxygenise()'
 
 # Publish only a successful build; refresh the browsable vignettes with it.
 # build/ is excluded from Git and source builds to prevent recursive packaging.
-build: document
+build: document audit-guide
 	mkdir -p build
 	@set -eu; \
 	stage=$$(mktemp -d "$(CURDIR)/build/.stage.XXXXXX"); \

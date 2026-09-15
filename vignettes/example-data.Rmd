@@ -1,0 +1,322 @@
+---
+title: "Example data and reusable visualization recipes"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{Example data and reusable visualization recipes}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 6, fig.height = 3)
+library(ivue)
+have.rgl <- nzchar(system.file(package = "rgl"))
+```
+
+A reusable ivue example starts with coordinates, observation IDs, annotations,
+and the meaning of any connections or frames. This guide constructs three
+small illustrative inputs in base R; it does not fit an embedding or propose
+a dataset-generation API. Use the [function guide](function-guide.html) to
+choose an entry point and the [introduction](ivue-introduction.html) for
+extended plotting controls.
+
+## Choose a recipe
+
+| What you need | Functions to combine | What to retain or share |
+|---|---|---|
+| Finite n-by-3 positions and one numerical value per row | `color.scale.cont()`, `plot3D.cont()` | Coordinates, IDs, scale, initial camera, HTML widget. |
+| The same positions and category labels | `color.scale.groups()`, `plot3D.groups()` | Named palette, level order, annotations, HTML widget. |
+| A vertex set, weighted edges, and supplied positions | `prepare.graph()`, `plot3D.graph()`, optional layers | Vertex IDs, normalized edge order, weight meaning, coordinates. |
+| Triangle indices or an independent height grid | `layer3D.mesh()` or `layer3D.surface()` with a point plot | Connectivity or grid coordinates; these have different reuse semantics. |
+| Stable observation rows over two or more frames | `map.colors()`, `animate.frames()` | Original frames and labels, retained indices, fixed colors, player. |
+| A finished static or animated view | `htmlwidgets::saveWidget()`; for animation, `write.animation.gif()` | Interactive HTML plus dependencies, or a noninteractive GIF. |
+
+Data, scales, cameras, and layer specifications can be kept together in an R
+list and saved with base R's `saveRDS()`. Keep the original scientific inputs
+and preparation choices as well as the widget.
+
+## Construct a point cloud
+
+This helix samples 24 equally spaced parameter values from one complete turn.
+Height is a numerical annotation; the sign of height defines two illustrative
+categories. These categories are assigned by construction, not discovered
+clusters. The first and last points share horizontal position but differ in
+height, so they are distinct observations.
+
+```{r point-data}
+n <- 24L
+t <- seq(0, 2 * pi, length.out = n)
+X <- cbind(x = cos(t), y = sin(t), z = seq(-1, 1, length.out = n))
+ids <- sprintf("point-%02d", seq_len(n))
+rownames(X) <- ids
+annotations <- data.frame(
+  id = ids, height = X[, "z"],
+  half = factor(ifelse(X[, "z"] < 0, "Lower", "Upper"),
+                levels = c("Lower", "Upper"))
+)
+# Simulate an annotation table arriving in another order, then align it.
+annotations <- annotations[rev(seq_len(n)), ]
+stopifnot(!anyNA(annotations$id), !anyDuplicated(annotations$id),
+          setequal(annotations$id, rownames(X)))
+annotations <- annotations[match(rownames(X), annotations$id), ]
+stopifnot(identical(annotations$id, rownames(X)),
+          identical(dim(X), c(n, 3L)), all(is.finite(X)))
+head(annotations, 3)
+```
+
+This explicit matching matters: ordinary point plots pair annotations by row
+position, not by vector names. If you subset or reorder observations, apply
+the same operation to coordinates and annotations and rebuild any row-indexed
+connectivity. Missing positions are errors in static plots. Missing annotation
+values can remain and receive the scale's missing color.
+
+## Share a scale and camera
+
+Compare height before and after an illustrative change to the annotation,
+while keeping positions and row identity fixed. The second value is half the
+first; it is not another embedding. A single numerical scale makes that
+reduction visible. Separate automatic scales would color both panels almost
+identically despite their different values.
+
+```{r shared-settings}
+original <- annotations$height
+reduced <- original / 2
+scale <- color.scale.cont(c(original, reduced), limits = c(-1, 1), center = 0,
+                          palette = c("#2166AC", "#F7F7F7", "#B2182B"))
+camera <- camera.zup(elevation = 20, turn = -135, fov = 0, zoom = 0.65)
+original.mapping <- map.colors(original, scale)
+reduced.mapping <- map.colors(reduced, scale)
+stopifnot(identical(original.mapping$legend, reduced.mapping$legend))
+original.mapping$legend
+```
+
+```{r shared-views, eval=have.rgl}
+original.view <- plot3D.cont(X, original, scale = scale, camera = camera,
+  aspect = "equal", point.size = 7, height = 360,
+  legend.title = "Original height", legend.width = 120)
+reduced.view <- plot3D.cont(X, reduced, scale = scale, camera = camera,
+  aspect = "equal", point.size = 7, height = 360,
+  legend.title = "Half height", legend.width = 120)
+original.view
+reduced.view
+```
+
+Both widgets start with identical coordinates, IDs, point sizes, aspect,
+projection, camera, and scale limits. Colors alone encode the changed values;
+no coordinate scaling or alignment occurs. At the negative endpoint the
+original view is dark blue, while half height has a lighter blue. Each widget
+rotates independently: this workflow does **not** synchronize interaction.
+For a noninteractive reader, the following small table records the same change.
+
+```{r shared-summary}
+rows <- c(1L, 12L, 24L)
+data.frame(id = ids[rows], original = original[rows], reduced = reduced[rows],
+           original.color = original.mapping$colors[rows],
+           reduced.color = reduced.mapping$colors[rows])
+```
+
+A categorical alternative uses the same observation order. This constructs
+and checks another view without adding a third embedded widget to the guide.
+Print `group.view` interactively to display it.
+
+```{r group-recipe}
+group.scale <- color.scale.groups(annotations$half,
+                                  colors = c(Lower = "#2166AC", Upper = "#B2182B"))
+map.colors(annotations$half, group.scale)$legend
+```
+
+```{r group-view, eval=have.rgl}
+group.view <- plot3D.groups(X, annotations$half, scale = group.scale,
+                            camera = camera, height = 300,
+                            legend.width = 120, legend.title = "Helix half")
+stopifnot(inherits(group.view, "htmlwidget"))
+```
+
+Equal colors across views establish a shared annotation mapping. Equal cameras
+establish an initial orientation. Neither establishes equivalent geometries,
+clustering quality, a developmental trajectory, or biological causation.
+
+## Prepare a small embedded weighted graph
+
+These four vertices and two connections are chosen for illustration. The
+weights represent supplied target distances; they are not inferred from the
+drawn segment lengths. The fourth vertex is isolated and is still retained.
+
+```{r graph-data}
+vertices <- c("start", "bend", "end", "isolate")
+edges <- data.frame(from = c("start", "bend"), to = c("bend", "end"),
+                    weight = c(2, 4))
+coords <- rbind(start = c(0, 0, 0), bend = c(1, 1, 0),
+                end = c(2, 0, 1), isolate = c(0, 2, 1))
+graph <- prepare.graph(edges, vertices = vertices, weight.type = "distance")
+stopifnot(identical(graph$vertices$id, vertices),
+          nrow(graph$edges) == 2L, all(is.finite(coords)),
+          identical(rownames(coords), graph$vertices$id))
+graph$edges
+```
+
+The prepared edge endpoints are integer indices into `graph$vertices`, not
+external IDs. We deliberately shuffle coordinate and annotation input order
+below. Unlike a point plot, `plot3D.graph()` aligns these named inputs by exact
+vertex ID. Layers still refer to the **prepared vertex order**.
+
+```{r graph-view, eval=have.rgl}
+coords <- coords[c("end", "start", "isolate", "bend"), , drop = FALSE]
+values <- c(isolate = 40, bend = 20, start = 10, end = 30)
+graph.view <- plot3D.graph(graph, X = coords, values = values,
+  edge.width = c(1, 3), edge.col = "gray55",
+  point.size = 8, legend.width = 100, height = 340,
+  camera = camera.zup(zoom = 0.55),
+  layers = list(layer3D.path(c(1, 3), col = "#D55E00", width = 2),
+                layer3D.labels(1:4, vertices, offset = c(0, 0, 0.15))))
+info <- attr(graph.view, "ivue")
+stopifnot(identical(rownames(info$X), vertices),
+          identical(info$mapping$colors,
+                    map.colors(unname(values[vertices]), info$mapping$scale)$colors))
+graph.view
+```
+
+The orange geometric path joins start directly to end without changing the
+graph topology; the gray graph edges go through bend. Labels sit 0.15
+coordinate units above their vertices. Edge widths are explicit visual choices in prepared edge
+order, independent of weights. No layout is computed. See the
+[introduction](ivue-introduction.html#weighted-graphs-and-geometric-layers)
+for reciprocal adjacency lists, matrices, and optional igraph layouts.
+
+## Record a short coordinate sequence
+
+This three-frame triangle first gains a vertex and then expands by a factor
+of 1.4 about the coordinate origin. The change is explicitly constructed;
+these frames are neither solver iterations nor physical time measurements.
+
+```{r frame-data}
+triangle <- rbind(a = c(0, 0), b = c(1, 0), c = c(0.5, 0.9))
+first <- triangle
+first[3, ] <- NA_real_
+frames <- list(first, triangle, triangle * 1.4)
+frame.labels <- c("Two vertices", "Complete triangle", "Expanded by 1.4")
+frame.edges <- rbind(c(1, 2), c(2, 3), c(3, 1))
+stopifnot(length(frames) == length(frame.labels),
+  all(vapply(frames, function(f) identical(dim(f), c(3L, 2L)) &&
+    identical(rownames(f), rownames(triangle)) &&
+    all(rowSums(is.finite(f)) == 2L | rowSums(is.na(f)) == 2L), logical(1))),
+  all(frame.edges >= 1L & frame.edges <= nrow(triangle)))
+```
+
+```{r frame-view, eval=have.rgl}
+player <- animate.frames(frames, edges = frame.edges, labels = frame.labels,
+  fps = 1, loop = FALSE, max.frames = NULL,
+  col = c("#2166AC", "#B2182B", "#009F87"), point.size = 9, height = 300)
+player
+```
+
+Press **Play**, step with the slider, or use **Reset**. Blue and red are present
+at the start; green and its two incident edges appear in the second frame.
+Two-dimensional input is drawn at z = 0, initially face-on. The three vertex
+colors are fixed across frames. No labels or categories are inferred from them.
+The player's text labels describe frames, not observations.
+
+An all-missing row means inactive, preserving its identity for later frames.
+A partially missing row is invalid. Bounds stay fixed across all original
+frames, and every retained frame has equal duration. No interpolation or
+alignment occurs. Record meaningful original frame labels for a real solver
+trace or measured sequence; uniform playback does not recover irregular time
+intervals. The [animation guide](animation.html) gives larger examples and
+explicit frame-selection recipes.
+
+### Save and clean up
+
+The example below checks a small HTML export and, when magick is installed,
+a three-frame GIF, then removes all outputs. It does not launch a viewer.
+Choose your own persistent directory when keeping an export.
+
+```{r export-recipe, eval=have.rgl}
+local({
+  directory <- tempfile("ivue-recipe-")
+  dir.create(directory)
+  on.exit(unlink(directory, recursive = TRUE))
+  htmlwidgets::saveWidget(player, file.path(directory, "triangle.html"),
+                          selfcontained = FALSE)
+  stopifnot(file.exists(file.path(directory, "triangle.html")))
+  if (requireNamespace("magick", quietly = TRUE)) {
+    gif <- write.animation.gif(player, file.path(directory, "triangle.gif"),
+                               width = 240, height = 240, final.hold = 0)
+    stopifnot(file.exists(gif))
+  }
+})
+```
+
+HTML retains interaction and must accompany its dependency folder unless
+saved with `selfcontained = TRUE` (which needs Pandoc). GIF is a fixed
+orthographic raster rendering using the R widget's initial camera; it does
+not capture browser rotations. See the [export comparison](function-guide.html#recorded-coordinate-animation-and-export)
+for controls, portability, and limitations.
+
+## Inspect the retinal bundle without refitting
+
+The bundled example adds a real identity and provenance check. Rendering the
+full case study is left to the [retinal-development vignette](retinal-development.html),
+which includes static posters and complete drawing recipes.
+
+```{r retinal-structure}
+retina <- readRDS(system.file("extdata", "retinal-development.rds", package = "ivue"))
+ids <- retina$annotations$id
+stopifnot(identical(names(retina$coordinates), c("umap", "sknn")),
+          identical(dim(retina$annotations), c(12000L, 3L)),
+          !anyNA(ids), !anyDuplicated(ids),
+          identical(retina$graph$vertices, ids),
+          nrow(retina$graph$edges) == 4108L,
+          all(retina$graph$edges$from %in% ids),
+          all(retina$graph$edges$to %in% ids))
+for (coords in retina$coordinates) {
+  stopifnot(identical(dim(coords), c(12000L, 3L)),
+            identical(rownames(coords), ids), all(is.finite(coords)))
+}
+data.frame(representation = names(retina$coordinates),
+           observations = 12000L, dimensions = 3L)
+c(age.levels = nlevels(retina$annotations$age),
+  cell.type.levels = nlevels(retina$annotations$cell.type),
+  displayed.edges = nrow(retina$graph$edges))
+```
+
+There are two 12,000-by-3 matrices (`umap`, `sknn`), an undirected distance
+weighted graph with 4,108 edges, and an annotation table with synthetic `id`,
+10-level `age`, and 11-level `cell.type`. `provenance` records the source,
+fitting cohort, methods, sample, checksums, and upstream package versions.
+
+The upstream fitting cohort had **120,804 cells**. The published analysis
+retained **107,052 retinal cells**; the bundle displays a stratified sample
+of **12,000** retained cells. Both embeddings were fitted on the full cohort
+before extracting these display rows. The displayed graph is an induced
+subgraph of the full fitting graph: it keeps only edges whose endpoints both
+survive display selection and can be disconnected. No embedding is refitted
+on this smaller graph.
+
+Published UMAP used **Canberra distance** on the upstream representation.
+The symmetric 4-nearest-neighbor graph used **Euclidean distance**, followed
+by weighted-GRIP and edge-KK layout. Distance metrics define comparisons of
+upstream observations; embedding/layout methods produce display coordinates.
+ivue renders those results. UMAP coordinates were centered for bundling;
+the README capture additionally applies independent rigid rotations to face
+each P14 centroid toward the viewer. The recipe camera alone does not perform
+that alignment. The README's PHATE view uses Euclidean distance and was also
+fitted on the full cohort, but its coordinates occur only in external assets,
+not in this RDS. No raw expression, principal-component matrix, original
+barcodes, or sample identifiers are bundled.
+
+The values come from [Clark et al. (2019)](https://doi.org/10.1016/j.neuron.2019.04.010),
+GEO GSE118614, and the Goff lab's published coordinates and annotations.
+Their [source use agreement](https://github.com/gofflab/developing_mouse_retina_scRNASeq/blob/3bfeea29ecc957d59e4a156229449b060ffda0a8/README.md#use-agreement)
+contains a prepublication consent restriction tied to January 1, 2019.
+The documented source review found no separate dataset license. Public
+availability and the elapsed date are not a public-domain claim or a new
+permission grant; the package's GPL code license does not establish rights
+in third-party values. The installed `extdata/README.md` and stored
+`provenance$source.terms` preserve these limitations.
+
+Shared colors and IDs help compare the same cells, but apparent proximity,
+separation, or a smooth age gradient is not by itself evidence of equivalent
+geometries, clustering fidelity, lineage, or biological causation. Interpret
+the plots together with the upstream analyses and the case study's limitations.

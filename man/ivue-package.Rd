@@ -26,6 +26,18 @@ Use \code{htmlwidgets::saveWidget()} to export HTML for later viewing or sharing
 layout. Weights do not automatically control edge width or color.
 }
 
+\section{Guides}{
+
+Five installed vignettes provide complementary starting points:
+\itemize{
+\item \code{vignette("function-guide", package = "ivue")}: task-oriented function catalog.
+\item \code{vignette("example-data", package = "ivue")}: reproducible inputs and reusable recipes.
+\item \code{vignette("ivue-introduction", package = "ivue")}: detailed plotting controls.
+\item \code{vignette("retinal-development", package = "ivue")}: data provenance and case study.
+\item \code{vignette("animation", package = "ivue")}: recorded frames and export.
+}
+}
+
 \section{Rendering}{
 
 Widgets use private rgl null-device scenes. The rgl namespace is loaded only

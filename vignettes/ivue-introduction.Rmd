@@ -1,6 +1,7 @@
 ---
 title: "Point Clouds and Weighted Graphs with ivue"
-output: rmarkdown::html_vignette
+output:
+  rmarkdown::html_vignette:
 vignette: >
   %\VignetteIndexEntry{Point Clouds and Weighted Graphs with ivue}
   %\VignetteEngine{knitr::rmarkdown}
@@ -13,6 +14,9 @@ library(ivue)
 have.rgl <- nzchar(system.file(package = "rgl"))
 have.geometry <- requireNamespace("geometry", quietly = TRUE)
 ```
+
+For a task index, see [Finding your way around ivue](function-guide.html);
+for small reproducible inputs, see [Example data and recipes](example-data.html).
 
 ## A sample from a saddle
 

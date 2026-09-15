@@ -1,6 +1,7 @@
 ---
 title: "Playing and Exporting Coordinate Animations"
-output: rmarkdown::html_vignette
+output:
+  rmarkdown::html_vignette:
 vignette: >
   %\VignetteIndexEntry{Playing and Exporting Coordinate Animations}
   %\VignetteEngine{knitr::rmarkdown}
@@ -14,6 +15,9 @@ have.rgl <- nzchar(system.file(package = "rgl"))
 have.magick <- requireNamespace("magick", quietly = TRUE)
 have.grip <- requireNamespace("grip", quietly = TRUE)
 ```
+
+For a task index, see [Finding your way around ivue](function-guide.html);
+for small reproducible inputs, see [Example data and recipes](example-data.html).
 
 `animate.frames()` turns recorded coordinates into a browser player.
 `write.animation.gif()` exports the same retained frames to a GIF for a
@@ -43,13 +47,13 @@ utils::packageVersion("grip")
 ```
 
 The trace contains coordinates after successive layout rounds, including
-rows for vertices that have not yet been introduced. Select up to 40 evenly
+rows for vertices that have not yet been introduced. Select up to 24 evenly
 spaced frames, including the first and last, to keep the player compact.
 Retain their metadata and original frame numbers for the labels:
 
 ```{r triangle-frame-selection, eval=have.grip}
 frame.index <- unique(as.integer(round(seq(
-  1, length(tr$frames), length.out = min(40L, length(tr$frames))
+  1, length(tr$frames), length.out = min(24L, length(tr$frames))
 ))))
 triangle.frames <- tr$frames[frame.index]
 triangle.meta <- tr$meta[frame.index, , drop = FALSE]
@@ -119,16 +123,18 @@ finite-coordinate requirement of ordinary `plot3D` functions is unchanged.
 
 ## Animate a changing 3D surface
 
-Any sequence of recorded coordinates can be played. This example explicitly
+Any sequence satisfying the frame contract can be played. This example explicitly
 constructs a sequence from a plane to a saddle; it is an illustrative
 deformation, not the output of a layout optimizer. The xy positions and
-vertex identities are fixed while the height changes.
+vertex identities are fixed while the height changes. A 7-by-7 grid and
+17 recorded amplitudes keep this installed example compact; the later
+paraboloid-to-saddle example uses 33 stages.
 
 ```{r saddle-frames}
-side <- 9L
+side <- 7L
 grid <- expand.grid(x = seq(-1, 1, length.out = side),
                     y = seq(-1, 1, length.out = side))
-amplitudes <- seq(0, 1.2, length.out = 25)
+amplitudes <- seq(0, 1.2, length.out = 17)
 saddle.frames <- lapply(amplitudes, function(a) {
   cbind(x = grid$x, y = grid$y, z = a * (grid$x^2 - grid$y^2))
 })
@@ -172,7 +178,7 @@ the surface is the saddle `z = 1.2 * (x^2 - y^2)`. An odd number of equally
 spaced frames places the flat grid exactly at the slider's midpoint.
 
 ```{r surface-morph-frames}
-stages <- seq(-1, 1, length.out = 49)
+stages <- seq(-1, 1, length.out = 33)
 surface.frames <- lapply(stages, function(t) {
   cbind(x = grid$x, y = grid$y,
         z = 1.2 * (abs(t) * grid$x^2 - t * grid$y^2))
@@ -192,7 +198,7 @@ surface.player <- animate.frames(
 surface.player
 ```
 
-Move the slider to the center to inspect the flat grid (frame 25 of 49).
+Move the slider to the center to inspect the flat grid (frame 17 of 33).
 Use **Pause** to hold a view and **Reverse** to change the playback direction.
 Colors still represent final saddle height, not the height in the current frame.
 
@@ -214,14 +220,19 @@ keep that folder with the HTML when sharing it.
 ## Export a GIF
 
 GIF export uses the frames retained in the player, including inactive
-vertices and edges. This example writes into R's temporary directory, leaving
-your working directory untouched. Supply your own destination to keep it.
+vertices and edges. This build checks the small three-frame triangle; the
+larger trace can be exported with the same function in your own session.
+The example writes only temporary output and removes it after checking the
+file. No GIF asset is embedded in the installed guide.
 
-```{r gif-export, eval=have.grip && have.rgl && have.magick}
-gif.path <- tempfile(fileext = ".gif")
-write.animation.gif(triangle.player, gif.path, fps = 5,
-                     width = 480, height = 480, final.hold = 2)
-knitr::include_graphics(gif.path)
+```{r gif-export, eval=have.rgl && have.magick}
+local({
+  gif.path <- tempfile(fileext = ".gif")
+  on.exit(unlink(gif.path))
+  write.animation.gif(small, gif.path, fps = 1,
+                       width = 240, height = 240, final.hold = 0)
+  stopifnot(file.exists(gif.path))
+})
 ```
 
 ```{r keep-gif, eval=FALSE}

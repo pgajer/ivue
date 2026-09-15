@@ -1,6 +1,7 @@
 ---
 title: "Retinal Development: Point-Cloud and Graph Views"
-output: rmarkdown::html_vignette
+output:
+  rmarkdown::html_vignette:
 vignette: >
   %\VignetteIndexEntry{Retinal Development: Point-Cloud and Graph Views}
   %\VignetteEngine{knitr::rmarkdown}
@@ -17,8 +18,8 @@ three-dimensional representations. The first is a published UMAP point cloud.
 The second is a symmetric k-nearest-neighbor graph with an independently
 computed graph layout. Both embeddings are fitted on 120,804 cells before
 extracting the same 12,000 cells for display. UMAP uses Canberra distance;
-the symmetric-kNN graph uses Euclidean distance. Holding cell identities, annotations, colors, and camera
-motion fixed makes the representational change visible without implying that
+the symmetric-kNN graph uses Euclidean distance. Holding cell identities, annotations, colors, and initial camera
+settings fixed makes the representational change visible without implying that
 the two geometries are equivalent.
 
 `ivue` renders both views. It does not compute UMAP coordinates, construct the
@@ -28,6 +29,9 @@ The README also shows a PHATE embedding fitted to the same full-population
 20-PC matrix, using Euclidean distance and 2,000 spectral landmarks before
 extracting these display cells. This vignette develops the two views included
 in the bundled data; PHATE coordinates and Python dependencies are not bundled.
+
+For a task index, see [Finding your way around ivue](function-guide.html);
+for small reproducible inputs, see [Example data and recipes](example-data.html).
 
 ## Load the prepared case study
 
@@ -77,6 +81,18 @@ The case-study sample contains 12,000 retained cells selected reproducibly
 across nonempty developmental-stage-by-cell-type strata, with a minimum of 20
 cells per stratum and seed 20190619. Both views use those exact identities in
 the same order.
+
+
+### Source and use terms
+
+The published coordinates and annotations are publicly available, but the
+source review found no separate dataset license. The upstream
+[use agreement](https://github.com/gofflab/developing_mouse_retina_scRNASeq/blob/3bfeea29ecc957d59e4a156229449b060ffda0a8/README.md#use-agreement)
+states a prepublication consent restriction tied to January 1, 2019.
+Public availability and the elapsed date do not establish public-domain status
+or a new permission grant. The package's GPL code license does not establish
+rights in third-party values. See the installed `extdata/README.md` and
+`retina$provenance$source.terms` for the documented review and limitations.
 
 ## Shared categorical scales
 
@@ -152,8 +168,10 @@ sknn.points.by.age
 knitr::include_graphics("figures/retinal-comparison.png")
 ```
 
-Because cell identities, stage colors, point styling, projection, and camera
-are held fixed, differences in this comparison come from the coordinates.
+The code holds cell identities, stage colors, point styling, projection, and
+initial camera fixed. The static poster additionally uses the independent rigid
+orientations described below. The two widgets created by the code rotate
+independently; synchronized capture is a separate README production step.
 
 ## Add the symmetric kNN graph
 

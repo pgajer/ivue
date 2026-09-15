@@ -26,6 +26,7 @@ Initial release.
   layouts can be displayed directly; optional igraph layouts use explicit
   distance or strength weight semantics.
 
-- **Documentation:** three vignettes introduce point-cloud and graph plotting,
-  develop a retinal-development case study, and demonstrate coordinate
-  animation and export.
+- **Documentation:** five installed vignettes include a task-oriented catalog
+  of all 18 public functions and reproducible data recipes, alongside the
+  plotting introduction, retinal case study, and animation guide. Compact examples keep
+  the self-contained HTML guides usable offline.

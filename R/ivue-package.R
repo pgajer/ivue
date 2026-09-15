@@ -18,6 +18,16 @@
 #' [plot3D.graph()] accepts that object with supplied coordinates or an explicit
 #' layout. Weights do not automatically control edge width or color.
 #'
+#' @section Guides:
+#' Five installed vignettes provide complementary starting points:
+#' \itemize{
+#' \item `vignette("function-guide", package = "ivue")`: task-oriented function catalog.
+#' \item `vignette("example-data", package = "ivue")`: reproducible inputs and reusable recipes.
+#' \item `vignette("ivue-introduction", package = "ivue")`: detailed plotting controls.
+#' \item `vignette("retinal-development", package = "ivue")`: data provenance and case study.
+#' \item `vignette("animation", package = "ivue")`: recorded frames and export.
+#' }
+#'
 #' @section Rendering:
 #' Widgets use private rgl null-device scenes. The rgl namespace is loaded only
 #' when rendering; caller options and the previous device are restored.
