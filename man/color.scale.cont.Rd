@@ -42,15 +42,20 @@ NULL uses the Viridis HCL palette. Numeric palette indices are resolved
 when fitting the scale, so later session palette changes have no effect.}
 
 \item{color.map}{Optional function of numeric values returning R colors.
-Mutually exclusive with palette. Called during mapping; keeping this
-callback independent of mutable external state is the caller's responsibility.}
+Mutually exclusive with palette. Must be deterministic and pointwise: a
+value's color cannot depend on other values, their order, or call count.
+Receives data-unit values after out-of-bounds handling, not normalized
+palette positions. Observations, legend ticks, and the ramp are mapped in
+separate calls. The caller is responsible for this contract.}
 
 \item{limits}{Two finite, nondecreasing numeric limits. Equal limits are
 permitted for constant data.}
 
 \item{center}{Optional reference value for a continuous diverging scale. Supply an
 appropriate diverging palette explicitly. Automatic limits are symmetric
-about center; explicit limits must contain it strictly.}
+about center; explicit limits must contain it strictly. With palette,
+center maps to the palette midpoint. With color.map, center can affect
+automatic limits but does not transform the values passed to the callback.}
 
 \item{breaks}{Strictly increasing numerical bin boundaries, or NULL.}
 
@@ -96,10 +101,28 @@ group counts describe the mapped input. A Missing entry is added as needed.
 Construct a scale once to keep colors comparable across scenes. Scale
 construction and mapping do not load rgl or create a graphics device.
 }
+\details{
+Prefer a palette and fixed limits for comparable views. A custom
+color.map must apply the same rule to each value regardless of the batch.
+For example, \code{function(x) ifelse(x < 0, "blue", "red")} is pointwise.
+A mapper that computes \code{range(x)}, ranks, or quantiles from the current
+batch to choose its colors is not supported: it can disagree with its own
+legend and assign different colors to the same value in different views,
+even without mutable external state. Fit such reference quantities once
+and capture them in a fixed mapping function instead.
+}
 \examples{
 sc <- color.scale.cont(c(-1, 0, 1))
 map.colors(c(-1, 0.5, NA), sc)
 groups <- factor(c("low", "high", "low"), levels = c("low", "high"))
 group.scale <- color.scale.groups(groups, c(low = "blue", high = "red"))
 map.colors(groups, group.scale)
+fixed.map <- function(x) ifelse(x < 0, "blue", "red")
+custom <- color.scale.cont(c(-2, 4), color.map = fixed.map, limits = c(-2, 4))
+map.colors(c(-1, 0, 2), custom)$colors
+}
+\seealso{
+\code{\link[=plot3D.cont]{plot3D.cont()}}, \code{\link[=plot3D.groups]{plot3D.groups()}}, \link{ivue-package},
+\href{../doc/function-guide.html}{Finding your way around ivue},
+\href{../doc/example-data.html#share-a-scale-and-camera}{Shared-scale recipe}.
 }

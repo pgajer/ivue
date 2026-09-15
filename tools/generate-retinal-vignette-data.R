@@ -53,12 +53,26 @@ n <- nrow(sampled)
 ids <- sprintf("cell-%05d", seq_len(n))
 umap <- as.matrix(source[selected, umap.columns, drop = FALSE])
 colnames(umap) <- c("x", "y", "z")
-umap <- sweep(umap, 2L, colMeans(umap), "-")
+base::source("tools/retinal-display-transform.R")
+umap.display <- retinal.display.transform(umap)
+umap <- umap.display$coordinates
 rownames(umap) <- ids
 
 sknn <- retinal$coordinates
 colnames(sknn) <- c("x", "y", "z")
 rownames(sknn) <- ids
+graph.transform <- retinal$display.transform
+if (is.null(graph.transform)) {
+    # Historical cache stores normalized coordinates only. Do not invent the
+    # original center/radius or refit the graph to replace that missing record.
+    graph.transform <- list(
+        formula = "display = (input - center) / scale.factor",
+        center = rep(NA_real_, 3L), scale.factor = NA_real_,
+        center.population = paste(n, "selected display cells"),
+        scale.rule = "maximum Euclidean radius after centering",
+        parameter.status = "original center and scale factor were not retained in the historical layout cache",
+        orientation = "not stored; figure-specific rigid rotations are applied only during rendering")
+}
 edge.matrix <- retinal$graph$edge.matrix
 edges <- data.frame(
     from = ids[edge.matrix[, 1L]],
@@ -98,6 +112,7 @@ case.study <- list(
         graph.input = retinal$input,
         graph.selection = retinal$k.selection,
         graph.layout = retinal$layout,
+        display.transforms = list(umap = umap.display$transform, sknn = graph.transform),
         fitting.graph = retinal$fitting.graph,
         source.urls = c(
             annotations = "https://github.com/gofflab/developing_mouse_retina_scRNASeq#cellular-phenotype-data",

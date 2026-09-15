@@ -113,6 +113,14 @@ before reproducing it for another use.
 
 ## Shared Rendering
 
+Before the rendering stage, bundled graph coordinates have already been
+centered on the 12,000 display cells and divided by their maximum centered
+radius. UMAP is centered without rescaling. The bundled
+`provenance$display.transforms` separates this preparation from the rigid
+rotations below. The historical graph cache lacks the numeric center/radius;
+future preparation runs record them. Edge weights and fit diagnostics retain
+their original units and conventions.
+
 Both README GIFs hold each of their 72 frames for 200 milliseconds, giving a
 14.4-second full rotation. All panels receive the identical camera matrix at
 each frame. Slower playback adds viewing time, not intermediate views; the

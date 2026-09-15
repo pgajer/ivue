@@ -13,6 +13,22 @@ is the induced subgraph on the displayed cells, not a new sample-fitted graph.
 Cell identifiers are synthetic. The object contains no expression or PC matrix,
 barcodes, sample identifiers, or local paths.
 
+### Coordinate units and display transformations
+
+`provenance$display.transforms` records the transformation of each coordinate
+set. UMAP is centered on the 12,000 selected display cells, with no rescaling;
+its three-component center and scale factor of one are recorded. The graph
+layout is centered on those display cells and divided by their maximum
+Euclidean radius, so its displayed maximum radius is one. The historical graph
+cache did not retain the original center or radius: those parameters are `NA`,
+with an explicit explanation. Future preparation runs retain them.
+
+Edge weights and fitted layout diagnostics remain in their original conventions;
+they are not rescaled with the display coordinates. A displayed segment length
+is therefore not directly comparable to its distance weight. Neither bundled
+matrix includes the figure-specific rigid rotations used for the README.
+These transformations change presentation, not the input used to fit an embedding.
+
 Regenerate it after `make readme-retinal-layout` with:
 
 ```

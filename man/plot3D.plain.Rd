@@ -168,3 +168,8 @@ if (nzchar(system.file(package = "rgl"))) {
   by.id <- plot3D.cont(positions, annotation) # a gets 0, b gets 5, c gets 10
 }
 }
+\seealso{
+\code{\link[=color.scale.cont]{color.scale.cont()}}, \code{\link[=map.colors]{map.colors()}}, \code{\link[=plot3D.graph]{plot3D.graph()}}, \link{ivue-package},
+\href{../doc/function-guide.html}{Finding your way around ivue},
+\href{../doc/example-data.html}{Example data and recipes}.
+}

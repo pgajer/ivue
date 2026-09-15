@@ -3,10 +3,13 @@
 #' Explore three-dimensional point clouds and embedded graphs with numerical
 #' or categorical annotations, reusable color scales, and geometric layers.
 #'
-#' @section Getting started:
-#' Install both the package and its optional plotting backend with
-#' `install.packages(c("ivue", "rgl"))`. Plotting requires rgl, while color
-#' mapping and [prepare.graph()] work without it. No XQuartz setup is required.
+#' @section Start here:
+#' Open \href{../doc/function-guide.html}{Finding your way around ivue} to
+#' choose a task, or \href{../doc/example-data.html}{Example data and recipes}
+#' for reproducible inputs. The small example below constructs a point cloud
+#' with a named numerical annotation; print `view` interactively to display it.
+#' Plotting requires the optional rgl package: `install.packages("rgl")`.
+#' Color mapping and [prepare.graph()] work without it. No XQuartz setup is required.
 #'
 #' [plot3D.plain()] shows a point cloud, [plot3D.cont()] maps numerical values,
 #' and [plot3D.groups()] maps categorical annotations. Each returns a browser
@@ -21,17 +24,28 @@
 #' @section Guides:
 #' Five installed vignettes provide complementary starting points:
 #' \itemize{
-#' \item `vignette("function-guide", package = "ivue")`: task-oriented function catalog.
-#' \item `vignette("example-data", package = "ivue")`: reproducible inputs and reusable recipes.
-#' \item `vignette("ivue-introduction", package = "ivue")`: detailed plotting controls.
-#' \item `vignette("retinal-development", package = "ivue")`: data provenance and case study.
-#' \item `vignette("animation", package = "ivue")`: recorded frames and export.
+#' \item \href{../doc/function-guide.html}{Finding your way around ivue}: task-oriented function catalog.
+#' \item \href{../doc/example-data.html}{Example data and recipes}: reproducible inputs and reusable recipes.
+#' \item \href{../doc/ivue-introduction.html}{Point clouds and weighted graphs}: detailed plotting controls.
+#' \item \href{../doc/retinal-development.html}{Retinal development}: data provenance and case study.
+#' \item \href{../doc/animation.html}{Coordinate animations}: recorded frames and export.
 #' }
+#' From the console, use `vignette("function-guide", package = "ivue")`,
+#' `vignette("example-data", package = "ivue")`, or `vignette(package = "ivue")`
+#' to list all five. Built package distributions include these guides for offline reading.
 #'
 #' @section Rendering:
 #' Widgets use private rgl null-device scenes. The rgl namespace is loaded only
 #' when rendering; caller options and the previous device are restored.
 #' See `vignette("ivue-introduction", package = "ivue")` for worked examples.
 #'
-#' @keywords internal
+#' @examples
+#' library(ivue)
+#' X <- rbind(a = c(0, 0, 0), b = c(1, 1, 1), c = c(2, 0, 0))
+#' height <- c(c = 0, a = 0, b = 1)
+#' if (nzchar(system.file(package = "rgl"))) {
+#'   view <- plot3D.cont(X, height, legend.title = "Height")
+#'   # Print view interactively to display it; construction opens no window.
+#' }
+#' @keywords package
 "_PACKAGE"

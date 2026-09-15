@@ -14,7 +14,7 @@ Description: Creates interactive three-dimensional point clouds and embedded
     Plays recorded coordinate frames with interactive controls and exports
     orthographic graph animations to GIF.
 License: GPL (>= 3)
-URL: https://github.com/pgajer/ivue
+URL: https://pgajer.github.io/ivue/, https://github.com/pgajer/ivue
 BugReports: https://github.com/pgajer/ivue/issues
 Encoding: UTF-8
 Language: en-US

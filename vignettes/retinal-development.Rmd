@@ -96,6 +96,18 @@ rights in third-party values. See the installed `extdata/README.md` and
 
 ## Shared categorical scales
 
+The bundle records display transformations in
+`retina$provenance$display.transforms`. Both coordinate sets are centered on
+the 12,000 selected cells. UMAP retains its coordinate scale; the graph layout
+is divided by its maximum centered radius, giving a displayed radius of one.
+The original graph center and radius were not retained in the historical cache
+and are explicitly recorded as unavailable (`NA`). The UMAP center is recorded,
+and future graph preparation runs retain both parameters.
+
+Graph weights and fitted diagnostics are not rescaled. Do not compare displayed
+segment lengths directly with distance weights. Figure-specific rigid rotations
+are applied later during rendering and are not stored in either coordinate matrix.
+
 Named palettes make annotation colors independent of factor order and reusable
 across coordinate systems.
 

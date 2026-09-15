@@ -189,9 +189,11 @@ See the [weighted graph workflow](ivue-introduction.html#weighted-graphs-and-geo
 | `map.colors()` | Apply a fitted scale without plotting. | Values/groups and their scale. | List with row-aligned colors, legend data frame, and scale. |
 
 Continuous scales use the reference range by default; `limits` fixes it.
-`center` requires a supplied diverging palette or `color.map`, places the
-center at the palette midpoint, and makes automatic limits symmetric about
-it. With explicit limits, the center must lie strictly inside them. A constant
+`center` requires a supplied diverging palette or `color.map` and makes automatic
+limits symmetric about it. For a palette, it places the center at the palette
+midpoint. A custom `color.map` instead receives data-unit values unchanged by
+centering; with explicit limits, `center` does not alter callback colors.
+With explicit limits, the center must lie strictly inside them. A constant
 range without a center maps to the middle color; all-missing reference values
 default to limits `c(0, 1)`.
 
@@ -212,9 +214,14 @@ Named colors must cover the reference
 levels; unknown groups error unless `unknown = "missing"`. Missing values are
 distinct from a literal `"NA"` category; empty strings are valid groups.
 Numeric palette indices are resolved when fitting scales. A `color.map`
-function runs at mapping time and must return one color per supplied value;
-its external state is the caller's responsibility. Supply it or `palette`,
-not both.
+function runs at mapping time on data-unit values after out-of-range handling.
+It must return one color per value and be deterministic and **pointwise**:
+the same value must have the same color when mapped alone, reordered, or in
+another batch. Observations, legend ticks, and the ramp are separate calls.
+`function(x) ifelse(x < 0, "blue", "red")` obeys that contract; recomputing
+`range(x)` or ranks inside each call does not, even without mutable external
+state. Prefer a palette with fixed limits for ordinary comparisons. Supply
+`color.map` or `palette`, not both.
 
 `map.colors()` returns a legend with `label`, `color`, and `count`. Continuous
 ticks have missing counts; binned/category counts describe the mapped input.

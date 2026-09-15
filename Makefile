@@ -1,4 +1,4 @@
-.PHONY: audit-guide document build check check-cran check-minimal install readme-retinal \
+.PHONY: audit-guide audit-installed site document build check check-cran check-minimal install readme-retinal \
 	readme-retinal-layout readme-retinal-deps readme-retinal-sknn \
 	readme-retinal-umap readme-retinal-comparison retinal-vignette \
 	retinal-vignette-data
@@ -48,6 +48,14 @@ check-minimal: build
 
 install: build
 	$(R_RUN) CMD INSTALL $(TARBALL)
+
+audit-installed: build
+	$(RSCRIPT_RUN) tools/audit_installed_help.R $(TARBALL)
+
+site: audit-installed
+	python3 tools/audit_vignette_html.py build/vignettes
+	$(RSCRIPT_RUN) tools/build_site.R $(TARBALL)
+	python3 tools/audit_site.py build/site
 
 readme-retinal-layout:
 	$(RSCRIPT_RUN) tools/prepare-retinal-readme.R

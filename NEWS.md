@@ -2,6 +2,16 @@
 
 Initial release.
 
+- **Getting started:** installed package help is visible in the help index,
+  links directly to all five guides, and includes a small executable example.
+  A documentation site offers rendered guides, function reference, and a built
+  development package containing the installed vignettes.
+- **Custom colors:** documentation specifies deterministic, pointwise mappings
+  in data units and distinguishes callback behavior from palette centering.
+- **Retinal provenance:** bundled metadata now records display transformations,
+  including explicit unavailable parameters in the historical graph cache.
+  Coordinates, annotations, graph weights, and fitted diagnostics are unchanged.
+
 - **Observation identity:** point plots now match named values, groups, colors,
   logical highlight masks, and style colors to explicit coordinate row IDs,
   using the same exact-match rule as graph plots. Unnamed vectors remain

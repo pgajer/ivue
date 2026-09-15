@@ -284,9 +284,9 @@ fit <- grip::edge.kk(
     seed = 20190619L
 )
 display.index <- retained.index[selected]
-coordinates <- fit$coords[display.index, , drop = FALSE]
-coordinates <- sweep(coordinates, 2L, colMeans(coordinates), "-")
-coordinates <- coordinates / max(sqrt(rowSums(coordinates^2)))
+source("tools/retinal-display-transform.R")
+display <- retinal.display.transform(fit$coords[display.index, , drop = FALSE], rescale = TRUE)
+coordinates <- display$coordinates
 rownames(coordinates) <- rownames(metadata)[selected]
 
 # Preserve only original edges whose endpoints both occur in the display sample.
@@ -297,6 +297,7 @@ keep.edges <- rowSums(is.na(display.edges)) == 0L
 
 result <- list(
     coordinates = coordinates,
+    display.transform = display$transform,
     graph = list(
         edge.matrix = display.edges[keep.edges, , drop = FALSE],
         edge.weight = graph$edge_weight[keep.edges]

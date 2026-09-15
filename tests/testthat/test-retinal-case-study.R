@@ -32,3 +32,23 @@ test_that("retinal case-study data preserve cross-view identities", {
     expect_equal(nrow(graph$vertices), 12000L)
     expect_equal(nrow(graph$edges), fitting$displayed.edges)
 })
+
+test_that("retinal display units and unavailable historical parameters are explicit", {
+    retina <- readRDS(system.file("extdata", "retinal-development.rds", package = "ivue"))
+    transforms <- retina$provenance$display.transforms
+    expect_named(transforms, c("umap", "sknn"))
+    expect_length(transforms$umap$center, 3L)
+    expect_true(all(is.finite(transforms$umap$center)))
+    expect_identical(transforms$umap$scale.factor, 1)
+    expect_equal(colMeans(retina$coordinates$umap), c(x = 0, y = 0, z = 0), tolerance = 1e-12)
+    expect_equal(colMeans(retina$coordinates$sknn), c(x = 0, y = 0, z = 0), tolerance = 1e-12)
+    expect_equal(max(sqrt(rowSums(retina$coordinates$sknn^2))), 1, tolerance = 1e-12)
+    expect_match(transforms$sknn$scale.rule, "maximum Euclidean radius")
+    if (grepl("not retained", transforms$sknn$parameter.status)) {
+        expect_true(all(is.na(transforms$sknn$center)))
+        expect_true(is.na(transforms$sknn$scale.factor))
+    } else {
+        expect_true(all(is.finite(transforms$sknn$center)))
+        expect_gt(transforms$sknn$scale.factor, 0)
+    }
+})

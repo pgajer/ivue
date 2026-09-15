@@ -13,23 +13,28 @@ developmental stage and annotated cell type. Shared coordinates and synchronized
 views show how the two annotations relate. The data come from
 [Clark et al. (2019)](https://pmc.ncbi.nlm.nih.gov/articles/PMC6768831/);
 the layout was computed with `dgraphs` and `grip`, then rendered with ivue.
-The [retinal-development vignette](vignettes/retinal-development.Rmd) presents
+The [retinal-development vignette](https://pgajer.github.io/ivue/doc/retinal-development.html) presents
 the complete example and its provenance, while the
-[introduction vignette](vignettes/ivue-introduction.Rmd) explains the plotting
+[introduction vignette](https://pgajer.github.io/ivue/doc/ivue-introduction.html) explains the plotting
 controls.
 
 ![Two synchronized point-only views of 12,000 retinal cells extracted after fitting a symmetric 4-nearest-neighbor graph layout on all 120,804 cells, colored by developmental stage and annotated cell type.](https://raw.githubusercontent.com/pgajer/ivue/d08a39e1baa4b4333dddc179fe6a4fa17c8cb132/man/figures/readme-retinal-sknn.gif)
 
 ## Get Started
 
-Once the first CRAN release is available, install ivue together with `rgl`,
-its optional plotting backend:
+Install the current **development build** (not yet a CRAN release). This built
+source package includes all five rendered guides. Install its dependencies first:
 
 ```r
-install.packages(c("ivue", "rgl"))
+install.packages(c("htmlwidgets", "htmltools", "rgl"))
+install.packages("https://pgajer.github.io/ivue/ivue_0.1.0.tar.gz",
+                 repos = NULL, type = "source")
+vignette("function-guide", package = "ivue")
 ```
 
-The release package includes the five rendered vignettes; you do not need
+The [documentation site](https://pgajer.github.io/ivue/) identifies the source
+commit and provides the same guides online. The built package includes them
+for offline reading; you do not need
 `knitr`, `rmarkdown`, or Pandoc to read them.
 
 Start with a coordinate matrix, one observation per row. This sample from a
@@ -51,7 +56,7 @@ returned widget to a variable to reuse it or save it with
 
 With explicit coordinate row IDs, named annotations match those IDs in both
 point-cloud and graph views. Unnamed annotations follow row order. See the
-[input recipes](vignettes/example-data.Rmd#construct-a-point-cloud) for checks
+[input recipes](https://pgajer.github.io/ivue/doc/example-data.html#construct-a-point-cloud) for checks
 and a shuffled-annotation example.
 
 ## Three Embeddings of Retinal Development
@@ -75,21 +80,21 @@ renders the supplied coordinates without computing the embeddings.
 
 The vignettes develop these examples and show how to adapt them to your data:
 
-- [Finding your way around ivue](vignettes/function-guide.Rmd): choose a task,
+- [Finding your way around ivue](https://pgajer.github.io/ivue/doc/function-guide.html): choose a task,
   find its public functions, and check input and export contracts.
-- [Example data and recipes](vignettes/example-data.Rmd): prepare reproducible
+- [Example data and recipes](https://pgajer.github.io/ivue/doc/example-data.html): prepare reproducible
   point clouds, graphs, and frames, with shared scales and cameras.
-- [Point clouds and weighted graphs](vignettes/ivue-introduction.Rmd): colors,
+- [Point clouds and weighted graphs](https://pgajer.github.io/ivue/doc/ivue-introduction.html): colors,
   highlighting, meshes and reference surfaces, graph inputs, cameras, and HTML
   export.
-- [Retinal-development case study](vignettes/retinal-development.Rmd): reproduce
+- [Retinal-development case study](https://pgajer.github.io/ivue/doc/retinal-development.html): reproduce
   the point-cloud and graph views using the bundled data, with shared palettes
   and the full data and embedding provenance.
-- [Coordinate animations](vignettes/animation.Rmd): generate and play a
+- [Coordinate animations](https://pgajer.github.io/ivue/doc/animation.html): generate and play a
   Sierpinski layout trace, animate changing surfaces, and export HTML or GIFs.
 
-The links above show the source guides on GitHub. Open the rendered guides
-from your installation with:
+The links above open rendered guides. Their [maintained sources](https://github.com/pgajer/ivue/tree/main/vignettes)
+are on GitHub. Open the same guides from your installation with:
 
 ```r
 vignette("function-guide", package = "ivue")

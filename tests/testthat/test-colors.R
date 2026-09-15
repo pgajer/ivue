@@ -42,6 +42,30 @@ test_that("palette generators and value maps have distinct contracts", {
     expect_error(map.colors(1:2, color.scale.cont(1:2, color.map = function(x) "red")), "one color")
 })
 
+test_that("pointwise color maps agree across batches and with legend ticks", {
+    mapper <- function(x) ifelse(x < 0, "blue", "red")
+    sc <- color.scale.cont(c(-2, 4), color.map = mapper, limits = c(-2, 4))
+    x <- c(-2, -.5, 1, 2.5, 4)
+    mapped <- map.colors(x, sc)
+    expect_identical(mapped$colors, c("blue", "blue", "red", "red", "red"))
+    expect_identical(mapped$colors, mapped$legend$color)
+    expect_identical(map.colors(rev(x), sc)$colors, rev(mapped$colors))
+    expect_identical(vapply(x, function(value) map.colors(value, sc)$colors, ""), mapped$colors)
+    expect_identical(map.colors(c(-100, 100, NA), sc)$colors, c("blue", "red", "gray80"))
+    centered <- color.scale.cont(c(-2, 4), color.map = mapper, limits = c(-2, 4), center = 0)
+    expect_identical(map.colors(x, centered)$colors, mapped$colors)
+    automatic <- color.scale.cont(c(-2, 4), color.map = mapper, center = 0)
+    expect_equal(automatic$limits, c(-4, 4))
+    expect_identical(map.colors(c(-4, 0, 4), automatic)$colors, c("blue", "red", "red"))
+    # The callback sees data units after censoring; NA does not reach it.
+    censor <- color.scale.cont(c(10, 20), color.map = function(x) ifelse(x < 15, "blue", "red"),
+                               oob = "censor")
+    expect_identical(map.colors(c(0, 10, 20, 30), censor)$colors,
+                     c("gray80", "blue", "red", "gray80"))
+    strict <- color.scale.cont(c(10, 20), color.map = mapper, oob = "error")
+    expect_error(map.colors(0, strict), "outside scale limits")
+})
+
 test_that("group colors are deterministic, retain factor order and opacity", {
     groups <- factor(c("c", "a", NA), levels = c("b", "a", "c"))
     sc <- color.scale.groups(groups, colors = c(a = "#FF000080", b = "blue", c = "green"))

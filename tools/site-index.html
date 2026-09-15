@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ivue — interactive 3D views in R</title>
+<style>
+body{margin:0;color:#192c35;background:#fafbf9;font:17px/1.6 system-ui,sans-serif}main,nav{max-width:920px;margin:auto;padding:24px}nav{display:flex;gap:24px;flex-wrap:wrap;border-bottom:1px solid #cedbd8}a{color:#006962;text-underline-offset:3px}h1{font-size:clamp(2.5rem,7vw,4rem);line-height:1.1;margin-bottom:14px}h2{line-height:1.25;margin-top:2em}p{max-width:760px}figure{margin:28px 0}img{display:block;width:100%;height:auto;border:1px solid #cedbd8}figcaption,.meta{font-size:.9rem;color:#425960}pre{padding:20px;background:#eaf1ee;overflow:auto;border-radius:8px}code{font-size:.9em}li{margin:10px 0}.lead{font-size:1.2rem}.guides{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;padding:0;list-style:none}.guides li{padding:18px;border:1px solid #cedbd8;border-radius:8px;background:white}.guides a{font-weight:650}footer{margin-top:48px;padding-top:16px;border-top:1px solid #cedbd8}
+</style>
+</head>
+<body>
+<nav aria-label="Main navigation"><strong>ivue</strong><a href="#install">Install</a><a href="doc/function-guide.html">Start here</a><a href="html/index.html">Reference</a><a href="https://github.com/pgajer/ivue">GitHub</a></nav>
+<main>
+<h1>Explore your coordinates.</h1>
+<p class="lead">Interactive point clouds, annotated graphs, surfaces, and recorded coordinate animations in R. Rotate a view, reuse a color scale, and share the result as HTML.</p>
+<figure><img src="retinal-sknn.png" width="960" height="533" alt="Two views of the same retinal graph-layout coordinates, colored by developmental stage and cell type."><figcaption>12,000 mouse retinal cells, displayed after fitting the graph layout on 120,804 cells. ivue renders supplied coordinates; it does not compute the embedding. <a href="doc/retinal-development.html">Read the case study and provenance</a>.</figcaption></figure>
+<h2 id="install">Install the development build</h2>
+<p>This is ivue @@VERSION@@ from the development branch, not a CRAN release. The source archive includes all five rendered guides. Install the dependencies first, then the built package:</p>
+<pre><code>install.packages(c("htmlwidgets", "htmltools", "rgl"))
+install.packages("https://pgajer.github.io/ivue/@@ARCHIVE@@",
+                 repos = NULL, type = "source")
+vignette("function-guide", package = "ivue")</code></pre>
+<p><a href="@@ARCHIVE@@">Download the built source package</a>. Reading installed guides needs neither knitr nor Pandoc. Rendering a new plot requires rgl; color mapping and graph preparation work without it.</p>
+<h2>A first view</h2>
+<pre><code>library(ivue)
+X &lt;- rbind(a = c(0, 0, 0), b = c(1, 1, 1), c = c(2, 0, 0))
+height &lt;- c(c = 0, a = 0, b = 1)
+view &lt;- plot3D.cont(X, height, legend.title = "Height")
+view</code></pre>
+<p>Named annotations match observation IDs. Printing displays the widget in RStudio's Viewer or a browser; assigning it does not open a window. See <a href="html/ivue-package.html">package help</a> for the installed starting point.</p>
+<h2>Find your next step</h2>
+<ul class="guides">
+<li><a href="doc/function-guide.html">Finding your way around</a><br>Choose a task and find its functions and input contracts.</li>
+<li><a href="doc/example-data.html">Example data and recipes</a><br>Prepare observations, match IDs, and share scales across views.</li>
+<li><a href="doc/ivue-introduction.html">Points, graphs, and geometry</a><br>Use colors, highlights, meshes, surfaces, layers, and cameras.</li>
+<li><a href="doc/animation.html">Coordinate animations</a><br>Play recorded frames and export interactive HTML or GIFs.</li>
+<li><a href="doc/retinal-development.html">Retinal development</a><br>Explore the bundled data and understand its scientific provenance.</li>
+<li><a href="html/index.html">Function reference</a><br>Read arguments, return values, and executable examples.</li>
+</ul>
+<footer><p class="meta">Built from <a href="https://github.com/pgajer/ivue/commit/@@COMMIT@@">commit @@COMMIT@@</a>. <a href="build-info.R">Build record and archive checksum</a>. <a href="https://github.com/pgajer/ivue/issues">Report an issue</a>.</p></footer>
+</main></body></html>

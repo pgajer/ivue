@@ -59,6 +59,9 @@
 #'   before ID alignment. The same named vector therefore gives matching group
 #'   colors in point and graph views even if their coordinate orders differ.
 #'   Reuse a scale to keep colors fixed when annotation order or membership changes.
+#' @seealso [color.scale.cont()], [map.colors()], [plot3D.graph()], [ivue-package],
+#'   \href{../doc/function-guide.html}{Finding your way around ivue},
+#'   \href{../doc/example-data.html}{Example data and recipes}.
 #' @export
 #' @examples
 #' set.seed(1)
