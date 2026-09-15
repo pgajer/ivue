@@ -30,9 +30,14 @@
 .scene <- function(X, colors, point.type, point.size, sphere.radius, alpha,
                    highlight, highlight.style, non.highlight.style, axes,
                    xlab, ylab, zlab, aspect, camera, width, height,
-                   background.color, layers, shiny.brush, limits = NULL) {
+                   background.color, layers, shiny.brush, limits = NULL,
+                   description = NULL, controls = TRUE) {
     X <- .coordinates(X)
     n <- nrow(X)
+    limits <- .view.limits(limits, X)
+    .flag(controls, "controls")
+    if (is.null(description)) description <- paste("Interactive 3D view of", n, "observations.")
+    .text(description, "description")
     colors <- .colors(colors, n)
     .flag(axes, "axes")
     for (nm in c("xlab", "ylab", "zlab")) .text(get(nm), nm)
@@ -56,13 +61,18 @@
     other.style <- .point.style(non.highlight.style, defaults)
     if (!is.null(selected.style$col)) .colors(selected.style$col, n, "highlight.style$col")
     if (!is.null(other.style$col)) .colors(other.style$col, n, "non.highlight.style$col")
-    .named.list(camera, c("theta", "phi", "fov", "zoom", "userMatrix"), "camera")
-    for (nm in setdiff(names(camera), "userMatrix")) .scalar(camera[[nm]], paste0("camera$", nm))
+    .named.list(camera, c("theta", "phi", "fov", "zoom", "userMatrix", "observer"), "camera")
+    for (nm in setdiff(names(camera), c("userMatrix", "observer"))) .scalar(camera[[nm]], paste0("camera$", nm))
     if (!is.null(camera$fov)) .scalar(camera$fov, "camera$fov", 0, 179)
     if (!is.null(camera$zoom)) .scalar(camera$zoom, "camera$zoom", .Machine$double.eps)
     if (!is.null(camera$userMatrix) && (!is.matrix(camera$userMatrix) ||
         !identical(dim(camera$userMatrix), c(4L, 4L)) || !is.numeric(camera$userMatrix) ||
         any(!is.finite(camera$userMatrix)))) .stop("camera$userMatrix must be a finite 4 x 4 matrix.")
+
+    if (!is.null(camera$observer) && (!is.numeric(camera$observer) ||
+        is.complex(camera$observer) || length(camera$observer) != 3L ||
+        any(!is.finite(camera$observer)) || camera$observer[3] <= 0))
+        .stop("camera$observer must contain three finite coordinates with positive depth.")
 
     # This option must precede the first namespace load, not just open3d().
     old.options <- options(rgl.useNULL = TRUE)
@@ -86,12 +96,17 @@
         list(xlim = limits[1, ], ylim = limits[2, ], zlim = limits[3, ])
     do.call(rgl::plot3d, c(list(x = X, type = "n", axes = axes,
                              xlab = xlab, ylab = ylab, zlab = zlab), bounds))
+    # Fixed ranges are established above; subsequent geometry does not enlarge them.
+    if (!is.null(limits)) rgl::par3d(ignoreExtent = TRUE)
     if (aspect == "equal") rgl::aspect3d("iso") else rgl::aspect3d(1, 1, 1)
     # Do not let a default userMatrix override explicitly supplied rgl angles.
     camera.defaults <- if (any(c("theta", "phi", "userMatrix") %in% names(camera)))
         list(theta = 35, phi = 20, fov = 30, zoom = 0.8) else camera.zup()
     camera <- utils::modifyList(camera.defaults, camera)
+    observer <- camera$observer
+    camera$observer <- NULL
     do.call(rgl::view3d, camera)
+    if (!is.null(observer)) rgl::observer3d(observer)
     ids <- rbind(.draw.points(X, which(!highlight), colors, other.style),
                  .draw.points(X, which(highlight), colors, selected.style))
     ids <- ids[order(ids$row), , drop = FALSE]
@@ -109,14 +124,23 @@
     if (is.null(width)) w$width <- "100%"
     w$sizingPolicy$browser$padding <- 0
     w$sizingPolicy$viewer$padding <- 0
-    w <- htmlwidgets::onRender(w, "function(el) {
-      Array.from(el.children).forEach(function(child) {
-        if (child.classList.contains('ivue-legend')) child.remove();
-      });
-    }")
+    w <- .view.controls(w, description, controls, aspect, X)
     captured.camera <- list(userMatrix = rgl::par3d("userMatrix"),
-                            zoom = rgl::par3d("zoom"), fov = rgl::par3d("FOV"))
+                            zoom = rgl::par3d("zoom"), fov = rgl::par3d("FOV"),
+                            observer = rgl::par3d("observer"))
     attr(w, "ivue") <- c(context, list(camera = captured.camera,
-                                    aspect = aspect, scene = scene))
+                                    aspect = aspect, limits = limits,
+                                    description = description, scene = scene))
     w
+}
+
+.view.limits <- function(limits, X) {
+    if (is.null(limits)) return(NULL)
+    if (!is.matrix(limits) || !is.numeric(limits) || is.complex(limits) ||
+        !identical(dim(limits), c(3L, 2L)) || any(!is.finite(limits)) ||
+        any(limits[, 1] > limits[, 2]) || any(!is.finite(limits[, 2]-limits[, 1])))
+        .stop("limits must be a finite 3-by-2 matrix of nondecreasing ranges.")
+    if (any(sweep(X, 2, limits[, 1], "<")) || any(sweep(X, 2, limits[, 2], ">")))
+        .stop("limits must contain every point coordinate.")
+    unname(limits)
 }

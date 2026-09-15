@@ -20,6 +20,15 @@
 #' @param fps Frames per second at the initial playback speed, from 0.1 to 100.
 #' @param loop Repeat browser playback.
 #' @param col Point colors, length one or n. Alpha components are preserved.
+#' @param mapping Optional result of [map.colors()], with one color per
+#'   vertex in frame row order. Mutually exclusive with col. Carries a fixed
+#'   numerical or categorical legend into saved interactive HTML. Colors do
+#'   not change with the frames; describe their meaning with caption.
+#' @param legend.title Title for the mapping's color legend.
+#' @param caption Optional plain-text interpretation retained below the widget
+#'   when saved as HTML; for example, 'Color: final saddle height; positions:
+#'   current frame.' HTML captions and legends are not included in GIF export.
+#' @inheritParams plot3D.plain
 #' @param point.size Point diameter in screen pixels.
 #' @param edge.col Edge colors, length one or the number of edges.
 #' @param edge.width Positive edge width in screen units.
@@ -46,7 +55,8 @@
 #'   sequence must contain at least one finite point.
 #'
 #'   Only points and optional straight edges are animated. Use col with
-#'   [map.colors()] to reuse numerical or categorical color scales. Ordinary
+#'   [map.colors()] to reuse numerical or categorical color scales; passing
+#'   mapping instead also preserves its legend. Ordinary
 #'   static plotting and validation retain their stricter finite-coordinate
 #'   requirements. rgl is loaded only when a widget is constructed.
 #' @seealso [write.animation.gif()]
@@ -64,12 +74,23 @@ animate.frames <- function(frames, edges = NULL, labels = NULL,
                             fps = 6, loop = TRUE, col = "#197A68",
                             point.size = 5, edge.col = "gray65", edge.width = 1,
                             camera = NULL, width = NULL, height = 600L,
-                            background.color = "white") {
+                            background.color = "white", mapping = NULL,
+                            legend.title = "Color", caption = NULL,
+                            description = NULL, controls = TRUE) {
     info <- .animation.frames(frames, edges, labels, frame.index, max.frames)
     .scalar(fps, "fps", 0.1, 100)
     .flag(loop, "loop")
     .scalar(point.size, "point.size", .Machine$double.eps)
     .scalar(edge.width, "edge.width", .Machine$double.eps)
+    if (!is.null(mapping)) {
+        if (!missing(col)) .stop("Supply mapping or col, not both.")
+        .animation.mapping(mapping, nrow(info$frames[[1]]))
+        col <- mapping$colors
+    }
+    .text(legend.title, "legend.title")
+    if (!is.null(caption)) .text(caption, "caption")
+    if (is.null(description)) description <- paste("Coordinate animation of",
+        nrow(info$frames[[1]]), "observations across", length(info$frames), "retained frames.")
     info$col <- .fixed.colors(col, nrow(info$frames[[1]]), "col")
     info$edge.col <- .fixed.colors(edge.col, nrow(info$edges), "edge.col")
     background.color <- .fixed.colors(background.color, 1L, "background.color")
@@ -89,19 +110,31 @@ animate.frames <- function(frames, edges = NULL, labels = NULL,
     w <- .scene(first, info$col, "point", point.size, NULL, 0, NULL,
                 list(), list(), FALSE, "", "", "", "equal", camera,
                 width, height, background.color, list(layer), NULL,
-                limits = info$limits)
+                limits = info$limits, description = description, controls = controls)
     ids <- attr(w, "ivue")$draw.ids
-    controls <- list(.animation.control(info, ids$object[1], seq_len(nrow(first)),
+    frame.controls <- list(.animation.control(info, ids$object[1], seq_len(nrow(first)),
                                         info$col, edges = FALSE))
-    if (length(edge.rows)) controls[[2]] <- .animation.control(
+    if (length(edge.rows)) frame.controls[[2]] <- .animation.control(
         info, edge.id, edge.rows, rep(info$edge.col, each = 2L), edges = TRUE)
-    player <- rgl::playwidget(w$elementId, controls, start = 0,
+    player <- rgl::playwidget(w$elementId, frame.controls, start = 0,
         stop = length(info$frames) - 1L, interval = 1 / fps, rate = fps,
         step = 1, loop = loop, labels = htmltools::htmlEscape(info$labels),
         components = c("Play", "Reverse", "Slower", "Faster", "Reset", "Slider", "Label"))
+    player <- htmlwidgets::onRender(player, 'function(el, x, data) {
+      el.setAttribute("role", "group");
+      el.setAttribute("aria-label", data.description + " Playback controls");
+      var slider = el.querySelector("input[type=range]");
+      if (slider) slider.setAttribute("aria-label", data.description + " Frame");
+    }', data=list(description=description))
+    if (!is.null(mapping)) w <- .legend(w, mapping, legend.title, "right", 12, 240)
+    if (!is.null(caption)) w <- htmlwidgets::appendContent(w,
+        htmltools::tags$p(class="ivue-animation-caption", caption))
     # Register the player so rgl reapplies its current frame after scene resize.
     w$x$players <- c(w$x$players, player$elementId)
-    w <- htmlwidgets::appendContent(w, player)
+    w$append <- c(list(player), w$append)
+    info$mapping <- mapping
+    info$caption <- caption
+    info$description <- description
     info$point.size <- point.size
     info$edge.width <- edge.width
     info$background.color <- background.color
@@ -185,4 +218,16 @@ animate.frames <- function(frames, edges = NULL, labels = NULL,
     rgl::vertexControl(values = values, vertices = rep(seq_along(rows), 4L),
         attributes = rep(c("x", "y", "z", "alpha"), each = length(rows)),
         objid = objid, param = seq_along(info$frames) - 1L, interp = FALSE)
+}
+
+.animation.mapping <- function(mapping, n) {
+    if (!is.list(mapping) || !inherits(mapping$scale, "ivue_color_scale") ||
+        !is.data.frame(mapping$legend) ||
+        !all(c("label", "color", "count") %in% names(mapping$legend)) ||
+        !is.character(mapping$legend$label) || anyNA(mapping$legend$label) ||
+        !is.numeric(mapping$legend$count) || length(mapping$colors) != n)
+        .stop("mapping must be a map.colors() result with one color per vertex.")
+    .colors(mapping$colors, n, "mapping$colors")
+    .colors(mapping$legend$color, nrow(mapping$legend), "mapping$legend$color")
+    invisible(mapping)
 }

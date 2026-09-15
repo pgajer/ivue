@@ -1,0 +1,9 @@
+.ivue-description {font:14px/1.45 sans-serif;color:#333;overflow-wrap:anywhere;}
+.ivue-tools {position:absolute;bottom:8px;left:8px;right:8px;z-index:6;max-height:35%;overflow:auto;background:rgba(255,255,255,.96);color:#222;border:1px solid #888;border-radius:4px;padding:5px;font:13px/1.4 sans-serif;}
+.ivue-tools summary {cursor:pointer;}
+.ivue-tools button {font:inherit;margin:3px;padding:4px 8px;}
+.ivue-tools textarea {box-sizing:border-box;width:100%;min-height:110px;font:12px/1.4 monospace;}
+.ivue-tools :focus-visible,.ivue-legend:focus-visible {outline:3px solid #075fa8;outline-offset:1px;}
+.ivue-legend details table {border-collapse:collapse;width:100%;font:inherit;}
+.ivue-legend th,.ivue-legend td {text-align:left;padding:3px;overflow-wrap:anywhere;}
+@media print {.ivue-tools {display:none;} .ivue-description {display:block;}}

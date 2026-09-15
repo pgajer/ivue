@@ -337,3 +337,31 @@ Shared colors and IDs help compare the same cells, but apparent proximity,
 separation, or a smooth age gradient is not by itself evidence of equivalent
 geometries, clustering fidelity, lineage, or biological causation. Interpret
 the plots together with the upstream analyses and the case study's limitations.
+
+
+## Compare spatial extents
+
+Reusing only a camera allows each scene to fit its own coordinate extent.
+For a spatial comparison, also fix the framing range, equal aspect, and widget
+size. This illustrative triangle is contracted by one half without changing
+its observation IDs. Both views use the same range and orthographic camera, so
+the contracted triangle occupies half the linear screen extent.
+
+```{r shared-bounds, eval=have.rgl}
+reference <- rbind(a = c(-1, -1, 0), b = c(1, -1, 0), c = c(0, 1, 1))
+common.bounds <- rbind(x = c(-2, 2), y = c(-2, 2), z = c(-2, 2))
+orientation <- camera.zup(elevation = 35, turn = 0)
+full <- plot3D.plain(reference, limits = common.bounds, camera = orientation,
+                     width = 300, height = 300, point.size = 8,
+                     description = "Reference triangle at its original scale.")
+contracted <- plot3D.plain(reference / 2, limits = common.bounds,
+                     camera = orientation, width = 300, height = 300, point.size = 8,
+                     description = "The same triangle contracted by half.")
+htmltools::tagList(full, contracted)
+```
+
+The ranges must contain every observation. They frame the view without adding
+points or clipping planes. Spheres, meshes, surfaces, and labels cannot expand
+an explicit range; leave enough room for them. With `aspect = "normalized"`,
+axis stretching is calculated from the supplied ranges, so equal data-unit
+lengths across axes no longer have equal screen scales.

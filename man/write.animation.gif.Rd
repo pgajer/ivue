@@ -44,7 +44,10 @@ optional magick package; it does not launch a browser or native 3D window.
 \details{
 GIF export uses the widget's retained coordinates, visibility masks,
 colors, edge widths, and initial camera orientation. Camera rotations or
-speed changes made later in the browser are not returned to R. Create a
+speed changes made later in the browser are not returned to R. Download
+view settings and supply their camera when constructing a new animation
+to reuse its orientation. HTML legends and captions are not rasterized;
+include their interpretation separately when sharing a GIF. Create a
 widget with an explicit camera to export that view. Perspective cameras
 (fov greater than zero) are rejected; use camera.zup(fov = 0).
 

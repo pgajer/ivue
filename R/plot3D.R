@@ -25,6 +25,9 @@
 #' @param aspect Equal data-unit scales (default), or normalized axis lengths.
 #'   Normalization distorts relative distances when coordinate spans differ.
 #' @param camera Named list of theta, phi, fov, zoom, or a 4-by-4 userMatrix.
+#'   Downloaded recipes also include observer (three finite eye coordinates,
+#'   positive depth), which is tied to that scene's framing. Omit observer to
+#'   fit the eye distance automatically when transferring an orientation.
 #'   With no orientation supplied, defaults to [camera.zup()]: z upward,
 #'   elevation 20 degrees, turn -135 degrees, orthographic projection, and
 #'   zoom 0.8. A list containing only fov or zoom retains this orientation.
@@ -34,6 +37,23 @@
 #' @param width,height Widget dimensions in pixels; NULL width fills its container.
 #' @param background.color Canvas background color.
 #' @param layers List of layer3D specifications, evaluated before widget capture.
+#' @param limits Optional finite 3-by-2 matrix: rows x, y, z; columns lower,
+#'   upper. Nondecreasing ranges must contain all point coordinates. These
+#'   fix framing, not clipping planes: spheres and layers cannot expand the
+#'   range and may extend outside the visible viewport. NULL fits automatically.
+#'   Equal endpoints are accepted for constant axes. Use the same limits,
+#'   camera, aspect, and widget dimensions for spatial comparisons. Equal
+#'   aspect preserves data-unit distances; normalized aspect stretches axes
+#'   according to these ranges. Limits never add observations or change IDs.
+#' @param description Optional plain-text scene description for readers who
+#'   cannot see or manipulate the canvas. NULL describes the point count.
+#'   Also shown below the widget, including when scripts or WebGL are unavailable.
+#' @param controls Show keyboard-operable view controls: rotate, zoom, reset,
+#'   and download current view settings as an R recipe. The recipe contains
+#'   camera, bounds, and aspect; use `source("ivue-view.R")`, then pass
+#'   `view$camera`, `view$limits`, and `view$aspect` to a new plot. Browser
+#'   interaction never changes the original R object. Match widget dimensions
+#'   as well as settings for equal screen scale. Reset restores the initial view.
 #' @param shiny.brush Optional rgl brush configuration passed as shinyBrush.
 #' @return An rglwidget/htmlwidget. `attr(widget, "ivue")` contains coordinates,
 #'   row.ids (integer row positions), observation.ids (explicit coordinate row
@@ -84,7 +104,8 @@ plot3D.plain <- function(X, col = "gray55", point.type = c("point", "sphere"),
                          axes = FALSE, xlab = "", ylab = "", zlab = "",
                          aspect = c("equal", "normalized"), camera = list(),
                          width = NULL, height = 600L, background.color = "white",
-                         layers = list(), shiny.brush = NULL) {
+                         layers = list(), shiny.brush = NULL, limits = NULL,
+                         description = NULL, controls = TRUE) {
     X <- .point.coordinates(X)
     col <- .align.point.data(col, X, "col")
     if (is.logical(highlight)) highlight <- .align.point.data(highlight, X, "highlight")
@@ -94,7 +115,8 @@ plot3D.plain <- function(X, col = "gray55", point.type = c("point", "sphere"),
         .align.point.data(non.highlight.style$col, X, "non.highlight.style$col")
     .scene(X, col, match.arg(point.type), point.size, sphere.radius, alpha,
            highlight, highlight.style, non.highlight.style, axes, xlab, ylab,
-           zlab, match.arg(aspect), camera, width, height, background.color, layers, shiny.brush)
+           zlab, match.arg(aspect), camera, width, height, background.color, layers, shiny.brush,
+           limits = limits, description = description, controls = controls)
 }
 
 #' @rdname plot3D.plain

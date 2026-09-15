@@ -26,7 +26,10 @@ plot3D.plain(
   height = 600L,
   background.color = "white",
   layers = list(),
-  shiny.brush = NULL
+  shiny.brush = NULL,
+  limits = NULL,
+  description = NULL,
+  controls = TRUE
 )
 
 plot3D.cont(
@@ -86,6 +89,9 @@ it still multiplies the alpha component of the selected colors.}
 Normalization distorts relative distances when coordinate spans differ.}
 
 \item{camera}{Named list of theta, phi, fov, zoom, or a 4-by-4 userMatrix.
+Downloaded recipes also include observer (three finite eye coordinates,
+positive depth), which is tied to that scene's framing. Omit observer to
+fit the eye distance automatically when transferring an orientation.
 With no orientation supplied, defaults to \code{\link[=camera.zup]{camera.zup()}}: z upward,
 elevation 20 degrees, turn -135 degrees, orthographic projection, and
 zoom 0.8. A list containing only fov or zoom retains this orientation.
@@ -100,6 +106,26 @@ fov = 30, and zoom = 0.8. Use \code{\link[=camera.zup]{camera.zup()}} to customi
 \item{layers}{List of layer3D specifications, evaluated before widget capture.}
 
 \item{shiny.brush}{Optional rgl brush configuration passed as shinyBrush.}
+
+\item{limits}{Optional finite 3-by-2 matrix: rows x, y, z; columns lower,
+upper. Nondecreasing ranges must contain all point coordinates. These
+fix framing, not clipping planes: spheres and layers cannot expand the
+range and may extend outside the visible viewport. NULL fits automatically.
+Equal endpoints are accepted for constant axes. Use the same limits,
+camera, aspect, and widget dimensions for spatial comparisons. Equal
+aspect preserves data-unit distances; normalized aspect stretches axes
+according to these ranges. Limits never add observations or change IDs.}
+
+\item{description}{Optional plain-text scene description for readers who
+cannot see or manipulate the canvas. NULL describes the point count.
+Also shown below the widget, including when scripts or WebGL are unavailable.}
+
+\item{controls}{Show keyboard-operable view controls: rotate, zoom, reset,
+and download current view settings as an R recipe. The recipe contains
+camera, bounds, and aspect; use \code{source("ivue-view.R")}, then pass
+\code{view$camera}, \code{view$limits}, and \code{view$aspect} to a new plot. Browser
+interaction never changes the original R object. Match widget dimensions
+as well as settings for equal screen scale. Reset restores the initial view.}
 
 \item{values}{Numeric values, one per row. Missing values use the scale's NA color.}
 

@@ -19,7 +19,12 @@ animate.frames(
   camera = NULL,
   width = NULL,
   height = 600L,
-  background.color = "white"
+  background.color = "white",
+  mapping = NULL,
+  legend.title = "Color",
+  caption = NULL,
+  description = NULL,
+  controls = TRUE
 )
 }
 \arguments{
@@ -59,6 +64,28 @@ default is orthographic: face-on for 2D and \code{\link[=camera.zup]{camera.zup(
 \item{width, height}{Widget dimensions, as in \code{\link[=plot3D.plain]{plot3D.plain()}}.}
 
 \item{background.color}{Canvas background color.}
+
+\item{mapping}{Optional result of \code{\link[=map.colors]{map.colors()}}, with one color per
+vertex in frame row order. Mutually exclusive with col. Carries a fixed
+numerical or categorical legend into saved interactive HTML. Colors do
+not change with the frames; describe their meaning with caption.}
+
+\item{legend.title}{Title for the mapping's color legend.}
+
+\item{caption}{Optional plain-text interpretation retained below the widget
+when saved as HTML; for example, 'Color: final saddle height; positions:
+current frame.' HTML captions and legends are not included in GIF export.}
+
+\item{description}{Optional plain-text scene description for readers who
+cannot see or manipulate the canvas. NULL describes the point count.
+Also shown below the widget, including when scripts or WebGL are unavailable.}
+
+\item{controls}{Show keyboard-operable view controls: rotate, zoom, reset,
+and download current view settings as an R recipe. The recipe contains
+camera, bounds, and aspect; use \code{source("ivue-view.R")}, then pass
+\code{view$camera}, \code{view$limits}, and \code{view$aspect} to a new plot. Browser
+interaction never changes the original R object. Match widget dimensions
+as well as settings for equal screen scale. Reset restores the initial view.}
 }
 \value{
 An rglwidget/htmlwidget with an attached player. Save interactive
@@ -87,7 +114,8 @@ frame.index to limit output size. A frame can be empty, but the full
 sequence must contain at least one finite point.
 
 Only points and optional straight edges are animated. Use col with
-\code{\link[=map.colors]{map.colors()}} to reuse numerical or categorical color scales. Ordinary
+\code{\link[=map.colors]{map.colors()}} to reuse numerical or categorical color scales; passing
+mapping instead also preserves its legend. Ordinary
 static plotting and validation retain their stricter finite-coordinate
 requirements. rgl is loaded only when a widget is constructed.
 }

@@ -1,5 +1,14 @@
 # ivue 0.1.0
 
+- Prepared graphs and color scales now print concise summaries while retaining
+  full list access.
+- Point and graph views accept common framing `limits`, scene `description`,
+  and keyboard view `controls`, including reset and downloadable camera recipes.
+- Color legends provide a focusable scrolling region and readable table.
+  Installed guides include small static saddle and animation alternatives.
+- `animate.frames()` accepts a fixed `mapping` and interpretation `caption`,
+  retained in saved HTML, and gives its player and slider descriptive names.
+
 Initial release.
 
 - **Getting started:** installed package help is visible in the help index,

@@ -20,13 +20,26 @@
         ramp <- htmltools::tags$div(style = paste0("height:12px;margin:4px 0;background:linear-gradient(to right,",
                     paste(.css.color(.with.alpha(cols, alpha)), collapse = ","), ");"))
     }
-    box <- htmltools::tags$div(class = "ivue-legend",
+    box <- htmltools::tags$div(class = "ivue-legend", tabindex = "0", role = "region",
+        `aria-label` = paste(title, "color legend; scroll for more entries"),
         style = paste0("position:absolute;top:8px;", position, ":8px;z-index:5;",
             "max-width:calc(100% - 32px);width:", width, "px;max-height:40%;overflow:auto;",
             "box-sizing:border-box;padding:8px;background:rgba(255,255,255,.92);",
             "border:1px solid #bbb;border-radius:4px;font-family:sans-serif;",
             "font-size:", font.size, "px;color:#222;"),
-        htmltools::tags$strong(style = "overflow-wrap:anywhere;", title), ramp, items)
+        htmltools::tags$strong(style = "overflow-wrap:anywhere;", title), ramp, items,
+        htmltools::tags$details(
+            htmltools::tags$summary("Read legend as table"),
+            htmltools::tags$table(
+                htmltools::tags$caption(title),
+                htmltools::tags$thead(htmltools::tags$tr(
+                    htmltools::tags$th(scope="col", "Value / group"),
+                    htmltools::tags$th(scope="col", "Color"),
+                    htmltools::tags$th(scope="col", "Count"))),
+                htmltools::tags$tbody(lapply(seq_len(nrow(data)), function(i)
+                    htmltools::tags$tr(htmltools::tags$td(data$label[i]),
+                        htmltools::tags$td(data$color[i]),
+                        htmltools::tags$td(if (is.na(data$count[i])) "Not a frequency" else data$count[i])))))))
     # Render hooks also work in Shiny, where prepended widget content is ignored.
     htmlwidgets::onRender(widget, "function(el, x, data) {
       var container = document.createElement('div');

@@ -292,7 +292,24 @@ Away from the poles, positive z initially projects upward. Interactive rotation
 can tilt it; this is not an enforced rotation constraint. Explicit `theta`,
 `phi`, or `userMatrix` selects the alternative camera controls described in
 `help("plot3D.plain", package = "ivue")`. Browser rotation does not update
-R-side camera metadata or synchronize another widget.
+R-side camera metadata or synchronize another widget. Open **View controls**
+for keyboard rotation/zoom and **Reset view**. **Download view settings** saves
+an R recipe containing the current camera, bounds, and aspect. Source it and
+supply those settings explicitly to another plot:
+
+```{r recovered-camera, eval=FALSE}
+source("ivue-view.R")
+recovered <- plot3D.plain(X, camera = view$camera, limits = view$limits,
+                          aspect = view$aspect)
+```
+
+The file contains viewing settings, not coordinates, annotations, or layers.
+Use matching widget dimensions as well for equal screen scale. The camera is
+transferable, but a bounds range from one scene may not contain another dataset.
+`limits = rbind(c(-2, 2), c(-2, 2), c(-2, 2))` fixes the x/y/z framing range;
+all observations must fit. Spheres and layers cannot enlarge it, and geometry
+outside the range may fall outside the viewport. It is not a clipping box.
+See the [common-bounds recipe](example-data.html#compare-spatial-extents).
 
 ### Recorded-coordinate animation and export
 
@@ -329,7 +346,8 @@ The parent directory must exist and existing files are protected by default.
 GIF delays round to centiseconds; points and edges need not look pixel-identical
 to WebGL, especially at intersections. Perspective cameras are rejected.
 `selfcontained` and `libdir` belong to `htmlwidgets::saveWidget()`, not GIF
-export. Neither export operation captures later browser interaction.
+export. Neither export operation automatically captures later browser
+interaction; download view settings and reconstruct the R widget to reuse it.
 
 ## Optional packages and detailed help
 

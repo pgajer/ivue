@@ -20,6 +20,13 @@ for small reproducible inputs, see [Example data and recipes](example-data.html)
 
 ## A sample from a saddle
 
+![Static orthographic view of 250 green points on a saddle, whose opposing sides curve upward and downward.](figures/saddle-points.png)
+
+The poster uses the same observations as the first interactive example below.
+It shows the saddle shape without requiring scripts or WebGL; it is a static
+projection, with no interactive rotation.
+
+
 The input is an `n x 3` numeric matrix, or an all-numeric data frame. Each row
 is one observation. Coordinates must be finite; ivue does not silently drop
 rows with missing coordinates.
@@ -51,7 +58,8 @@ positive y down-right on screen. Dragging the widget can change this orientation
 
 ```{r saddle-plain, eval=have.rgl}
 plain <- plot3D.plain(X, col = "#197A68", point.size = 5,
-                     axes = TRUE, xlab = "x", ylab = "y", zlab = "z")
+                     axes = TRUE, xlab = "x", ylab = "y", zlab = "z",
+                     description = "250 green observations on a saddle; opposite sides curve upward and downward.")
 plain
 ```
 
@@ -209,6 +217,12 @@ actually drawn. The same layer and camera also work with `plot3D.graph()`.
 
 ## A triangular mesh beneath the spheres
 
+![Static view of triangular faces connecting the 500 saddle observations. Point colors encode height: blue below zero, yellow at zero, and red above zero.](figures/saddle-mesh.png)
+
+This poster projects the same sample and triangulation used below. It is a
+flat diagram of the geometry; it does not reproduce WebGL lighting or spheres.
+
+
 Connecting neighboring observations with triangular faces makes the saddle's
 shape easier to see. Construct a Delaunay triangulation in the original
 two-dimensional parameter plane, then draw its faces at the three-dimensional
@@ -237,7 +251,7 @@ as in the preceding plot.
 
 ```{r saddle-mesh, eval=have.rgl && have.geometry}
 saddle.mesh <- plot3D.cont(
-  saddle, values = saddle[, "z"], scale = byr.scale,
+  saddle, description = "500 saddle observations joined by triangular faces; blue is below zero, yellow is zero, red is above zero.", values = saddle[, "z"], scale = byr.scale,
   point.type = "sphere", sphere.radius = 0.02,
   legend.title = "Saddle height", legend.width = 160,
   axes = FALSE, aspect = "equal",

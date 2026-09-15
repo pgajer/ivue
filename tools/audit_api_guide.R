@@ -23,7 +23,10 @@ rd <- lapply(list.files("man", "[.]Rd$", full.names = TRUE), tools::parse_Rd)
 aliases <- unlist(lapply(rd, function(doc) unlist(lapply(Filter(function(x)
   identical(attr(x, "Rd_tag"), "\\alias"), doc), as.character))))
 stopifnot(all(exports %in% aliases))
-n.methods <- length(entries("S3method"))
+methods <- vapply(entries("S3method"), function(x)
+  paste(as.character(x[[2L]]), as.character(x[[3L]]), sep="."), "")
+stopifnot(all(methods %in% definitions), all(methods %in% aliases))
+n.methods <- length(methods)
 stopifnot(any(grepl(sprintf("%d explicit public function exports", length(exports)), guide, fixed = TRUE)),
           any(grepl(sprintf("%d S3 methods", n.methods), guide, fixed = TRUE)))
 # Vignette cross-links must resolve to maintained sources (anchors checked after build).

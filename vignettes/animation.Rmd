@@ -123,6 +123,14 @@ finite-coordinate requirement of ordinary `plot3D` functions is unchanged.
 
 ## Animate a changing 3D surface
 
+![Three static views show a plane, halfway deformation, and a saddle, using the same framing. Blue and red colors stay fixed and describe final saddle height, even in the flat frame.](figures/saddle-animation.png)
+
+The poster shows three of the recorded states below with a common spatial
+scale. All players start paused, including for readers who prefer reduced
+motion. Use the labeled frame slider with the arrow keys to inspect one frame
+at a time without starting playback.
+
+
 Any sequence satisfying the frame contract can be played. This example explicitly
 constructs a sequence from a plane to a saddle; it is an illustrative
 deformation, not the output of a layout optimizer. The xy positions and
@@ -146,14 +154,18 @@ saddle.edges <- rbind(
 final.heights <- saddle.frames[[length(saddle.frames)]][, "z"]
 height.scale <- color.scale.cont(final.heights, center = 0,
                                  palette = c("#2455A4", "#ECE6C2", "#B83232"))
-point.colors <- map.colors(final.heights, height.scale)$colors
+height.mapping <- map.colors(final.heights, height.scale)
+point.colors <- height.mapping$colors
 ```
 
 ```{r saddle-player, eval=have.rgl}
 saddle.player <- animate.frames(
   saddle.frames, edges = saddle.edges,
   labels = sprintf("Saddle amplitude = %.2f", amplitudes),
-  col = point.colors, point.size = 6, edge.col = "#314E6E99",
+  mapping = height.mapping, legend.title = "Final saddle height",
+  caption = "Color: final saddle height; positions: current frame.",
+  description = "Plane to saddle, with fixed colors for final saddle height.",
+  point.size = 6, edge.col = "#314E6E99",
   camera = camera.zup(elevation = 25, turn = -130),
   fps = 8, height = 450
 )
@@ -191,7 +203,10 @@ surface.labels <- sprintf("%s | t = %.2f",
 ```{r surface-morph-player, eval=have.rgl}
 surface.player <- animate.frames(
   surface.frames, edges = saddle.edges, labels = surface.labels,
-  col = point.colors, point.size = 6, edge.col = "#314E6E99",
+  mapping = height.mapping, legend.title = "Final saddle height",
+  caption = "Color: final saddle height; positions: current frame.",
+  description = "Paraboloid through a plane to a saddle, with fixed colors for final saddle height.",
+  point.size = 6, edge.col = "#314E6E99",
   camera = camera.zup(elevation = 25, turn = -130),
   fps = 8, height = 450
 )
@@ -205,7 +220,7 @@ Colors still represent final saddle height, not the height in the current frame.
 ## Export interactive HTML
 
 The returned object is an ordinary htmlwidget. Saving it preserves the
-player and camera controls and does not require Shiny or a running R session
+player, caption, readable color legend, and camera controls and does not require Shiny or a running R session
 for playback. No file is saved merely by constructing a player.
 
 ```{r html-export, eval=FALSE}
@@ -218,6 +233,9 @@ Use `selfcontained = FALSE` to save the HTML alongside a dependency folder;
 keep that folder with the HTML when sharing it.
 
 ## Export a GIF
+
+HTML captions and legends are not captured by the separate GIF renderer.
+When sharing a GIF, provide its color legend and interpretation alongside it.
 
 GIF export uses the frames retained in the player, including inactive
 vertices and edges. This build checks the small three-frame triangle; the

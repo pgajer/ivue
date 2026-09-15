@@ -20,6 +20,8 @@ controls.
 
 ![Two synchronized point-only views of 12,000 retinal cells extracted after fitting a symmetric 4-nearest-neighbor graph layout on all 120,804 cells, colored by developmental stage and annotated cell type.](https://raw.githubusercontent.com/pgajer/ivue/d08a39e1baa4b4333dddc179fe6a4fa17c8cb132/man/figures/readme-retinal-sknn.gif)
 
+[View a static alternative without motion](man/figures/readme-retinal-sknn.png).
+
 ## Get Started
 
 Install the current **development build** (not yet a CRAN release). This built
@@ -67,6 +69,8 @@ published UMAP coordinates, a symmetric-kNN graph layout fitted with
 weighted-GRIP followed by edge-KK refinement, and a PHATE embedding.
 
 ![Three synchronized point-only views of the same 12,000 retinal cells in published UMAP, symmetric-kNN weighted-GRIP plus edge-KK, and PHATE coordinates, colored by developmental stage and initially oriented with their P14 centroids toward the viewer.](https://raw.githubusercontent.com/pgajer/ivue/d08a39e1baa4b4333dddc179fe6a4fa17c8cb132/man/figures/readme-retinal-phate-comparison.gif)
+
+[View a static alternative without motion](man/figures/readme-retinal-phate-comparison.png).
 
 All three embeddings were fitted on **120,804 cells** before selecting the same
 12,000 retained retinal cells for display. UMAP uses **Canberra distance**;
