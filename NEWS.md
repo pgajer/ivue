@@ -6,6 +6,10 @@
 - **Annotated GIFs:** `write.animation.gif(..., annotations = TRUE)` draws the
   fixed mapping legend and caption beside/below the scene. The default remains
   unannotated; long text requires sufficient output dimensions.
+- **Shiny and keyboard controls:** complete animations now connect their scene
+  and player IDs inside `renderUI()`. Reactive updates preserve control focus,
+  leave unrelated inputs focused, and stop removed players. Frame sliders expose
+  descriptive labels without announcing every playback tick.
 - **Guide navigation:** task links and function-help links work in installed
   and hosted documentation, with a persistent first-export recipe.
 

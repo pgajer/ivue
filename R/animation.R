@@ -115,6 +115,9 @@ animate.frames <- function(frames, edges = NULL, labels = NULL,
                 list(), list(), FALSE, "", "", "", "equal", camera,
                 width, height, background.color, list(layer), NULL,
                 limits = info$limits, description = description, controls = controls)
+    # In Shiny, rgl leaves element IDs for the output binding to supply. An
+    # animation returned through renderUI needs both companion IDs beforehand.
+    if (is.null(w$elementId)) w$elementId <- basename(tempfile("ivue-animation-"))
     ids <- attr(w, "ivue")$draw.ids
     frame.controls <- list(.animation.control(info, ids$object[1], seq_len(nrow(first)),
                                         info$col, edges = FALSE))
@@ -122,6 +125,7 @@ animate.frames <- function(frames, edges = NULL, labels = NULL,
         info, edge.id, edge.rows, rep(info$edge.col, each = 2L), edges = TRUE)
     player <- rgl::playwidget(w$elementId, frame.controls, start = 0,
         stop = length(info$frames) - 1L, interval = 1 / fps, rate = fps,
+        elementId = paste0(w$elementId, "-player"),
         step = 1, loop = loop, labels = htmltools::htmlEscape(info$labels),
         components = c("Play", "Reverse", "Slower", "Faster", "Reset", "Slider", "Label"))
     player <- htmlwidgets::onRender(player, 'function(el, x, data) {
@@ -136,11 +140,24 @@ animate.frames <- function(frames, edges = NULL, labels = NULL,
         // output has an implicit status role. Suppress announcements on every
         // playback tick; the focused slider reports its actual frame label.
         if (output) output.setAttribute("aria-live", "off");
+        if (window.ivueRestorePlayerFocus) window.ivueRestorePlayerFocus(el);
       }
       if (el.ivueLabelObserver) el.ivueLabelObserver.disconnect();
       el.ivueLabelObserver = new MutationObserver(labelSlider);
       el.ivueLabelObserver.observe(el, {childList:true, subtree:true, characterData:true});
       labelSlider();
+      var output = el.closest(".shiny-bound-output");
+      if (output) {
+        if (el.ivueRemovalObserver) el.ivueRemovalObserver.disconnect();
+        el.ivueRemovalObserver = new MutationObserver(function() {
+          if (!el.isConnected) {
+            if (el.rgltimer && el.rgltimer.enabled) el.rgltimer.play();
+            el.ivueLabelObserver.disconnect();
+            el.ivueRemovalObserver.disconnect();
+          }
+        });
+        el.ivueRemovalObserver.observe(output, {childList:true, subtree:true});
+      }
     }', data=list(description=description, labels=info$labels))
     if (!is.null(mapping)) w <- .legend(w, mapping, legend.title, "right", 12, 240)
     if (!is.null(caption)) w <- htmlwidgets::appendContent(w,

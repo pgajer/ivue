@@ -32,6 +32,7 @@ Suggests:
     grip,
     rgl,
     magick,
+    shiny,
     geometry,
     igraph,
     Matrix,

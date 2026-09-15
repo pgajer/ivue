@@ -40,3 +40,20 @@ test_that('animation carries a fixed mapping and caption with its player', {
     expect_match(paste(vapply(w$append[-1],as.character,''),collapse=''), '&lt;final height&gt;')
     expect_identical(w$append[[1]]$jsHooks$render[[1]]$data$description, 'Changing triangle')
 })
+
+test_that('Shiny renderUI animations have explicit connected companion IDs', {
+    skip_if(!nzchar(system.file(package='rgl')))
+    skip_if_not_installed('shiny')
+    session <- shiny::MockShinySession$new()
+    on.exit(session$close())
+    X <- rbind(c(0,0),c(1,1))
+    widgets <- shiny::withReactiveDomain(session, list(
+        animate.frames(list(X, X*2)), animate.frames(list(X, X*2))))
+    expect_false(identical(widgets[[1]]$elementId, widgets[[2]]$elementId))
+    for(w in widgets) {
+        player <- w$append[[1]]
+        expect_true(nzchar(w$elementId))
+        expect_identical(player$x$sceneId, w$elementId)
+        expect_identical(w$x$players, player$elementId)
+    }
+})

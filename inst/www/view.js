@@ -1,20 +1,39 @@
+// One focus tracker per document, shared by static scenes and renderUI players.
+// Retaining only the most recent target avoids listeners on detached widgets.
+if (!window.ivueTrackFocus) {
+  document.addEventListener('focusin', function(e) {
+    var widget = e.target.closest('.rglWebGL, .rglPlayer');
+    var output = widget && widget.closest('.shiny-bound-output');
+    var kind = widget && (widget.classList.contains('rglPlayer') ? '.rglPlayer' : '.rglWebGL');
+    var key = e.target.getAttribute('data-ivue-control');
+    if (kind === '.rglPlayer') key = e.target.type === 'range' ? 'frame' : e.target.id.split('-').pop();
+    window.ivueActiveControl = widget ? {widget:widget, output:output, kind:kind,
+      index:output ? Array.from(output.querySelectorAll(kind)).indexOf(widget) : -1, key:key} : null;
+  });
+  window.ivueTrackFocus = true;
+}
+window.ivueFocusTarget = function(el) {
+  var p=window.ivueActiveControl;
+  if (!p || !p.key) return null;
+  if (document.activeElement !== document.body && !el.contains(document.activeElement)) return null;
+  if (p.widget === el) return p.key;
+  var output=el.closest('.shiny-bound-output');
+  if (!p.widget.isConnected && output && p.output === output && el.matches(p.kind) &&
+      Array.from(output.querySelectorAll(p.kind)).indexOf(el) === p.index) return p.key;
+  return null;
+};
+window.ivueRestorePlayerFocus = function(el) {
+  var key=window.ivueFocusTarget(el);
+  if (!key || (window.ivueActiveControl && window.ivueActiveControl.widget === el)) return;
+  var node=Array.from(el.querySelectorAll('input')).find(function(input) {
+    return key === 'frame' ? input.type === 'range' : input.id.endsWith('-'+key);
+  });
+  if (node) node.focus();
+};
 /* Controls are scoped to one rgl widget, including on Shiny re-render. */
 window.ivueView = function(el, data) {
-  // Shiny may remove children before invoking this hook. Keep the focused
-  // control's identity on the persistent output element, clearing it whenever
-  // focus moves to another widget or an external input.
-  if (!window.ivueTrackFocus) {
-    document.addEventListener('focusin', function(e) {
-      var widget = e.target.closest('.rglWebGL');
-      window.ivueActiveControl = widget ? {widget:widget,
-        key:e.target.getAttribute('data-ivue-control')} : null;
-    });
-    window.ivueTrackFocus = true;
-  }
-  var previous = window.ivueActiveControl;
-  var restore = previous && previous.widget === el ? previous.key : null;
-  var expanded = el.ivueExpanded;
-  var canRestore = document.activeElement === document.body || el.contains(document.activeElement);
+  var restore = window.ivueFocusTarget(el), expanded = el.ivueExpanded;
+  if (restore && restore !== 'summary') expanded = true;
   Array.from(el.children).forEach(function(child) {
     if (child.classList.contains('ivue-legend') || child.classList.contains('ivue-tools')) child.remove();
   });
@@ -29,7 +48,7 @@ window.ivueView = function(el, data) {
     canvas.setAttribute('aria-label', data.description);
     canvas.textContent = data.description + ' WebGL is required for the interactive view.';
   }
-  if (el.classList.contains('shiny-bound-output')) {
+  if (data.shinyDescription) {
     var description = document.getElementById(el.id + '-ivue-description');
     if (!description) {
       description = document.createElement('p'); description.id = el.id + '-ivue-description';
@@ -92,7 +111,7 @@ window.ivueView = function(el, data) {
     } catch(e) { status.textContent=e.message; }
   });
   panel.appendChild(text); panel.appendChild(status); el.appendChild(panel);
-  if (restore && canRestore) {
+  if (restore) {
     var target=Array.from(panel.querySelectorAll('[data-ivue-control]')).find(function(node) {
       return node.getAttribute('data-ivue-control') === restore;
     });
