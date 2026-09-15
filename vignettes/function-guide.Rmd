@@ -122,7 +122,10 @@ highlight overrides. See [groups and highlighting](ivue-introduction.html#groups
 ## Function catalog
 
 This catalog covers all **18 explicit public function exports**, once each.
-ivue registers **0 S3 methods** and re-exports no functions. Dots in names such
+ivue registers **2 S3 methods**: `print()` summarizes prepared graphs and color
+scales without rendering; `$vertices`, `$edges`, and scale fields retain the full
+data. These methods are described through their object workflows, not counted
+as separate function rows. ivue re-exports no functions. Dots in names such
 as `plot3D.cont` do not make them registered methods of `plot3D()` or `plot()`.
 Call these functions directly. The returned widgets use printing and knitting
 methods supplied by htmlwidgets/rgl; ivue does not add a separate widget
