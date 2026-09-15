@@ -51,6 +51,21 @@ function near(a,b) {assert.equal(a.length,b.length); a.forEach((v,i)=>assert.ok(
    assert.deepEqual(await snapshot(page),initial);
    await page.setViewportSize({width:width===390?800:420,height:950});
    near((await snapshot(page)).matrix,initial.matrix);
+   const perspective=page.locator('.rglWebGL').nth(2);
+   await perspective.getByText('View controls',{exact:true}).click();
+   await perspective.getByRole('button',{name:'Rotate up',exact:true}).click();
+   await perspective.getByRole('button',{name:'Show view settings',exact:true}).click();
+   const perspectiveBefore=await snapshot(page,2);
+   assert.equal(perspectiveBefore.fov,45);
+   fs.writeFileSync('artifacts/perspective-view.R',await perspective.getByRole('textbox').inputValue());
+   execFileSync('Rscript',['tools/replay_view_recipe.R','artifacts/perspective-view.R','artifacts/perspective-replay.html'],{stdio:'inherit'});
+   const perspectivePage=await browser.newPage({viewport:{width:width===390?800:420,height:950}});
+   await perspectivePage.goto(pathToFileURL(path.resolve('artifacts/perspective-replay.html')).href);
+   await perspectivePage.getByText('View controls',{exact:true}).waitFor();
+   const perspectiveAfter=await snapshot(perspectivePage);
+   near(perspectiveAfter.matrix,perspectiveBefore.matrix);near(perspectiveAfter.observer,perspectiveBefore.observer);
+   near([perspectiveAfter.zoom,perspectiveAfter.fov],[perspectiveBefore.zoom,perspectiveBefore.fov]);
+   await perspectivePage.close();
    await page.close();
    const animation=await browser.newPage({viewport:{width,height:900},reducedMotion:'reduce'});
    await animation.goto(pathToFileURL(path.resolve('artifacts/annotated-animation.html')).href);
@@ -78,8 +93,16 @@ function near(a,b) {assert.equal(a.length,b.length); a.forEach((v,i)=>assert.ok(
   const disabled=await browser.newPage({javaScriptEnabled:false});
   await disabled.goto(pathToFileURL(path.resolve('artifacts/annotated-animation.html')).href);
   assert.ok(await disabled.getByText('Color: final height; positions: current frame.',{exact:true}).isVisible());
-  assert.ok(await disabled.getByText('Triangle expansion',{exact:true}).isVisible());
+  assert.ok((await disabled.locator('.ivue-description').innerText()).includes('Triangle expansion'));
+  assert.ok(await disabled.locator('.ivue-description').isVisible());
   await disabled.close();
+  const noGL=await chromium.launch({headless:true,args:['--disable-webgl','--disable-webgl2']});
+  try {
+   const fallback=await noGL.newPage();
+   await fallback.goto(pathToFileURL(path.resolve('artifacts/annotated-animation.html')).href);
+   assert.ok(await fallback.locator('.ivue-description').isVisible());
+   assert.ok(await fallback.getByText('Color: final height; positions: current frame.',{exact:true}).isVisible());
+  } finally {await noGL.close();}
   console.log('PASS: scoped keyboard controls, reset, downloadable/replayed camera, shared projection, labeled timeline, persistent caption/legend, no-script descriptions at desktop/mobile sizes.');
  } finally {await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});
