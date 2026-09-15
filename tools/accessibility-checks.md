@@ -41,10 +41,20 @@ comfort or usability.
 
 ## Qualification limits (September 15, 2026)
 
-The development checks target Chromium and Firefox through the browser CI job,
-plus native Safari 26.6 on macOS 26.6.1. Tests cover camera replay, frame labels,
-legend/caption persistence and Shiny rerender behavior; consult the successful
-CI run for the exact tested commit and engine versions.
+[CI run 35034646370](https://github.com/pgajer/ivue/actions/runs/35034646370)
+passed on source commit `b6c46bd` with Playwright 1.62.1, Chromium
+151.0.7922.34 and Firefox 153.0 on Ubuntu. Both engines passed keyboard controls,
+camera replay, frame labels, long legends, caption persistence, narrow layouts,
+GIF scale comparisons and Shiny rerender tests. The Shiny checks include focus
+in static and replaced animation controls, preserving external-input focus,
+and stopping a removed player that was playing.
+
+Native Safari 26.6 on macOS 26.6.1 passed a smaller manual check: scene naming,
+keyboard frame stepping, rotation/reset and readable camera settings. Its Shiny
+scene updated its description and retained one expanded camera panel; the
+window became unavailable before the full native Shiny sequence finished.
+This is partial Safari qualification, not evidence that every automated check
+was repeated there.
 
 NVDA/Windows is untested: no environment or tester was available. VoiceOver
 could be enabled locally, but the automation tool could not expose its caption
