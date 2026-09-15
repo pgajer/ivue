@@ -55,7 +55,9 @@ plot3D.groups(
 }
 \arguments{
 \item{X}{Numeric matrix or all-numeric data frame with exactly three columns
-and at least one row. Coordinates must be finite; rows are never dropped.}
+and at least one row. Coordinates must be finite; rows are never dropped.
+Explicit row names are unique, nonempty, nonmissing observation IDs.
+Automatic data-frame row numbers are not IDs. Point plots keep row order.}
 
 \item{col}{Plain point colors, length one or nrow(X).}
 
@@ -120,7 +122,8 @@ Unknown names and legacy argument spellings are rejected.}
 }
 \value{
 An rglwidget/htmlwidget. \code{attr(widget, "ivue")} contains coordinates,
-row.ids, mapped colors, highlight, draw.ids (row, object, index), camera,
+row.ids (integer row positions), observation.ids (explicit coordinate row
+names, or NULL), mapped colors, highlight, draw.ids (row, object, index), camera,
 aspect, captured scene, and (for colored plots) mapping data. Object IDs
 describe the captured scene, not an open device. Save separately with
 \code{htmlwidgets::saveWidget()}.
@@ -132,6 +135,24 @@ These functions always return a browser widget. They use a private null
 device and restore caller graphics options and the previous device. Loading
 ivue does not load rgl. No XQuartz or native display is required.
 }
+\details{
+Named \code{values}, \code{groups}, per-point \code{col}, logical \code{highlight}, and
+style color vectors are matched to \code{rownames(X)}, using the same exact-ID
+rule as \code{\link[=plot3D.graph]{plot3D.graph()}}. Their names must cover every observation exactly
+once. Missing, empty, duplicate, partial, or extra names cause errors, as
+do named annotations without explicit coordinate row names. Only unnamed
+scalar colors are recycled. Unnamed vectors follow coordinate row order;
+use \code{unname()} explicitly if annotation names are not observation IDs.
+Numeric highlight indices and indexed layers always use coordinate row
+positions, regardless of names attached to those indices. Plotting never
+reorders point coordinates or infers IDs from an annotation vector.
+
+Without a supplied categorical scale, factor levels set the color order;
+otherwise groups use first occurrence in the supplied annotation vector,
+before ID alignment. The same named vector therefore gives matching group
+colors in point and graph views even if their coordinate orders differ.
+Reuse a scale to keep colors fixed when annotation order or membership changes.
+}
 \examples{
 set.seed(1)
 xs <- runif(250, -1, 1)
@@ -142,5 +163,8 @@ if (nzchar(system.file(package = "rgl"))) {
   sc <- color.scale.cont(X[, 3])
   continuous <- plot3D.cont(X, X[, 3], scale = sc)
   grouped <- plot3D.groups(X, ifelse(X[, 3] >= 0, "positive", "negative"))
+  positions <- rbind(a = c(0, 0, 0), b = c(1, 1, 1), c = c(2, 0, 0))
+  annotation <- c(c = 10, a = 0, b = 5)
+  by.id <- plot3D.cont(positions, annotation) # a gets 0, b gets 5, c gets 10
 }
 }

@@ -66,11 +66,24 @@ stopifnot(identical(annotations$id, rownames(X)),
 head(annotations, 3)
 ```
 
-This explicit matching matters: ordinary point plots pair annotations by row
-position, not by vector names. If you subset or reorder observations, apply
-the same operation to coordinates and annotations and rebuild any row-indexed
-connectivity. Missing positions are errors in static plots. Missing annotation
-values can remain and receive the scale's missing color.
+Explicit table matching is useful when keeping several annotation columns
+together. Alternatively, pass a named annotation vector: point and graph plots
+both match its names to observation IDs, regardless of vector order. For example,
+the following reversed vector still associates each height with its own point:
+
+```{r named-annotation}
+named.height <- setNames(annotations$height, annotations$id)
+named.height <- named.height[rev(seq_along(named.height))]
+```
+
+Named vectors must cover the coordinate IDs exactly. Duplicate, missing, empty,
+partial, or extra names are errors, as are named point annotations without
+explicit coordinate row names. Automatic data-frame row numbers are not IDs.
+Unnamed vectors, including table columns extracted with `$`, follow row position;
+`unname()` explicitly requests that behavior for a named vector. If you subset
+or reorder coordinates, rebuild any row-indexed connectivity. Missing positions
+are errors in static plots. Missing annotation values can remain and receive
+the scale's missing color.
 
 ## Share a scale and camera
 
@@ -93,12 +106,15 @@ original.mapping$legend
 ```
 
 ```{r shared-views, eval=have.rgl}
-original.view <- plot3D.cont(X, original, scale = scale, camera = camera,
+original.view <- plot3D.cont(X, named.height, scale = scale, camera = camera,
   aspect = "equal", point.size = 7, height = 360,
   legend.title = "Original height", legend.width = 120)
 reduced.view <- plot3D.cont(X, reduced, scale = scale, camera = camera,
   aspect = "equal", point.size = 7, height = 360,
   legend.title = "Half height", legend.width = 120)
+stopifnot(identical(attr(original.view, "ivue")$mapping$colors,
+                    original.mapping$colors),
+          identical(attr(original.view, "ivue")$observation.ids, ids))
 original.view
 reduced.view
 ```
@@ -159,8 +175,9 @@ graph$edges
 
 The prepared edge endpoints are integer indices into `graph$vertices`, not
 external IDs. We deliberately shuffle coordinate and annotation input order
-below. Unlike a point plot, `plot3D.graph()` aligns these named inputs by exact
-vertex ID. Layers still refer to the **prepared vertex order**.
+below. As with point annotations, `plot3D.graph()` aligns named inputs by exact
+ID. Graph plotting additionally puts coordinates into **prepared vertex order**;
+its layers refer to that order. Point plotting keeps the supplied coordinate order.
 
 ```{r graph-view, eval=have.rgl}
 coords <- coords[c("end", "start", "isolate", "bend"), , drop = FALSE]

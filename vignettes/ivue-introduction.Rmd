@@ -24,6 +24,12 @@ The input is an `n x 3` numeric matrix, or an all-numeric data frame. Each row
 is one observation. Coordinates must be finite; ivue does not silently drop
 rows with missing coordinates.
 
+Explicit coordinate row names are observation IDs. Named `values`, `groups`,
+point colors, logical highlight masks, and style colors match those IDs exactly,
+as in graph plots; missing, duplicate, or extra names cause errors. Unnamed
+vectors follow row position. Use `unname()` deliberately if annotation names
+are not IDs. Point coordinates and indexed layers keep their supplied row order.
+
 ```{r saddle-data}
 set.seed(1)
 xs <- runif(250, -1, 1)

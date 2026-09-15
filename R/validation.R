@@ -33,6 +33,35 @@
     X
 }
 
+# Automatic data-frame row numbers are positions, not observation IDs.
+.point.coordinates <- function(X) {
+    automatic <- is.data.frame(X) && .row_names_info(X, 1L) < 0L
+    X <- .coordinates(X)
+    if (automatic) rownames(X) <- NULL
+    ids <- rownames(X)
+    if (!is.null(ids) && (anyNA(ids) || any(!nzchar(ids)) || anyDuplicated(ids)))
+        .stop("Coordinate row names must be unique, nonempty, nonmissing observation IDs.")
+    X
+}
+
+.align.named.data <- function(x, ids, name, id.type) {
+    keys <- names(x)
+    if (length(x) != length(ids) || anyNA(keys) || any(!nzchar(keys)) ||
+        anyDuplicated(keys) || !setequal(keys, ids))
+        .stop("Named ", name, " must match ", id.type,
+              " IDs exactly, without missing, duplicate, or extra names.")
+    x[match(ids, keys)]
+}
+
+.align.point.data <- function(x, X, name) {
+    if (is.null(names(x))) return(x)
+    ids <- rownames(X)
+    if (is.null(ids))
+        .stop("Named ", name, " requires explicit observation IDs in rownames(X); ",
+              "use unname() only when positional matching is intended.")
+    .align.named.data(x, ids, name, "observation")
+}
+
 .indices <- function(x, n, name) {
     if (!is.numeric(x) || is.complex(x) || any(!is.finite(x)) || any(x != floor(x)) ||
         any(x < 1 | x > n))

@@ -63,7 +63,8 @@ layer3D.labels <- function(rows, labels, col = "black", cex = 1,
 #' Callback Layers
 #'
 #' An advanced escape hatch for drawing with rgl. The callback must not open,
-#' close, or switch devices. Its context contains X, row.ids, colors, highlight,
+#' close, or switch devices. Its context contains X, row.ids (integer positions),
+#' observation.ids (coordinate row names, or NULL), colors, highlight,
 #' and draw.ids (row, object, index). Captured object IDs are not live devices.
 #'
 #' @param fun Function called with context as its first argument.

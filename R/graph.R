@@ -33,10 +33,14 @@
 #'   vertex order. Named vectors must match vertex IDs exactly and are reordered
 #'   to that order; partial, duplicate, missing, or extra names are rejected.
 #'   Supply at most one; scales and legends use the corresponding point family.
+#'   Default categorical colors use factor levels or first occurrence in the
+#'   supplied annotation vector, before ID alignment, as in [plot3D.groups()].
 #' @param layers Additional layer3D specifications.
 #' @param ... Named controls for the selected point family. Legacy graph-layout
 #'   and basin arguments are not supported.
 #' @return A widget with normalized graph data in attr(widget, "ivue")$graph.
+#'   Its observation.ids are graph vertex IDs; row.ids remain integer positions
+#'   in graph vertex order.
 #' @details Only fr and kk need igraph. Negative and zero finite weights can be
 #'   stored/drawn, but these layout algorithms require positive weights.
 #'   Explicit sparse zeros are rejected because zero-edge semantics would be
@@ -67,6 +71,7 @@ plot3D.graph <- function(graph, X = NULL, layout = NULL, vertices = NULL,
     }
     X <- .align.coordinates(X, g$vertices$id)
     if (!is.null(values) && !is.null(groups)) .stop("Supply values or groups, not both.")
+    reference.groups <- groups
     values <- .align.vertex.data(values, g$vertices$id, "values")
     groups <- .align.vertex.data(groups, g$vertices$id, "groups")
     if (!is.list(layers) || inherits(layers, "ivue_layer")) .stop("layers must be a list.")
@@ -78,6 +83,9 @@ plot3D.graph <- function(graph, X = NULL, layout = NULL, vertices = NULL,
                        c("X", "values", "groups", "layers", "..."))
     if (!identical(fun, plot3D.plain)) allowed <- setdiff(allowed, "col")
     .named.list(dots, allowed, "graph scene controls")
+    # Match the point family's default palette before ID alignment changes order.
+    if (!is.null(names(reference.groups)) && is.null(dots$scale))
+        dots$scale <- color.scale.groups(reference.groups)
     dots$col <- .align.vertex.data(dots$col, g$vertices$id, "col", scalar = TRUE)
     if (is.logical(dots$highlight))
         dots$highlight <- .align.vertex.data(dots$highlight, g$vertices$id, "highlight")
@@ -280,10 +288,7 @@ prepare.graph <- function(graph, vertices = NULL, directed = NULL, weight.type =
             .stop(name, " must have one entry per vertex", if (scalar) " or be an unnamed scalar" else "", ".")
         return(x)
     }
-    if (length(x) != length(ids) || anyNA(keys) || any(!nzchar(keys)) ||
-        anyDuplicated(keys) || !setequal(keys, ids))
-        .stop("Named ", name, " must match vertex IDs exactly, without missing, duplicate, or extra names.")
-    x[match(ids, keys)]
+    .align.named.data(x, ids, name, "vertex")
 }
 
 .align.coordinates <- function(X, ids) {

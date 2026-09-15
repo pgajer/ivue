@@ -88,10 +88,16 @@ observation. For a planar static plot, explicitly append `z = 0` to two-column
 coordinates. Missing coordinates, `NaN`, and infinity cause errors; rows are
 never silently cleaned or dropped.
 
-Point-cloud `values`, `groups`, colors, and highlight masks follow **row
-position**, even when annotation vectors have names. Match external annotations
-to coordinate IDs yourself and check uniqueness and completeness first, as in
-[the recipes](example-data.html#construct-a-point-cloud). Missing numerical
+Named point-cloud `values`, `groups`, per-point colors, style color vectors,
+and logical highlight masks match **observation IDs in `rownames(X)`**. Explicit
+row names must be unique, nonempty, and nonmissing. Annotation names must match
+the complete ID set exactly; partial, duplicate, missing, or extra names fail.
+Automatic data-frame row numbers are not observation IDs. Named annotations
+without explicit coordinate IDs also fail. Unnamed vectors follow **row position**;
+use `unname()` explicitly when their names are not IDs. Only unnamed scalar
+colors are recycled. Coordinates keep their original order, and numeric
+highlight indices and indexed layers still refer to those row positions.
+See [the recipes](example-data.html#construct-a-point-cloud). Missing numerical
 annotations use `na.color`; infinite annotation values are errors. Missing
 categories also use the missing color. Neither removes coordinate rows.
 Plain colors must be valid R colors with no missing entries, of length one
@@ -136,7 +142,8 @@ The repository's `make audit-guide` checks catalog coverage and help aliases.
 | `plot3D.cont()` | Draw numerical colors and a legend. | `X`, one numerical value per row, optional scale. | Widget with mapping metadata. |
 | `plot3D.groups()` | Draw categorical colors and a legend. | `X`, one group per row, optional scale. | Widget with mapping metadata. |
 
-`attr(widget, "ivue")` records coordinates, row IDs, mapped colors, highlight,
+`attr(widget, "ivue")` records coordinates, integer `row.ids`, explicit
+`observation.ids` (or `NULL` for unnamed coordinates), mapped colors, highlight,
 draw IDs, aspect, camera, and the captured scene. Draw IDs describe serialized
 scene objects, not a device left open for further drawing.
 
@@ -198,7 +205,10 @@ agree with outer breaks. `winsor.p` is only for uniform binned fitting, and
 boundaries without changing the numerical calculations.
 
 Factors retain level order, including unused nonmissing levels. Other group
-vectors use first-occurrence order. Named colors must cover the reference
+vectors use first-occurrence order. When plots fit a default categorical scale,
+this is the supplied annotation order before ID alignment, for both point and
+graph views. Reuse a scale when annotation order or membership changes.
+Named colors must cover the reference
 levels; unknown groups error unless `unknown = "missing"`. Missing values are
 distinct from a literal `"NA"` category; empty strings are valid groups.
 Numeric palette indices are resolved when fitting scales. A `color.map`
@@ -246,7 +256,7 @@ and no ticks. It is distinct from ordinary bounding-box axes enabled by
 
 Callbacks run once during scene construction on the private rgl device,
 **before serialization**, not on later browser events. Their first argument
-contains `X`, `row.ids`, `colors`, `highlight`, and `draw.ids`; `args` supplies
+contains `X`, integer `row.ids`, `observation.ids`, `colors`, `highlight`, and `draw.ids`; `args` supplies
 named additional arguments. They must not open, close, or switch devices.
 Captured object IDs are not live devices. Constructing the specification does
 not run the callback; drawing its plot does. Prefer ordinary layer constructors

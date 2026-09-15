@@ -49,6 +49,11 @@ zoom it. No native graphics window or XQuartz setup is needed. Assign the
 returned widget to a variable to reuse it or save it with
 `htmlwidgets::saveWidget()`.
 
+With explicit coordinate row IDs, named annotations match those IDs in both
+point-cloud and graph views. Unnamed annotations follow row order. See the
+[input recipes](vignettes/example-data.Rmd#construct-a-point-cloud) for checks
+and a shuffled-annotation example.
+
 ## Three Embeddings of Retinal Development
 
 The same plotting controls also let you compare coordinate systems while

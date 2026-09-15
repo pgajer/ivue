@@ -1,6 +1,16 @@
 library(ivue)
 
 stopifnot(!"rgl" %in% loadedNamespaces())
+
+# Ambiguous named annotations fail before loading a graphics backend.
+X <- rbind(a = c(0, 0, 0), b = c(1, 1, 1))
+for (expr in list(quote(plot3D.cont(X, c(a = 1, extra = 2))),
+                  quote(plot3D.groups(unname(X), c(a = "low", b = "high"))),
+                  quote(plot3D.plain(X, highlight = c(a = TRUE, a = FALSE))))) {
+    failure <- tryCatch(eval(expr), error = identity)
+    stopifnot(inherits(failure, "error"), grepl("observation IDs", conditionMessage(failure)))
+}
+stopifnot(!"rgl" %in% loadedNamespaces())
 sc <- color.scale.cont(c(-1, 0, 1), palette = c("blue", "red"))
 mapped <- map.colors(c(-1, 0, 1, NA), sc)
 stopifnot(length(mapped$colors) == 4L, tail(mapped$colors, 1) == "gray80")

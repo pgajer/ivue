@@ -6,6 +6,8 @@
 #'
 #' @param X Numeric matrix or all-numeric data frame with exactly three columns
 #'   and at least one row. Coordinates must be finite; rows are never dropped.
+#'   Explicit row names are unique, nonempty, nonmissing observation IDs.
+#'   Automatic data-frame row numbers are not IDs. Point plots keep row order.
 #' @param col Plain point colors, length one or nrow(X).
 #' @param point.type Draw screen-space points or data-space spheres.
 #' @param point.size Positive point size in screen pixels.
@@ -34,12 +36,29 @@
 #' @param layers List of layer3D specifications, evaluated before widget capture.
 #' @param shiny.brush Optional rgl brush configuration passed as shinyBrush.
 #' @return An rglwidget/htmlwidget. `attr(widget, "ivue")` contains coordinates,
-#'   row.ids, mapped colors, highlight, draw.ids (row, object, index), camera,
+#'   row.ids (integer row positions), observation.ids (explicit coordinate row
+#'   names, or NULL), mapped colors, highlight, draw.ids (row, object, index), camera,
 #'   aspect, captured scene, and (for colored plots) mapping data. Object IDs
 #'   describe the captured scene, not an open device. Save separately with
 #'   `htmlwidgets::saveWidget()`.
 #'   Mapped colors describe the base scale before highlight and opacity
 #'   overrides. Legends reflect the scale and global alpha, not highlight styles.
+#' @details Named `values`, `groups`, per-point `col`, logical `highlight`, and
+#'   style color vectors are matched to `rownames(X)`, using the same exact-ID
+#'   rule as [plot3D.graph()]. Their names must cover every observation exactly
+#'   once. Missing, empty, duplicate, partial, or extra names cause errors, as
+#'   do named annotations without explicit coordinate row names. Only unnamed
+#'   scalar colors are recycled. Unnamed vectors follow coordinate row order;
+#'   use `unname()` explicitly if annotation names are not observation IDs.
+#'   Numeric highlight indices and indexed layers always use coordinate row
+#'   positions, regardless of names attached to those indices. Plotting never
+#'   reorders point coordinates or infers IDs from an annotation vector.
+#'
+#'   Without a supplied categorical scale, factor levels set the color order;
+#'   otherwise groups use first occurrence in the supplied annotation vector,
+#'   before ID alignment. The same named vector therefore gives matching group
+#'   colors in point and graph views even if their coordinate orders differ.
+#'   Reuse a scale to keep colors fixed when annotation order or membership changes.
 #' @export
 #' @examples
 #' set.seed(1)
@@ -51,6 +70,9 @@
 #'   sc <- color.scale.cont(X[, 3])
 #'   continuous <- plot3D.cont(X, X[, 3], scale = sc)
 #'   grouped <- plot3D.groups(X, ifelse(X[, 3] >= 0, "positive", "negative"))
+#'   positions <- rbind(a = c(0, 0, 0), b = c(1, 1, 1), c = c(2, 0, 0))
+#'   annotation <- c(c = 10, a = 0, b = 5)
+#'   by.id <- plot3D.cont(positions, annotation) # a gets 0, b gets 5, c gets 10
 #' }
 plot3D.plain <- function(X, col = "gray55", point.type = c("point", "sphere"),
                          point.size = 3, sphere.radius = NULL, alpha = 1,
@@ -60,6 +82,13 @@ plot3D.plain <- function(X, col = "gray55", point.type = c("point", "sphere"),
                          aspect = c("equal", "normalized"), camera = list(),
                          width = NULL, height = 600L, background.color = "white",
                          layers = list(), shiny.brush = NULL) {
+    X <- .point.coordinates(X)
+    col <- .align.point.data(col, X, "col")
+    if (is.logical(highlight)) highlight <- .align.point.data(highlight, X, "highlight")
+    if (is.list(highlight.style)) highlight.style$col <-
+        .align.point.data(highlight.style$col, X, "highlight.style$col")
+    if (is.list(non.highlight.style)) non.highlight.style$col <-
+        .align.point.data(non.highlight.style$col, X, "non.highlight.style$col")
     .scene(X, col, match.arg(point.type), point.size, sphere.radius, alpha,
            highlight, highlight.style, non.highlight.style, axes, xlab, ylab,
            zlab, match.arg(aspect), camera, width, height, background.color, layers, shiny.brush)
@@ -79,8 +108,9 @@ plot3D.plain <- function(X, col = "gray55", point.type = c("point", "sphere"),
 plot3D.cont <- function(X, values, scale = NULL, legend.show = TRUE,
                         legend.title = "Value", legend.position = c("left", "right"),
                         legend.font.size = 12, legend.width = 240, ...) {
-    X <- .coordinates(X)
+    X <- .point.coordinates(X)
     .values(values)
+    values <- .align.point.data(values, X, "values")
     if (length(values) != nrow(X)) .stop("values must have one entry per row of X.")
     if (is.null(scale)) scale <- color.scale.cont(values)
     if (!inherits(scale, "ivue_color_scale") || scale$type != "continuous")
@@ -95,10 +125,12 @@ plot3D.cont <- function(X, values, scale = NULL, legend.show = TRUE,
 plot3D.groups <- function(X, groups, scale = NULL, legend.show = TRUE,
                          legend.title = "Group", legend.position = c("left", "right"),
                          legend.font.size = 12, legend.width = 240, ...) {
-    X <- .coordinates(X)
+    X <- .point.coordinates(X)
     .groups(groups)
+    reference.groups <- groups
+    groups <- .align.point.data(groups, X, "groups")
     if (length(groups) != nrow(X)) .stop("groups must have one entry per row of X.")
-    if (is.null(scale)) scale <- color.scale.groups(groups)
+    if (is.null(scale)) scale <- color.scale.groups(reference.groups)
     if (!inherits(scale, "ivue_color_scale") || scale$type != "groups")
         .stop("plot3D.groups requires a group scale.")
     .colored.scene(X, groups, scale, legend.show, legend.title,

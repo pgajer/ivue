@@ -96,7 +96,8 @@
                  .draw.points(X, which(highlight), colors, selected.style))
     ids <- ids[order(ids$row), , drop = FALSE]
     rownames(ids) <- NULL
-    context <- list(X = X, row.ids = seq_len(n), colors = colors, highlight = highlight, draw.ids = ids)
+    context <- list(X = X, row.ids = seq_len(n), observation.ids = rownames(X),
+                    colors = colors, highlight = highlight, draw.ids = ids)
     for (layer in layers) {
         devices.before <- rgl::rgl.dev.list()
         .draw.layer(layer, context)

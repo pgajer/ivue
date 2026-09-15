@@ -2,6 +2,14 @@
 
 Initial release.
 
+- **Observation identity:** point plots now match named values, groups, colors,
+  logical highlight masks, and style colors to explicit coordinate row IDs,
+  using the same exact-match rule as graph plots. Unnamed vectors remain
+  positional; use `unname()` to retain that behavior when names are not IDs.
+  Invalid or incomplete names are errors. Default categorical scales use
+  annotation order before alignment in both point and graph views. Widget
+  metadata adds `observation.ids`; `row.ids` remains integer row positions.
+
 - **3D visualization:** `plot3D.plain()`, `plot3D.cont()`,
   `plot3D.groups()`, and `plot3D.graph()` display point clouds and embedded
   weighted graphs with numerical or categorical colors and highlighting.

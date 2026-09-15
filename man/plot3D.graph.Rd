@@ -58,7 +58,9 @@ normalized edge. They are not automatically inferred from weights.}
 \item{values, groups}{Optional vertex coloring. Unnamed vectors follow graph
 vertex order. Named vectors must match vertex IDs exactly and are reordered
 to that order; partial, duplicate, missing, or extra names are rejected.
-Supply at most one; scales and legends use the corresponding point family.}
+Supply at most one; scales and legends use the corresponding point family.
+Default categorical colors use factor levels or first occurrence in the
+supplied annotation vector, before ID alignment, as in \code{\link[=plot3D.groups]{plot3D.groups()}}.}
 
 \item{layers}{Additional layer3D specifications.}
 
@@ -67,6 +69,8 @@ and basin arguments are not supported.}
 }
 \value{
 A widget with normalized graph data in attr(widget, "ivue")$graph.
+Its observation.ids are graph vertex IDs; row.ids remain integer positions
+in graph vertex order.
 }
 \description{
 Graph input is normalized independently of the rendering engine. Supplied
