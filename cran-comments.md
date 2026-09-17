@@ -1,6 +1,26 @@
 ## Submission
 
-First submission of ivue 0.1.0. There are no CRAN reverse dependencies.
+Resubmission of ivue 0.1.0 following the September 17, 2026 request to restore
+options, graphical parameters, and the working directory with immediate
+`on.exit()` handlers. There are no CRAN reverse dependencies.
+
+## Changes Addressing Review
+
+- Both GIF rendering helpers in `R/animation-gif.R` and
+  `R/animation-annotations.R` now save graphical parameters and immediately
+  register `on.exit()` restoration, before changing them. Restoration runs
+  before closing the private PNG device, on success and error. Only relevant
+  parameters are saved; derived dimensions such as `pin` can be invalid to
+  reapply on very small devices with default margins.
+- The temporary `rgl.useNULL` option in `R/scene.R` already has an immediate
+  restoration handler. Regression tests now also cover an initially FALSE
+  or absent option, including errors during drawing. The renderer retains
+  its existing device and subscene cleanup.
+- Package functions, examples, and vignettes do not call `setwd()`.
+- New regression tests verify annotation parameter restoration, successful
+  and failed GIF export with two existing graphics devices, unchanged caller
+  options and working directory, and widget error cleanup. Eight raster
+  comparisons confirm unchanged rendering pixels.
 
 ## Package Scope
 
@@ -13,16 +33,14 @@ Examples and tests guard optional packages and do not launch a browser.
 
 ## Checks
 
-Candidate package contents checked September 15, 2026 (commit b6c46bd):
+Candidate package contents checked September 17, 2026 (commit 5cf42dc):
 
 - macOS arm64, R-devel 4.7.0 (2026-06-24 r90190):
   `R_TIDYCMD=/opt/homebrew/bin/tidy make check-cran`, with HTML Tidy 5.8.0:
-  0 errors, 0 warnings, 1 NOTE (`New submission`). All 890 assertions passed;
+  0 errors, 0 warnings, 1 NOTE (`New submission`). All 920 assertions passed;
   examples, all five vignette rebuilds, and PDF/HTML manuals passed.
-  An earlier run selected the system's older Tidy and reported an additional
-  HTML-validation NOTE; selecting the existing modern executable resolved it.
 - `make -o build check-minimal` checked the same archive with dependency-only
-  settings: Status OK, 845 assertions passed, three magick tests and one Shiny
+  settings: Status OK, 861 assertions passed, four magick tests and one Shiny
   test skipped. This check does not rebuild vignettes.
 - Preparation/color/camera/layer probes confirm rgl is not loaded. All 18
   explicit exports have help and one catalog row; 2 S3 print methods are
@@ -31,23 +49,21 @@ Candidate package contents checked September 15, 2026 (commit b6c46bd):
   overview/index discovery, all five guides, their help links, local resources,
   byte counts, and source exclusions. Negative fixtures detect a missing
   overview entry, broken anchor, and missing asset.
-- GitHub Actions run 35034646370 passed all six package jobs: Linux R-release,
-  R-devel and R 4.1, Windows R-release and R-devel, and macOS R-release. Its
-  browser job passed Chromium 151 and Firefox 153 controls, exports, GIF scale
-  comparisons, and Shiny rerender/focus checks. These are browser checks, not
-  a screen-reader or accessibility-conformance certification.
+- GitHub Actions run 35240857184 passed all six package jobs: Linux R-release,
+  R-devel and R 4.1; Windows R-release and R-devel; and macOS R-release.
+  Its browser job also passed, including Chromium/Firefox controls, GIF
+  comparisons, and Shiny rerender/focus checks.
 
 Installed size is INFO on this R version: 5.8 MB total, including 4.9 MB of
-`doc`. Installed documentation totals 5,113,210 bytes (4.876 MiB), including
+`doc`. Installed documentation totals 5,113,201 bytes (4.876 MiB), including
 R's generated vignette index. Guides retain local/embedded resources and do
 not need remote assets to render essential examples. Large retinal fitting
 and media-generation tasks remain outside normal checks.
 
 Shiny is an optional suggested dependency for reactive-context tests. Ordinary
 preparation and rendering do not require it. The optional grip workflow remains
-guarded, and no upstream retinal analysis was rerun. Win-builder has not been
-rerun for these contents. No submission or external checking-service upload
-was performed here.
+guarded, and no upstream retinal analysis was rerun. No CRAN resubmission
+or Win-builder upload has been made for these contents.
 
 The retinal case study uses bundled coordinates and static posters. Its
 large rendering and upstream data-processing recipes are not evaluated
