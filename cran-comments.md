@@ -51,6 +51,8 @@ Candidate package contents checked September 17, 2026 (commit 5cf42dc):
   overview entry, broken anchor, and missing asset.
 - GitHub Actions run 35240857184 passed all six package jobs: Linux R-release,
   R-devel and R 4.1; Windows R-release and R-devel; and macOS R-release.
+  R 4.1 reports an installed-size NOTE (5.8 MB total, 4.9 MB documentation);
+  the other five package jobs report Status OK.
   Its browser job also passed, including Chromium/Firefox controls, GIF
   comparisons, and Shiny rerender/focus checks.
 
