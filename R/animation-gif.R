@@ -125,6 +125,11 @@ write.animation.gif <- function(animation, file, fps = NULL,
                    bg = info$background.color)
     device <- grDevices::dev.cur()
     on.exit(grDevices::dev.off(device), add = TRUE)
+    old.par <- graphics::par(c("family", "ps", "fig", "mar", "new", "xaxs", "yaxs",
+                               "usr", "xaxp", "yaxp"))
+    on.exit(graphics::par(old.par), add = TRUE, after = FALSE)
+    # Restore before closing; derived dimensions such as pin can be negative
+    # on small devices with default margins, so do not save/reapply them.
     graphics::par(family = "sans", ps = 10)
     layout <- .animation.layout(info, width, height, labels, annotations)
     .animation.annotations(info, layout, width, height)

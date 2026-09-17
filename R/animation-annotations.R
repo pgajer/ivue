@@ -52,6 +52,8 @@
 }
 
 .animation.annotations <- function(info, layout, width, height) {
+    old.par <- graphics::par(c("fig", "mar", "new", "xaxs", "yaxs", "usr", "xaxp", "yaxp"))
+    on.exit(graphics::par(old.par), add = TRUE)
     graphics::par(fig=c(0, 1, 0, 1), mar=rep(0, 4), xaxs="i", yaxs="i")
     graphics::plot.new(); graphics::plot.window(c(0, width), c(0, height))
     draw.lines <- function(lines, x, y) {

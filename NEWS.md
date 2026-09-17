@@ -1,5 +1,7 @@
 # ivue 0.1.0
 
+- **Graphics cleanup:** GIF rendering and annotation drawing explicitly restore
+  graphical parameters on success and failure, before closing export devices.
 - **GIF camera correction:** smaller zoom values now enlarge both browser and
   GIF views. GIF framing uses the retained observer and bounds. Existing GIF
   recipes may change apparent size; check their output before reusing it.
