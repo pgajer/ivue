@@ -1,5 +1,8 @@
 # ivue 0.1.0
 
+- **README figures:** static retinal alternatives use version-pinned web links
+  so they remain accessible from the source package, which excludes large
+  repository figure assets.
 - **Graphics cleanup:** GIF rendering and annotation drawing explicitly restore
   graphical parameters on success and failure, before closing export devices.
 - **GIF camera correction:** smaller zoom values now enlarge both browser and

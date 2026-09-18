@@ -30,6 +30,7 @@ build: document audit-guide
 	stage=$$(mktemp -d "$(CURDIR)/build/.stage.XXXXXX"); \
 	trap 'rm -rf "$$stage"' EXIT HUP INT TERM; \
 	(cd "$$stage" && RGL_USE_NULL=TRUE $(R_RUN) CMD build "$(CURDIR)"); \
+	python3 tools/audit_archive_links.py "$$stage/$(ARCHIVE)"; \
 	tar -xzf "$$stage/$(ARCHIVE)" -C "$$stage" "$(PKGNAME)/inst/doc"; \
 	rm -f build/$(PKGNAME)_*.tar.gz; \
 	mv "$$stage/$(ARCHIVE)" "$(TARBALL)"; \
@@ -56,6 +57,8 @@ audit-installed: build
 audit-distribution: audit-installed
 	$(RSCRIPT_RUN) tools/test_distribution_audit.R
 	python3 tools/test_distribution_audit.py
+	python3 tools/test_archive_links.py
+	python3 tools/audit_archive_links.py $(TARBALL)
 	$(RSCRIPT_RUN) tools/audit_archive_contents.R $(TARBALL)
 
 site: audit-distribution

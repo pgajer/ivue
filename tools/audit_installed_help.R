@@ -25,5 +25,17 @@ local({
     stopifnot(setequal(vignette(package = "ivue", lib.loc = lib)$results[, "Item"], guides))
     stopifnot(system2("python3", c("tools/audit_vignette_html.py", shQuote(file.path(pkg, "doc")))) == 0L)
     example("ivue", package = "ivue", lib.loc = lib, ask = FALSE, echo = FALSE)
+    retina <- readRDS(system.file("extdata", "retinal-development.rds",
+                                 package = "ivue", lib.loc = lib, mustWork = TRUE))
+    stopifnot(is.list(retina), nrow(retina$coordinates$umap) == 12000L)
+    widget <- ivue::plot3D.plain(matrix(seq_len(9), ncol = 3))
+    deps <- htmltools::renderTags(widget)$dependencies
+    own <- Filter(function(dep) dep$name == "ivue-view", deps)
+    stopifnot(length(own) == 1L)
+    resources <- file.path(own[[1]]$src$file, c(own[[1]]$script, own[[1]]$stylesheet))
+    stopifnot(length(resources) == 2L, all(file.exists(resources)),
+              all(startsWith(normalizePath(resources, winslash = "/"),
+                             paste0(normalizePath(pkg, winslash = "/"), "/"))))
+    cat("PASS: bundled retinal data and declared widget JavaScript/CSS resolve inside the installed candidate.\n")
     cat("PASS: package aliases, visible overview index, five installed guide links, and package example.\n")
 })
