@@ -1,39 +1,30 @@
 ## Submission
 
-Resubmission of ivue 0.1.0 following the September 17, 2026 request to restore
-options, graphical parameters, and the working directory with immediate
-`on.exit()` handlers. There are no CRAN reverse dependencies.
+Resubmission of ivue 0.1.0 addressing the September 18, 2026 report of invalid
+README file URIs. The September 17 session-settings fixes are retained.
+There are no CRAN reverse dependencies.
 
 ## Changes Addressing Review
 
-- Both GIF rendering helpers in `R/animation-gif.R` and
-  `R/animation-annotations.R` now save graphical parameters and immediately
-  register `on.exit()` restoration, before changing them. Restoration runs
-  before closing the private PNG device, on success and error. Only relevant
-  parameters are saved; derived dimensions such as `pin` can be invalid to
-  reapply on very small devices with default margins.
-- The temporary `rgl.useNULL` option in `R/scene.R` already has an immediate
-  restoration handler. Regression tests now also cover an initially FALSE
-  or absent option, including errors during drawing. The renderer retains
-  its existing device and subscene cleanup.
-- Package functions, examples, and vignettes do not call `setwd()`.
-- New regression tests verify annotation parameter restoration, successful
-  and failed GIF export with two existing graphics devices, unchanged caller
-  options and working directory, and widget error cleanup. Eight raster
-  comparisons confirm unchanged rendering pixels.
-
-## Package Scope
-
-Interactive 3D point and embedded-graph visualization with reusable color
-scales, geometric layers, recorded-frame playback, and optional GIF export.
-The optional rgl backend is loaded only when
-rendering; color mapping and graph preparation work without it. Ordinary
-plotting uses null-device scenes without opening a native graphics window.
-Examples and tests guard optional packages and do not launch a browser.
+- Replaced the README's two relative static-image links,
+  `man/figures/readme-retinal-sknn.png` and
+  `man/figures/readme-retinal-phate-comparison.png`, with verified HTTPS
+  URLs pinned to the same Git commit as the existing animations. The images
+  exist in the repository but are intentionally excluded from the source
+  package. README figures remain online; vignette figures remain bundled.
+- A new build-time check parses Markdown/HTML links in the actual tarball,
+  reproduces both failures in the previous submission, and passes for this
+  candidate. Twelve negative fixtures cover missing linked files, images,
+  scripts, stylesheets, anchors, and machine-local paths. Installed guide
+  resources, help links, retinal data, and widget assets also pass inspection.
+- The September 17 fixes remain unchanged: both GIF helpers immediately
+  register graphical-parameter restoration before drawing, and the temporary
+  `rgl.useNULL` option has immediate restoration. Success/error regression
+  tests still pass. Functions, examples, and vignettes do not call `setwd()`.
 
 ## Checks
 
-Candidate package contents checked September 17, 2026 (commit 5cf42dc):
+Candidate package contents checked September 18, 2026 (commit fb9074c):
 
 - macOS arm64, R-devel 4.7.0 (2026-06-24 r90190):
   `R_TIDYCMD=/opt/homebrew/bin/tidy make check-cran`, with HTML Tidy 5.8.0:
@@ -42,34 +33,29 @@ Candidate package contents checked September 17, 2026 (commit 5cf42dc):
 - `make -o build check-minimal` checked the same archive with dependency-only
   settings: Status OK, 861 assertions passed, four magick tests and one Shiny
   test skipped. This check does not rebuild vignettes.
-- Preparation/color/camera/layer probes confirm rgl is not loaded. All 18
-  explicit exports have help and one catalog row; 2 S3 print methods are
-  documented through their object workflows.
 - `make -o build audit-distribution` installs the exact archive and checks
   overview/index discovery, all five guides, their help links, local resources,
   byte counts, and source exclusions. Negative fixtures detect a missing
   overview entry, broken anchor, and missing asset.
-- GitHub Actions run 35240857184 passed all six package jobs: Linux R-release,
-  R-devel and R 4.1; Windows R-release and R-devel; and macOS R-release.
-  R 4.1 reports an installed-size NOTE (5.8 MB total, 4.9 MB documentation);
-  the other five package jobs report Status OK.
-  Its browser job also passed, including Chromium/Firefox controls, GIF
-  comparisons, and Shiny rerender/focus checks.
+- `urlchecker::url_check()` passes on the exact archive, including both new
+  static-image URLs. The separate offline archive check covers local file
+  references, which the online URL check alone did not detect.
+- GitHub Actions run 35378299264 passed all six package jobs (Linux
+  R-release/R-devel/R 4.1, Windows R-release/R-devel, macOS R-release) and
+  the Chromium/Firefox browser checks. Five package jobs report Status OK;
+  R 4.1 reports only the installed-size NOTE (5.8 MB total, 4.9 MB doc).
+  The Linux R-release job also passed the new archive-link and asset checks.
 
 Installed size is INFO on this R version: 5.8 MB total, including 4.9 MB of
-`doc`. Installed documentation totals 5,113,201 bytes (4.876 MiB), including
+`doc`. Installed documentation totals 5,113,197 bytes (4.876 MiB), including
 R's generated vignette index. Guides retain local/embedded resources and do
 not need remote assets to render essential examples. Large retinal fitting
 and media-generation tasks remain outside normal checks.
 
-Shiny is an optional suggested dependency for reactive-context tests. Ordinary
-preparation and rendering do not require it. The optional grip workflow remains
-guarded, and no upstream retinal analysis was rerun. No CRAN resubmission
-or Win-builder upload has been made for these contents.
-
-The retinal case study uses bundled coordinates and static posters. Its
-large rendering and upstream data-processing recipes are not evaluated
-during checking. The source values and their redistribution scope are unchanged.
+Examples guard optional dependencies and do not launch a browser or native
+graphics window. The retinal case study uses bundled coordinates and static
+posters; large upstream computations are not run during checks. No new
+Win-builder upload was made; fresh Windows CI checks are listed above.
 
 ## Retinal Example: Source Terms
 
