@@ -210,7 +210,7 @@ if (is.comparison) {
         views[[4]] <- make.view(sgd.X, sampled$age, age.scale)
         views[[4]]$elementId <- "retina-sgd"
         panel.titles <- c(panel.titles, sprintf(
-            "Metric-MDS (SGD; 2,000 landmarks; %d %s)",
+            "Metric-MDS (Euclidean; SGD; 2,000 landmarks; %d %s)",
             sgd$epoch, if (sgd$epoch == 1L) "epoch" else "epochs"))
     }
 } else {
