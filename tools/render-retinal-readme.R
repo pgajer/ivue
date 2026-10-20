@@ -407,7 +407,7 @@ view.provenance <- if (view == "sknn") c(
         "PHATE preview only: feasibility settings, not a tuned or validated biological model"
     ),
     if (view == "sgd-comparison") c(
-        "Fourth input: sparse metric-MDS (SGD), graph-shortest-path targets on the same k = 4 graph",
+        "Fourth input: sparse metric-MDS (SGD), ambient Euclidean targets in the same reconstructed 20-PC matrix",
         paste("SGD checkpoint:", normalizePath(sgd.file)),
         paste("SGD cache identity:", sgd$cache.key),
         paste("SGD completed epochs:", sgd$epoch),

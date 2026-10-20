@@ -148,7 +148,7 @@ if (nzchar(sgd.file)) {
     case.study$provenance$display.transforms$sgd <- sgd.display$transform
     case.study$provenance$sgd <- list(
         method = "grip::metric.mds; sparse approximation; SGD backend",
-        target = "weighted shortest-path distances on the full symmetric k = 4 graph",
+        target = "ambient Euclidean distances in the reconstructed 20-PC matrix",
         pivots = 2000L, pivot.selection = "internal randomized distance-proportional",
         weighting = "inverse-squared distances with regional endpoint multipliers",
         seed = sgd$settings$seed, starts = sgd$settings$starts,
@@ -156,10 +156,12 @@ if (nzchar(sgd.file)) {
         schedule.epsilon = sgd$settings$schedule.epsilon,
         schedule.epochs = sgd$settings$schedule.epochs,
         refinement = "none", converged = FALSE,
-        cache.key = sgd$cache.key, graph.sha256 = sgd$graph.hash,
+        cache.key = sgd$cache.key, target.sha256 = sgd$target.hash,
+        local.neighbors = sgd$settings$local.q,
+        neighbor.variance.target = sgd$settings$neighbor.variance.target,
         evaluation = sgd$summary,
         evaluation.definition = paste(
-            "100*sqrt(mean(((graph_distance-embedded_distance)/graph_distance)^2));",
+            "100*sqrt(mean(((euclidean_pc20_distance-embedded_distance)/euclidean_pc20_distance)^2));",
             "estimate on fixed sampled pairs, original fitted units, no scale fitting;",
             "95% source-block bootstrap Monte Carlo intervals;",
             "not an exact all-pairs score or the sparse fitting proxy")
