@@ -9,6 +9,7 @@ if (length(view.arg) != 1L) {
     stop("Supply --view=sknn, --view=umap, --view=comparison, --view=phate-comparison, or --view=sgd-comparison.")
 }
 view <- sub("^--view=", "", view.arg)
+interactive.preview <- identical(Sys.getenv("IVUE_RETINAL_INTERACTIVE"), "true")
 if (!view %in% c("sknn", "umap", "comparison", "phate-comparison", "sgd-comparison")) {
     stop("Unknown retinal view: ", view)
 }
@@ -177,7 +178,7 @@ if (is.comparison) {
 }
 common <- list(point.size = point.size, alpha = alpha, axes = FALSE,
                aspect = "equal", camera = camera, width = 520L,
-               height = 360L, background.color = "white", controls = FALSE)
+               height = 360L, background.color = "white", controls = interactive.preview)
 age.scale <- color.scale.groups(sampled$age, colors = age.colors)
 cell.scale <- color.scale.groups(sampled$cell.type, colors = cell.colors)
 make.view <- function(X, groups, scale, edges = FALSE) {
@@ -340,6 +341,9 @@ page.subtitle <- if (view == "sknn") {
         "%s-cell sample | published 3D UMAP coordinates",
         format(sample.size, big.mark = ",")
     )
+}
+if (interactive.preview && view == "sgd-comparison") {
+    page.subtitle <- paste0(page.subtitle, " | ambient SGD checkpoint: epoch ", sgd$epoch)
 }
 
 panel.legends <- if (is.comparison) {
