@@ -13,25 +13,31 @@ async function canvasPixels(canvas) {
     const data = new Uint8Array(node.width * node.height * 4);
     gl.readPixels(0, 0, node.width, node.height, gl.RGBA, gl.UNSIGNED_BYTE, data);
     let colored = 0;
+    let hash = 2166136261;
     for (let i = 0; i < data.length; i += 4) {
       if (data[i + 3] && Math.min(data[i], data[i + 1], data[i + 2]) < 235) colored++;
+      hash = Math.imul(hash ^ data[i], 16777619) >>> 0;
+      hash = Math.imul(hash ^ data[i + 1], 16777619) >>> 0;
+      hash = Math.imul(hash ^ data[i + 2], 16777619) >>> 0;
     }
-    return { colored, width: node.width, height: node.height };
+    return { colored, hash, width: node.width, height: node.height };
   });
 }
 
 (async () => {
   const viewArg = process.argv.find(value => value.startsWith('--view='));
   const view = viewArg ? viewArg.slice('--view='.length) : '';
-  if (!['sknn', 'umap', 'comparison', 'phate-comparison'].includes(view)) {
+  if (!['sknn', 'umap', 'comparison', 'phate-comparison', 'sgd-comparison'].includes(view)) {
     throw new Error(
-      'Supply --view=sknn, --view=umap, --view=comparison, or --view=phate-comparison.'
+      'Supply --view=sknn, --view=umap, --view=comparison, --view=phate-comparison, or --view=sgd-comparison.'
     );
   }
-  const candidate = view === 'phate-comparison';
-  const out = candidate ? path.resolve('artifacts', 'retinal-phate', 'preview') :
-    path.resolve('artifacts', 'retinal-readme');
-  const panelCount = candidate ? 3 : 2;
+  const candidate = ['phate-comparison', 'sgd-comparison'].includes(view);
+  const out = process.env.IVUE_RETINAL_OUTPUT || (view === 'sgd-comparison' ?
+    path.resolve('artifacts', 'retinal-sgd', 'preview') :
+    candidate ? path.resolve('artifacts', 'retinal-phate', 'preview') :
+    path.resolve('artifacts', 'retinal-readme'));
+  const panelCount = view === 'sgd-comparison' ? 4 : candidate ? 3 : 2;
   const html = path.join(out, `retinal-${view}.html`);
   if (!fs.existsSync(html)) throw new Error(`Missing rendered page: ${html}`);
 
@@ -46,7 +52,10 @@ async function canvasPixels(canvas) {
     args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader']
   });
   try {
-    const page = await browser.newPage({ viewport: { width: candidate ? 1600 : 1120, height: 720 } });
+    const page = await browser.newPage({ viewport: {
+      width: view === 'phate-comparison' ? 1600 : 1120,
+      height: view === 'sgd-comparison' ? 1100 : 720
+    } });
     const errors = [];
     page.on('pageerror', error => errors.push(String(error)));
     page.on('console', message => {
@@ -96,7 +105,29 @@ async function canvasPixels(canvas) {
     for (const index of [Math.floor(frameCount / 4), Math.floor(frameCount / 2),
       Math.floor(3 * frameCount / 4)]) {
       await frame(index);
+      for (let i = 0; i < panelCount; i++) {
+        const pixels = await canvasPixels(canvases.nth(i));
+        if (pixels.colored < 1000 || pixels.hash === pixelCounts[i].hash) {
+          throw new Error(`Scene ${i} is blank or unchanged after rotation to frame ${index}.`);
+        }
+      }
       await screenshot(path.join(out, `quarter-${view}-${index}.png`));
+    }
+
+    if (view === 'sgd-comparison') {
+      await page.setViewportSize({ width: 390, height: 900 });
+      await frame(0);
+      const overflow = await page.evaluate(() =>
+        document.documentElement.scrollWidth > window.innerWidth);
+      if (overflow) throw new Error('Mobile retinal comparison overflows horizontally.');
+      for (let i = 0; i < panelCount; i++) {
+        const pixels = await canvasPixels(canvases.nth(i));
+        if (pixels.colored < 500) throw new Error(`Blank mobile scene ${i}.`);
+      }
+      await page.screenshot({ path: path.join(out, 'mobile-sgd-comparison.png'),
+        fullPage: true });
+      await page.setViewportSize({ width: 1120, height: 1100 });
+      await frame(0);
     }
 
     if (process.argv.includes('--animation')) {

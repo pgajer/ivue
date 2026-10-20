@@ -6,10 +6,10 @@ options(rgl.useNULL = TRUE)
 args <- commandArgs(trailingOnly = TRUE)
 view.arg <- grep("^--view=", args, value = TRUE)
 if (length(view.arg) != 1L) {
-    stop("Supply --view=sknn, --view=umap, --view=comparison, or --view=phate-comparison.")
+    stop("Supply --view=sknn, --view=umap, --view=comparison, --view=phate-comparison, or --view=sgd-comparison.")
 }
 view <- sub("^--view=", "", view.arg)
-if (!view %in% c("sknn", "umap", "comparison", "phate-comparison")) {
+if (!view %in% c("sknn", "umap", "comparison", "phate-comparison", "sgd-comparison")) {
     stop("Unknown retinal view: ", view)
 }
 
@@ -29,6 +29,8 @@ pkgload::load_all(".", quiet = TRUE, export_all = FALSE, helpers = FALSE)
 
 out <- file.path("artifacts", "retinal-readme")
 if (view == "phate-comparison") out <- file.path("artifacts", "retinal-phate", "preview")
+if (view == "sgd-comparison") out <- file.path("artifacts", "retinal-sgd", "preview")
+out <- Sys.getenv("IVUE_RETINAL_OUTPUT", out)
 dir.create(out, recursive = TRUE, showWarnings = FALSE)
 dir.create(file.path("man", "figures"), recursive = TRUE, showWarnings = FALSE)
 
@@ -87,7 +89,7 @@ valid.coordinates <- function(X) {
         all(is.finite(X))
 }
 if (!valid.coordinates(X) ||
-    (view %in% c("comparison", "phate-comparison") && !valid.coordinates(sknn.X))) {
+    (view %in% c("comparison", "phate-comparison", "sgd-comparison") && !valid.coordinates(sknn.X))) {
     stop("Every retinal coordinate set must be a finite n-by-3 matrix.")
 }
 
@@ -119,10 +121,13 @@ cell.colors <- stats::setNames(c(
     "#8F9D44"
 ), cell.levels)
 
-is.comparison <- view %in% c("comparison", "phate-comparison")
-if (view == "phate-comparison") {
+is.comparison <- view %in% c("comparison", "phate-comparison", "sgd-comparison")
+has.phate <- view %in% c("phate-comparison", "sgd-comparison")
+if (has.phate) {
     phate.dir <- file.path("artifacts", "retinal-phate")
-    phate.result <- jsonlite::read_json(file.path(phate.dir, "full", "result.json"),
+    phate.result.file <- Sys.getenv("IVUE_RETINAL_PHATE_RESULT",
+                                    file.path(phate.dir, "full", "result.json"))
+    phate.result <- jsonlite::read_json(phate.result.file,
                                        simplifyVector = TRUE)
     phate.index <- utils::read.csv(file.path(phate.dir, "display-index.csv"))
     phate.X <- as.matrix(utils::read.csv(file.path(phate.dir, "full",
@@ -138,6 +143,15 @@ if (view == "phate-comparison") {
               valid.coordinates(phate.X))
     rownames(phate.X) <- rownames(sampled)
 }
+if (view == "sgd-comparison") {
+    sgd.file <- Sys.getenv("IVUE_RETINAL_SGD")
+    source("tools/retinal-sgd-input.R")
+    pc.file <- file.path("artifacts", "retinal-readme", "retinal-umap-input-pc20.rds")
+    sgd <- read.retinal.sgd(sgd.file, rownames(sampled), pc.file)
+    sgd.X <- sgd$coordinates[sgd$display.indices, , drop = FALSE]
+    stopifnot(valid.coordinates(sgd.X))
+    rownames(sgd.X) <- rownames(sampled)
+}
 point.size <- if (view == "sknn") 2.1 else 2.2
 alpha <- if (view == "sknn") 0.84 else 0.78
 camera <- camera.zup(elevation = 18, turn = -28, fov = 0, zoom = 0.64)
@@ -149,9 +163,13 @@ if (is.comparison) {
     )
     X <- orientation$umap$coordinates
     sknn.X <- orientation$sknn$coordinates
-    if (view == "phate-comparison") {
+    if (has.phate) {
         orientation$phate <- orient.retinal.stage(phate.X, sampled$age, camera)
         phate.X <- orientation$phate$coordinates
+    }
+    if (view == "sgd-comparison") {
+        orientation$sgd <- orient.retinal.stage(sgd.X, sampled$age, camera)
+        sgd.X <- orientation$sgd$coordinates
     }
     jsonlite::write_json(lapply(orientation, function(value)
         value[setdiff(names(value), "coordinates")]),
@@ -159,7 +177,7 @@ if (is.comparison) {
 }
 common <- list(point.size = point.size, alpha = alpha, axes = FALSE,
                aspect = "equal", camera = camera, width = 520L,
-               height = 360L, background.color = "white")
+               height = 360L, background.color = "white", controls = FALSE)
 age.scale <- color.scale.groups(sampled$age, colors = age.colors)
 cell.scale <- color.scale.groups(sampled$cell.type, colors = cell.colors)
 make.view <- function(X, groups, scale, edges = FALSE) {
@@ -182,10 +200,18 @@ if (is.comparison) {
         make.view(sknn.X, sampled$age, age.scale)
     )
     panel.titles <- c("Published 3D UMAP (Canberra)", "sKNN k = 4 (Euclidean)")
-    if (view == "phate-comparison") {
+    if (has.phate) {
         views[[3]] <- make.view(phate.X, sampled$age, age.scale)
         panel.titles <- c(panel.titles, "PHATE (Euclidean; 2,000 landmarks)")
         views[[3]]$elementId <- "retina-phate"
+    }
+    if (view == "sgd-comparison") {
+        panel.titles[2] <- "Weighted-GRIP + edge-KK (sKNN k = 4)"
+        views[[4]] <- make.view(sgd.X, sampled$age, age.scale)
+        views[[4]]$elementId <- "retina-sgd"
+        panel.titles <- c(panel.titles, sprintf(
+            "Metric-MDS (SGD; 2,000 landmarks; %d %s)",
+            sgd$epoch, if (sgd$epoch == 1L) "epoch" else "epochs"))
     }
 } else {
     views <- list(
@@ -278,8 +304,19 @@ if (view == "phate-comparison") css <- paste0(css, "
     .legend-age { grid-template-columns: repeat(3, max-content); }
   }
 ")
+if (view == "sgd-comparison") css <- paste0(css, "
+  #hero { width: 1080px; max-width: 100%; }
+  h2 { min-height: 44px; font-size: 17px; }
+  @media (max-width: 700px) {
+    #panels { grid-template-columns: 1fr; }
+    .legend-age { grid-template-columns: repeat(3, max-content); }
+    h1 { font-size: 23px; }
+  }
+")
 
-page.title <- if (view == "phate-comparison") {
+page.title <- if (view == "sgd-comparison") {
+    "The same retinal cells in four 3D embeddings"
+} else if (view == "phate-comparison") {
     "The same retinal cells in three 3D embeddings"
 } else if (view == "sknn") {
     "Whole-population retinal graph layout"
@@ -362,12 +399,21 @@ view.provenance <- if (view == "sknn") c(
     "Rendering: matched ivue point clouds; no graph edges",
     "Initial orientation: each cloud rigidly rotated to face its P14 centroid toward the viewer",
     "Orientation anchor: cloud centroid to P14 centroid; minimum-angle proper rotation; no reflection or refit",
-    if (view == "phate-comparison") c(
+    if (has.phate) c(
         "Third input: Python PHATE fitted to the same 120,804 x 20 PC matrix",
         paste("PHATE version:", phate.result$versions$phate),
         "PHATE: Euclidean, knn=5, decay=40, 2000 spectral landmarks, no additional PCA",
         paste("PHATE auto-selected diffusion time:", phate.result$optimal_t),
         "PHATE preview only: feasibility settings, not a tuned or validated biological model"
+    ),
+    if (view == "sgd-comparison") c(
+        "Fourth input: sparse metric-MDS (SGD), graph-shortest-path targets on the same k = 4 graph",
+        paste("SGD checkpoint:", normalizePath(sgd.file)),
+        paste("SGD cache identity:", sgd$cache.key),
+        paste("SGD completed epochs:", sgd$epoch),
+        "SGD: 2,000 internally selected pivots; regional endpoint weights; one start; seed 20190619",
+        "SGD schedule: Zheng; epsilon 0.1; fixed 500-epoch horizon; no edge-KK",
+        "Epoch completion is not a convergence certificate; errors evaluated before display transforms"
     )
 ) else c(
     "Input: published three-dimensional UMAP coordinates",

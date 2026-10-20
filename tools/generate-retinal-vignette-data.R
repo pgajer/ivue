@@ -134,12 +134,45 @@ case.study <- list(
     )
 )
 
+sgd.file <- Sys.getenv("IVUE_RETINAL_SGD")
+if (nzchar(sgd.file)) {
+    base::source("tools/retinal-sgd-input.R")
+    sgd <- read.retinal.sgd(sgd.file, rownames(sampled),
+        file.path(artifact.dir, "retinal-umap-input-pc20.rds"), require.complete = TRUE)
+    sgd.display <- retinal.display.transform(
+        sgd$coordinates[sgd$display.indices, , drop = FALSE], rescale = TRUE)
+    sgd.coordinates <- sgd.display$coordinates
+    rownames(sgd.coordinates) <- ids
+    colnames(sgd.coordinates) <- c("x", "y", "z")
+    case.study$coordinates$sgd <- sgd.coordinates
+    case.study$provenance$display.transforms$sgd <- sgd.display$transform
+    case.study$provenance$sgd <- list(
+        method = "grip::metric.mds; sparse approximation; SGD backend",
+        target = "weighted shortest-path distances on the full symmetric k = 4 graph",
+        pivots = 2000L, pivot.selection = "internal randomized distance-proportional",
+        weighting = "inverse-squared distances with regional endpoint multipliers",
+        seed = sgd$settings$seed, starts = sgd$settings$starts,
+        epochs = sgd$epoch, scheduler = sgd$settings$schedule,
+        schedule.epsilon = sgd$settings$schedule.epsilon,
+        schedule.epochs = sgd$settings$schedule.epochs,
+        refinement = "none", converged = FALSE,
+        cache.key = sgd$cache.key, graph.sha256 = sgd$graph.hash,
+        evaluation = sgd$summary,
+        evaluation.definition = paste(
+            "100*sqrt(mean(((graph_distance-embedded_distance)/graph_distance)^2));",
+            "estimate on fixed sampled pairs, original fitted units, no scale fitting;",
+            "95% source-block bootstrap Monte Carlo intervals;",
+            "not an exact all-pairs score or the sparse fitting proxy")
+    )
+}
+
 if (any(grepl("barcode", names(case.study$annotations), ignore.case = TRUE)) ||
     any(grepl("/Users/|~", unlist(case.study$provenance)))) {
     stop("The public case-study object contains identifying or local-path fields.")
 }
 
-output <- file.path("inst", "extdata", "retinal-development.rds")
+output <- Sys.getenv("IVUE_RETINAL_VIGNETTE_DATA",
+                     file.path("inst", "extdata", "retinal-development.rds"))
 saveRDS(case.study, output, compress = "xz", version = 2L)
 message("Wrote ", output, " (", format(file.info(output)$size, big.mark = ","),
         " bytes)")
