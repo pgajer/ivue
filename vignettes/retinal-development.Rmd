@@ -147,7 +147,7 @@ umap.by.age <- plot3D.groups(
   alpha = 0.78,
   axes = FALSE,
   aspect = "equal",
-  camera = camera
+  camera = camera, controls = FALSE
 )
 umap.by.age
 ```
@@ -171,7 +171,7 @@ sknn.points.by.age <- plot3D.groups(
   alpha = 0.78,
   axes = FALSE,
   aspect = "equal",
-  camera = camera
+  camera = camera, controls = FALSE
 )
 sknn.points.by.age
 ```
@@ -222,7 +222,7 @@ graph.by.age <- plot3D.graph(
   edge.width = 1,
   axes = FALSE,
   aspect = "equal",
-  camera = camera
+  camera = camera, controls = FALSE
 )
 graph.by.age
 ```
@@ -248,7 +248,7 @@ umap.by.cell.type <- plot3D.groups(
   alpha = 0.78,
   axes = FALSE,
   aspect = "equal",
-  camera = camera
+  camera = camera, controls = FALSE
 )
 
 graph.by.cell.type <- plot3D.graph(
@@ -262,7 +262,7 @@ graph.by.cell.type <- plot3D.graph(
   edge.width = 1,
   axes = FALSE,
   aspect = "equal",
-  camera = camera
+  camera = camera, controls = FALSE
 )
 ```
 

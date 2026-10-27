@@ -54,7 +54,7 @@ head(map.colors(height, height.scale)$colors)
 view <- plot3D.cont(X, values = height, scale = height.scale,
                    legend.title = "Height", legend.width = 120,
                    point.size = 7, height = 340,
-                   camera = camera.zup(zoom = 0.65))
+                   camera = camera.zup(zoom = 0.65), controls = FALSE)
 view
 ```
 
@@ -302,15 +302,17 @@ Away from the poles, positive z initially projects upward. Interactive rotation
 can tilt it; this is not an enforced rotation constraint. Explicit `theta`,
 `phi`, or `userMatrix` selects the alternative camera controls described in
 `help("plot3D.plain", package = "ivue")`. Browser rotation does not update
-R-side camera metadata or synchronize another widget. Open **View controls**
-for keyboard rotation/zoom and **Reset view**. **Download view settings** saves
+R-side camera metadata or synchronize another widget. These vignettes hide
+the camera panel with `controls = FALSE`; drag to rotate and scroll to zoom.
+In your own plots, `controls = TRUE` adds keyboard rotation/zoom, **Reset view**,
+and **Download view settings**. The download saves
 an R recipe containing the current camera, bounds, and aspect. Source it and
 supply those settings explicitly to another plot:
 
 ```{r recovered-camera, eval=FALSE}
 source("ivue-view.R")
 recovered <- plot3D.plain(X, camera = view$camera, limits = view$limits,
-                          aspect = view$aspect)
+                          aspect = view$aspect, controls = FALSE)
 ```
 
 The file contains viewing settings, not coordinates, annotations, or layers.

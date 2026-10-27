@@ -72,7 +72,7 @@ positive y down-right on screen. Dragging the widget can change this orientation
 ```{r saddle-plain, eval=have.rgl}
 plain <- plot3D.plain(X, col = "#197A68", point.size = 5,
                      axes = TRUE, xlab = "x", ylab = "y", zlab = "z",
-                     description = "250 green observations on a saddle; opposite sides curve upward and downward.")
+                     description = "250 green observations on a saddle; opposite sides curve upward and downward.", controls = FALSE)
 plain
 ```
 
@@ -103,7 +103,7 @@ mapping$legend
 
 ```{r saddle-continuous, eval=have.rgl}
 colored <- plot3D.cont(X, values = zs, scale = height.scale,
-                       point.size = 5, legend.title = "Saddle height")
+                       point.size = 5, legend.title = "Saddle height", controls = FALSE)
 colored
 ```
 
@@ -174,7 +174,7 @@ saddle.view <- plot3D.cont(
   axes = FALSE, aspect = "equal",
   layers = list(layer3D.axes(head.length = 0.04, head.angle = pi/8)),
   camera = camera.zup(elevation = 20, turn = -135, fov = 0, zoom = 0.4),
-  height = 500L
+  height = 500L, controls = FALSE
 )
 ```
 
@@ -270,7 +270,7 @@ saddle.mesh <- plot3D.cont(
   axes = FALSE, aspect = "equal",
   layers = list(surface, layer3D.axes()),
   camera = camera.zup(elevation = 20, turn = -135, fov = 0, zoom = 0.4),
-  height = 500L
+  height = 500L, controls = FALSE
 )
 ```
 
@@ -291,7 +291,7 @@ metric-MDS or metric-MDS-followed-by-edge-KK coordinates in the same row order:
 plot3D.cont(
   Z, values = saddle[, "z"], scale = byr.scale,
   point.type = "sphere", sphere.radius = 0.02, axes = FALSE,
-  layers = list(surface, layer3D.axes()), camera = camera.zup()
+  layers = list(surface, layer3D.axes()), camera = camera.zup(), controls = FALSE
 )
 ```
 
@@ -326,7 +326,7 @@ map.colors(groups, group.scale)$legend
 plot3D.groups(X, groups, scale = group.scale, point.size = 5,
   highlight = abs(zs) > 0.4,
   highlight.style = list(point.size = 7),
-  non.highlight.style = list(col = "gray75", alpha = 0.25))
+  non.highlight.style = list(col = "gray75", alpha = 0.25), controls = FALSE)
 ```
 
 `highlight` changes styling, not membership: all 250 rows keep their original
@@ -356,7 +356,7 @@ saddle.mesh.groups <- plot3D.groups(
   axes = FALSE, aspect = "equal",
   layers = list(surface, layer3D.axes()),
   camera = camera.zup(elevation = 20, turn = -135, fov = 0, zoom = 0.4),
-  height = 500L
+  height = 500L, controls = FALSE
 )
 ```
 
@@ -396,7 +396,7 @@ reference.view <- plot3D.cont(
   X, values = X[, "z"], scale = height.scale, point.size = 5,
   legend.title = "Saddle height", legend.width = 160, axes = FALSE,
   layers = list(reference, layer3D.axes()),
-  camera = camera.zup(zoom = 0.6), height = 450
+  camera = camera.zup(zoom = 0.6), height = 450, controls = FALSE
 )
 ```
 
@@ -435,7 +435,7 @@ plot3D.graph(graph, X = coords, values = values, edge.col = "gray50",
   edge.width = 1 + graph$edges$weight,
   point.type = "sphere", sphere.radius = 0.07,
   layers = list(layer3D.path(c(1, 2, 3), col = "#D55E00", width = 4),
-                layer3D.labels(1:4, vertices$label, offset = c(0, 0, 0.15))))
+                layer3D.labels(1:4, vertices$label, offset = c(0, 0, 0.15))), controls = FALSE)
 ```
 
 The other accepted formats are paired `adj.list`/`weight.list` lists, dense or
@@ -489,10 +489,10 @@ use the built-in adapters:
 
 ```{r optional-layout, eval=have.rgl && requireNamespace("igraph", quietly=TRUE)}
 layout.widget <- plot3D.graph(adjacency, layout = "kk", weight.type = "distance",
-                              seed = 1)
+                              seed = 1, controls = FALSE)
 stopifnot(inherits(layout.widget, "htmlwidget"))
 unweighted <- igraph::make_ring(4)
-unweighted.widget <- plot3D.graph(unweighted, layout = "fr", weight.type = "unweighted")
+unweighted.widget <- plot3D.graph(unweighted, layout = "fr", weight.type = "unweighted", controls = FALSE)
 stopifnot(inherits(unweighted.widget, "htmlwidget"))
 ```
 
@@ -623,7 +623,7 @@ this R-side camera metadata.
 
 ```{r camera-comparison, eval=have.rgl}
 camera <- attr(colored, "ivue")$camera
-comparison <- plot3D.plain(X, camera = camera)
+comparison <- plot3D.plain(X, camera = camera, controls = FALSE)
 stopifnot(identical(attr(comparison, "ivue")$row.ids, seq_len(nrow(X))))
 comparison
 ```
