@@ -30,10 +30,15 @@ and the [animation guide](animation.html) covers longer recorded sequences.
 | [Show a numerical annotation](#point-clouds-and-annotations) | `plot3D.cont(X, values)` | Continuous or explicitly binned colors with a matching legend. |
 | [Show categories](#point-clouds-and-annotations) | `plot3D.groups(X, groups)` | Named groups, which need not be clusters. |
 | [Inspect an embedded graph](#graph-preparation-and-plotting) | `prepare.graph()` then `plot3D.graph()` | Check IDs and edges before adding coordinates and annotations. |
-| [Compare views consistently](#reusable-color-scales-and-legends) | A reusable color scale and `camera.zup()` | Fix the meaning of colors and the initial orientation. |
+| [Compare scientific views](ivue-introduction.html#comparing-scientific-views) | Reuse colors, sphere sizes, coordinate scales and cameras | Compare an exact rotation with a lossy projection; distinguish display settings from coordinate changes. |
 | [Add geometric context](#geometric-layers) | `layers = list(...)` | Supply connectivity, labels, a mesh, a reference surface, or axes. |
 | [Play recorded coordinates](#recorded-coordinate-animation-and-export) | `animate.frames()` | Preserve row identity across all frames. |
 | [Share a view](#recorded-coordinate-animation-and-export) | `htmlwidgets::saveWidget()` or `write.animation.gif()` | Choose interactive HTML or a fixed raster animation. |
+
+For a worked comparison, see [Comparing scientific views](ivue-introduction.html#comparing-scientific-views).
+It measures distance distortion before displaying two versions of the same
+observations. Shared colors and cameras make the comparison easier to read;
+they do not establish that the geometries agree.
 
 ## A first view
 
