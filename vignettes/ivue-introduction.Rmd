@@ -18,6 +18,17 @@ have.geometry <- requireNamespace("geometry", quietly = TRUE)
 For a task index, see [Finding your way around ivue](function-guide.html);
 for small reproducible inputs, see [Example data and recipes](example-data.html).
 
+For side-by-side scientific interpretation, start with
+[Comparing scientific views](#comparing-scientific-views) below: it shows how
+to share colors, sphere sizes, coordinate scales and cameras, while distinguishing
+an exact view from a lossy projection. For the fitting questions behind those
+pictures, continue to grip's
+[embedding fidelity](https://pgajer.github.io/grip/articles/embedding-fidelity.html)
+and [local versus population embeddings](https://pgajer.github.io/grip/articles/local-global-embeddings.html)
+articles. For the geometry introduced before fitting, see linf's
+[simplex corners and max normalization](https://pgajer.github.io/linf/articles/simplex-corner-geometry.html).
+
+
 **On this page:** [A sample from a saddle](#a-sample-from-a-saddle) · [Reusable numerical colors](#reusable-numerical-colors) · [Textbook-style axes and a z-up camera](#textbook-style-axes-and-a-z-up-camera) · [A triangular mesh beneath the spheres](#a-triangular-mesh-beneath-the-spheres) · [Groups and highlighting](#groups-and-highlighting) · [A gridded reference surface](#a-gridded-reference-surface) · [Weighted graphs and geometric layers](#weighted-graphs-and-geometric-layers) · [Comparing scientific views](#comparing-scientific-views) · [Cameras, metadata, and export](#cameras-metadata-and-export)
 
 ## A sample from a saddle
