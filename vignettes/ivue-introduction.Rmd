@@ -18,7 +18,7 @@ have.geometry <- requireNamespace("geometry", quietly = TRUE)
 For a task index, see [Finding your way around ivue](function-guide.html);
 for small reproducible inputs, see [Example data and recipes](example-data.html).
 
-**On this page:** [A sample from a saddle](#a-sample-from-a-saddle) · [Reusable numerical colors](#reusable-numerical-colors) · [Textbook-style axes and a z-up camera](#textbook-style-axes-and-a-z-up-camera) · [A triangular mesh beneath the spheres](#a-triangular-mesh-beneath-the-spheres) · [Groups and highlighting](#groups-and-highlighting) · [A gridded reference surface](#a-gridded-reference-surface) · [Weighted graphs and geometric layers](#weighted-graphs-and-geometric-layers) · [Cameras, metadata, and export](#cameras-metadata-and-export)
+**On this page:** [A sample from a saddle](#a-sample-from-a-saddle) · [Reusable numerical colors](#reusable-numerical-colors) · [Textbook-style axes and a z-up camera](#textbook-style-axes-and-a-z-up-camera) · [A triangular mesh beneath the spheres](#a-triangular-mesh-beneath-the-spheres) · [Groups and highlighting](#groups-and-highlighting) · [A gridded reference surface](#a-gridded-reference-surface) · [Weighted graphs and geometric layers](#weighted-graphs-and-geometric-layers) · [Comparing scientific views](#comparing-scientific-views) · [Cameras, metadata, and export](#cameras-metadata-and-export)
 
 ## A sample from a saddle
 
@@ -496,6 +496,113 @@ requiring a graph object. `layer3D.callback()` supports advanced rgl drawing;
 callbacks receive coordinates and row/draw IDs but must not open, close, or
 switch devices. Layers are applied before serialization, not appended to a
 live browser widget later.
+
+## Comparing scientific views
+
+A comparison is easier to interpret when display changes are separated from
+changes to the underlying coordinates. Use the same observations and a stable
+color definition, then decide explicitly which scales should be shared. A
+camera can make different structures look similar; a different camera can make
+the same structure look different.
+
+| Choice | What to keep consistent | What it does not establish |
+|:--|:--|:--|
+| Colors | Reuse one scale and the same variable or category dictionary | Color agreement does not imply geometric agreement |
+| Coordinate units | Use `aspect = "equal"`; share limits when units are comparable | Equal axis scales do not recover discarded dimensions |
+| Spheres | Specify one radius in coordinate units | Automatic radii can change between subsets |
+| Camera | Use the same initial camera and viewport dimensions | A shared camera does not align independently fitted embeddings |
+| Labels | State whether coordinates are original, projected, or fitted | “3D view” alone does not describe how it was generated |
+
+Here we reuse the 500 surface-area-sampled saddle observations above. We rotate
+and center them with all three PCA coordinates, which preserves Euclidean
+pair distances exactly. We then set the third PCA coordinate to zero. This
+second view is a two-dimensional projection displayed in a 3D widget; it loses
+information even though it contains exactly the same observations.
+
+```{r comparison-coordinates}
+comparison.pca <- prcomp(saddle, center = TRUE, scale. = FALSE)
+comparison.exact <- comparison.pca$x
+comparison.projected <- comparison.exact
+comparison.projected[, 3] <- 0
+original.dist <- as.numeric(dist(saddle))
+exact.dist <- as.numeric(dist(comparison.exact))
+projected.dist <- as.numeric(dist(comparison.projected))
+stopifnot(all(original.dist > 0),
+          max(abs(original.dist - exact.dist)) < 1e-10,
+          all(projected.dist <= original.dist + 1e-10))
+relative.error <- (projected.dist - original.dist) / original.dist
+short.pairs <- original.dist <= quantile(original.dist, 0.1)
+comparison.quality <- data.frame(
+  View = c("All three PCA coordinates (exact)", "First two PCA coordinates (projection)"),
+  RMS_relative_error_percent = c(100 * sqrt(mean(((exact.dist-original.dist)/original.dist)^2)),
+                                  100 * sqrt(mean(relative.error^2))),
+  Shortest_decile_RMS_percent = c(0, 100 * sqrt(mean(relative.error[short.pairs]^2))),
+  Squared_length_retained_percent = c(100, 100 * sum(comparison.projected^2) / sum(comparison.exact^2)))
+knitr::kable(comparison.quality, digits = 2, row.names = FALSE,
+  col.names = c("View", "RMS error (%)", "Short pairs (%)", "Squared length retained (%)"))
+```
+
+The error uses **all 124,750 unordered pairs**, comparing drawn Euclidean
+distance with the original three-coordinate distance. The shortest-decile
+column uses the shortest 10% of original distances, including threshold ties.
+Squared length retained describes variation about the centroid; it is not a
+guarantee that individual pair distances are accurate. These are deterministic
+projection diagnostics, not a fitted MDS stress or a biological comparison.
+
+For the two widgets we reuse `byr.scale`, so sphere colors continue to encode
+**original saddle height**. They do not switch to the third displayed PCA
+coordinate, which is zero in the projected view. Limits are shared, axes have
+equal scale, and sphere radius and initial camera are identical. Drag to rotate
+and scroll to zoom; the two widgets can be manipulated independently.
+
+```{r comparison-view-settings, eval=have.rgl}
+comparison.limits <- t(apply(rbind(comparison.exact, comparison.projected), 2, range))
+comparison.span <- max(comparison.limits[, 2] - comparison.limits[, 1])
+comparison.limits[, 1] <- comparison.limits[, 1] - 0.08 * comparison.span
+comparison.limits[, 2] <- comparison.limits[, 2] + 0.08 * comparison.span
+comparison.camera <- camera.zup(elevation = 25, turn = -125, zoom = 0.55)
+comparison.view <- function(coordinates, description) {
+  plot3D.cont(coordinates, values = saddle[, "z"], scale = byr.scale,
+    point.type = "sphere", sphere.radius = 0.02,
+    aspect = "equal", limits = comparison.limits, camera = comparison.camera,
+    axes = FALSE, xlab = "", ylab = "", zlab = "",
+    legend.title = "Original saddle height", legend.width = 180,
+    controls = FALSE, height = 450L, description = description)
+}
+comparison.exact.widget <- comparison.view(comparison.exact,
+  "Exact view: all three PCA coordinates preserve every original pair distance.")
+comparison.projected.widget <- comparison.view(comparison.projected,
+  "Approximate view: the third PCA coordinate is set to zero; colors still show original height.")
+```
+
+### Exact coordinates, rotated into a common frame
+
+```{r comparison-exact-display, eval=have.rgl, echo=FALSE}
+comparison.exact.widget
+```
+
+### Lossy projection, with the same display settings
+
+```{r comparison-projected-display, eval=have.rgl, echo=FALSE}
+comparison.projected.widget
+```
+
+For independently fitted embeddings, matching cameras is insufficient because
+the coordinates may differ by translation, rotation, or reflection. An
+orthogonal alignment using corresponding observations can remove those
+arbitrary frame differences without changing pair distances. If alignment also
+rescales coordinates, disclose that separately: scale affects the distances
+being compared. Alignment cannot remove nonlinear distortion.
+
+Use common limits when comparing sizes in the same units. If each plot is
+framed separately to reveal detail, say so and do not interpret apparent
+screen size as a distance comparison. When normalizations or distance targets
+change units, explain those changes before drawing size conclusions.
+For a worked fitting comparison, see grip's
+[embedding fidelity](https://pgajer.github.io/grip/articles/embedding-fidelity.html)
+and [local versus population fits](https://pgajer.github.io/grip/articles/local-global-embeddings.html)
+articles; for normalization before any fit, see linf's
+[simplex corner geometry](https://pgajer.github.io/linf/articles/simplex-corner-geometry.html).
 
 ## Cameras, metadata, and export
 

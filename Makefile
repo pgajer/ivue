@@ -101,3 +101,7 @@ retinal-vignette: readme-retinal readme-retinal-umap retinal-vignette-data
 	cp man/figures/readme-retinal-sknn.png vignettes/figures/retinal-sknn.png
 	cp man/figures/readme-retinal-comparison.png \
 		vignettes/figures/retinal-comparison.png
+
+.PHONY: comparison-guide
+comparison-guide:
+	OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 $(RSCRIPT_RUN) tools/render-comparison-guide.R
