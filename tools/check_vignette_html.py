@@ -1,6 +1,6 @@
 """Check built/installed vignette links and assets without network access.
 
-Run: python3 tools/audit_vignette_html.py build/vignettes
+Run: python3 tools/check_vignette_html.py build/vignettes
 External hyperlinks are citations; executable/image/style resources must be local
 or embedded. This checks packaging, not browser execution.
 """

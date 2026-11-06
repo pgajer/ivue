@@ -4,7 +4,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 import io
 import tarfile
-from audit_archive_links import audit
+from check_archive_links import audit
 
 
 def archive(path, readme):

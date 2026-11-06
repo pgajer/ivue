@@ -1,7 +1,7 @@
 """Check local documentation links against the files actually in an R tarball.
 
 Pandoc parses Markdown links, images, reference links, and embedded HTML.
-Installed vignette HTML is checked separately by audit_vignette_html.py because
+Installed vignette HTML is checked separately by check_vignette_html.py because
 its help links resolve only after R has generated the installed help directory.
 This check is offline; external HTTP(S) URLs need a separate network check.
 """

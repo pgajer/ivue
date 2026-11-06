@@ -3,7 +3,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from contextlib import redirect_stdout
 import io
-from audit_vignette_html import audit
+from check_vignette_html import audit
 
 with TemporaryDirectory(prefix='ivue-audit-fixture-') as tmp:
     root = Path(tmp)

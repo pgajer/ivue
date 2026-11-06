@@ -44,7 +44,7 @@ jobs:
       - name: Check without suggested packages
         if: matrix.os == 'ubuntu-latest' && matrix.r == 'release'
         run: make check-minimal R_ENV=env
-      - name: Audit the built distribution
+      - name: Check the built distribution
         if: matrix.os == 'ubuntu-latest' && matrix.r == 'release'
         run: make -o build audit-distribution R_ENV=env
       - uses: actions/upload-artifact@v4
@@ -132,7 +132,7 @@ jobs:
       - run: node "$RUNNER_TEMP/ivue-browser/node_modules/playwright/cli.js" install --with-deps chromium firefox
       - run: PLAYWRIGHT_MODULE="$RUNNER_TEMP/ivue-browser/node_modules/playwright" node tools/browser_smoke.cjs
       - run: PLAYWRIGHT_MODULE="$RUNNER_TEMP/ivue-browser/node_modules/playwright" node tools/animation_browser.cjs
-      - run: PLAYWRIGHT_MODULE="$RUNNER_TEMP/ivue-browser/node_modules/playwright" node tools/audit_fix_browser.cjs
+      - run: PLAYWRIGHT_MODULE="$RUNNER_TEMP/ivue-browser/node_modules/playwright" node tools/check_fix_browser.cjs
       - run: PLAYWRIGHT_MODULE="$RUNNER_TEMP/ivue-browser/node_modules/playwright" node tools/view_controls_browser.cjs
       - run: PLAYWRIGHT_MODULE="$RUNNER_TEMP/ivue-browser/node_modules/playwright" node tools/gif_projection_browser.cjs
       - run: PLAYWRIGHT_MODULE="$RUNNER_TEMP/ivue-browser/node_modules/playwright" node tools/shiny_controls_browser.cjs

@@ -17,7 +17,7 @@ RETINAL_NODE_DIR := artifacts/retinal-readme/node
 RETINAL_PLAYWRIGHT := $(RETINAL_NODE_DIR)/node_modules/playwright
 
 audit-guide:
-	$(RSCRIPT_RUN) tools/audit_api_guide.R
+	$(RSCRIPT_RUN) tools/check_api_guide.R
 
 document:
 	$(RSCRIPT_RUN) -e 'roxygen2::roxygenise()'
@@ -30,7 +30,7 @@ build: document audit-guide
 	stage=$$(mktemp -d "$(CURDIR)/build/.stage.XXXXXX"); \
 	trap 'rm -rf "$$stage"' EXIT HUP INT TERM; \
 	(cd "$$stage" && RGL_USE_NULL=TRUE $(R_RUN) CMD build "$(CURDIR)"); \
-	python3 tools/audit_archive_links.py "$$stage/$(ARCHIVE)"; \
+	python3 tools/check_archive_links.py "$$stage/$(ARCHIVE)"; \
 	tar -xzf "$$stage/$(ARCHIVE)" -C "$$stage" "$(PKGNAME)/inst/doc"; \
 	rm -f build/$(PKGNAME)_*.tar.gz; \
 	mv "$$stage/$(ARCHIVE)" "$(TARBALL)"; \
@@ -51,19 +51,19 @@ install: build
 	$(R_RUN) CMD INSTALL $(TARBALL)
 
 audit-installed: build
-	$(RSCRIPT_RUN) tools/audit_installed_help.R $(TARBALL)
+	$(RSCRIPT_RUN) tools/check_installed_help.R $(TARBALL)
 
 # Use make -o build audit-distribution to audit an existing successful archive.
 audit-distribution: audit-installed
 	$(RSCRIPT_RUN) tools/test_distribution_audit.R
 	python3 tools/test_distribution_audit.py
 	python3 tools/test_archive_links.py
-	python3 tools/audit_archive_links.py $(TARBALL)
-	$(RSCRIPT_RUN) tools/audit_archive_contents.R $(TARBALL)
+	python3 tools/check_archive_links.py $(TARBALL)
+	$(RSCRIPT_RUN) tools/check_archive_contents.R $(TARBALL)
 
 site: audit-distribution
 	$(RSCRIPT_RUN) tools/build_site.R $(TARBALL)
-	python3 tools/audit_site.py build/site
+	python3 tools/check_site.py build/site
 
 readme-retinal-layout:
 	$(RSCRIPT_RUN) tools/prepare-retinal-readme.R
