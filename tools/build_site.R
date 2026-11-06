@@ -42,7 +42,7 @@ local({
     # Rd2HTML's reference navigation uses R's conventional index filename.
     file.copy(file.path(output, "html", "index.html"), file.path(output, "html", "00Index.html"))
     stopifnot(file.copy(archive, file.path(output, basename(archive))))
-    stopifnot(file.copy("vignettes/figures/retinal-sknn.png", file.path(output, "retinal-sknn.png")))
+    stopifnot(file.copy("vignettes/guide-images/retinal-sknn.png", file.path(output, "retinal-sknn.png")))
     commit <- system2("git", c("rev-parse", "HEAD"), stdout = TRUE)
     dirty <- length(system2("git", c("status", "--porcelain"), stdout = TRUE)) > 0L
     manifest <- list(package = "ivue", version = version, commit = commit,

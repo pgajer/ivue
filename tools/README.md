@@ -26,6 +26,15 @@ negative fixtures must detect a missing overview entry, missing local asset, and
 broken anchor. CI runs this audit on the archive created by its minimal-check
 step; it does not build a second candidate for the audit.
 
+The five guides share `ivue-libs/` and a small stylesheet. The vignette
+Makefile retains generated assets for `.install_extras` to copy into `inst/doc`;
+keep these directories beside the HTML when copying a guide. The distribution
+audit verifies offline resources and limits installed documentation to 5 MB.
+`check_vignette_browser.cjs` opens all five installed guides with network
+requests blocked, verifies WebGL rendering/rotation and narrow-screen layout,
+and saves screenshots. Set `PLAYWRIGHT_MODULE` to the installed Playwright
+directory and optionally `CHROME_PATH` to an existing Chromium executable.
+
 ## Browser and Shiny qualification
 
 `render_examples.R`, `render_audit_fixes.R`, `render_view_controls.R`, and
@@ -70,7 +79,10 @@ build, distribution audit, package tests, or browser fixtures.
 
 ## Release utilities
 
-`release_audit.R` and `release_browser.cjs` provide additional release probes.
+`Rscript tools/release_audit.R update` checks the published CRAN version,
+reverse dependencies, dependencies and metadata URLs. Omit the argument for
+automatic new/update detection; `new` also checks package-name availability.
+`release_browser.cjs` provides additional release probes.
 `check_winbuilder.R` concerns the external Win-builder service: read its behavior
 and obtain release authorization before submitting. Building/checking locally
 is separate from CRAN submission. GitHub Pages uses `build_site.R` and

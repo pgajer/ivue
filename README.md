@@ -24,20 +24,29 @@ controls.
 
 ## Get Started
 
-Install the current **development build** (not yet a CRAN release). This built
-source package includes all five rendered guides. Install its dependencies first:
+Install the [CRAN release](https://cran.r-project.org/package=ivue) and the optional `rgl`
+package to run the 3D examples:
 
 ```r
-install.packages(c("htmlwidgets", "htmltools", "rgl"))
-install.packages("https://pgajer.github.io/ivue/ivue_0.1.0.tar.gz",
-                 repos = NULL, type = "source")
+install.packages(c("ivue", "rgl"))
+
+# Start here
+vignette("ivue-introduction", package = "ivue")
+# Find the right functions for your task
 vignette("function-guide", package = "ivue")
 ```
 
-The [documentation site](https://pgajer.github.io/ivue/) identifies the source
-commit and provides the same guides online. The built package includes them
-for offline reading; you do not need
-`knitr`, `rmarkdown`, or Pandoc to read them.
+The CRAN source distribution includes all five rendered guides:
+`ivue-introduction`, `function-guide`, `example-data`,
+`retinal-development`, and `animation`. Read them offline after installation;
+`knitr`, `rmarkdown`, and Pandoc are not needed to read the bundled HTML.
+Use `help("ivue-package", package = "ivue")` or
+`browseVignettes("ivue")` to find them from R.
+
+Development sources and rendered guides are available from the
+[repository](https://github.com/pgajer/ivue) and
+[documentation site](https://pgajer.github.io/ivue/).
+The site identifies the source commit of its development snapshot.
 
 Start with a coordinate matrix, one observation per row. This sample from a
 saddle is colored by height:

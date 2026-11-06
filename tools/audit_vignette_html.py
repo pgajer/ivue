@@ -63,6 +63,7 @@ def audit(root):
         print(f'{path.name}: {path.stat().st_size:,} bytes; {len(page.resources)} embedded/local resources')
     assert not errors, '\n'.join(errors)
     size = sum(p.stat().st_size for p in root.rglob('*') if p.is_file())
+    assert size <= 5_000_000, f'Installed documentation exceeds 5 MB: {size:,} bytes'
     print(f'PASS: local files/anchors/resources. Documentation files: {size:,} bytes ({size / 2**20:.3f} MiB).')
 
 if __name__ == '__main__':

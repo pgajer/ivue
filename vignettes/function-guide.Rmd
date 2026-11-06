@@ -2,6 +2,10 @@
 title: "Finding your way around ivue"
 output:
   rmarkdown::html_vignette:
+    self_contained: false
+    lib_dir: ivue-libs
+    css: ivue-vignette.css
+    math_method: mathml
     toc: false
 vignette: >
   %\VignetteIndexEntry{Finding your way around ivue}

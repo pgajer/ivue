@@ -27,6 +27,7 @@ artifacts/
 /vignettes/*.pdf
 /vignettes/*_files/
 /vignettes/*_cache/
+/vignettes/ivue-libs/
 
 # R test output.
 tests/testthat.Rout*

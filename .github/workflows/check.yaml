@@ -19,7 +19,6 @@ jobs:
           - {os: macos-latest, r: release}
           - {os: windows-latest, r: release}
           - {os: windows-latest, r: devel}
-          - {os: ubuntu-latest, r: '4.1'}
     runs-on: ${{ matrix.os }}
     env:
       RGL_USE_NULL: "TRUE"
@@ -54,7 +53,52 @@ jobs:
           name: source-tarball-r-release
           path: build/ivue_*.tar.gz
 
+  minimum-r:
+    name: R 4.1 with supported optional dependencies
+    needs: package
+    runs-on: ubuntu-latest
+    env:
+      RGL_USE_NULL: "TRUE"
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      PKG_USE_BIOCONDUCTOR: "false"
+      _R_CHECK_FORCE_SUGGESTS_: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: '4.1'
+          use-public-rspm: true
+      # Check the built guides from R-release. Current geometry/magic and
+      # Matrix need newer R; modern jobs retain full optional coverage.
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: |
+            any::rcmdcheck
+            any::testthat
+            any::rgl
+      - uses: actions/download-artifact@v4
+        with:
+          name: source-tarball-r-release
+          path: build
+      - name: Check the release archive on the minimum R version
+        shell: Rscript {0}
+        run: |
+          archive <- list.files("build", "^ivue_.*[.]tar[.]gz$", full.names = TRUE)
+          stopifnot(length(archive) == 1L,
+                    requireNamespace("testthat", quietly = TRUE),
+                    requireNamespace("rgl", quietly = TRUE))
+          rcmdcheck::rcmdcheck(archive,
+            args = c("--as-cran", "--no-manual", "--no-vignettes"),
+            error_on = "warning", check_dir = "check")
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: minimum-r-check
+          path: check
+
   browser:
+    needs: package
     runs-on: ubuntu-latest
     env:
       RGL_USE_NULL: "TRUE"
@@ -74,7 +118,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: R CMD INSTALL .
+      - uses: actions/download-artifact@v4
+        with:
+          name: source-tarball-r-release
+          path: build
+      - run: R CMD INSTALL build/ivue_*.tar.gz
       - run: Rscript -e 'stopifnot(requireNamespace("rgl", quietly = TRUE))'
       - run: Rscript tools/render_examples.R
       - run: Rscript tools/render_audit_fixes.R
@@ -88,6 +136,7 @@ jobs:
       - run: PLAYWRIGHT_MODULE="$RUNNER_TEMP/ivue-browser/node_modules/playwright" node tools/view_controls_browser.cjs
       - run: PLAYWRIGHT_MODULE="$RUNNER_TEMP/ivue-browser/node_modules/playwright" node tools/gif_projection_browser.cjs
       - run: PLAYWRIGHT_MODULE="$RUNNER_TEMP/ivue-browser/node_modules/playwright" node tools/shiny_controls_browser.cjs
+      - run: PLAYWRIGHT_MODULE="$RUNNER_TEMP/ivue-browser/node_modules/playwright" node tools/check_vignette_browser.cjs "$(Rscript -e 'cat(system.file("doc", package = "ivue"))')"
       - run: IVUE_BROWSER=firefox PLAYWRIGHT_MODULE="$RUNNER_TEMP/ivue-browser/node_modules/playwright" xvfb-run -a node tools/view_controls_browser.cjs
       - run: IVUE_BROWSER=firefox PLAYWRIGHT_MODULE="$RUNNER_TEMP/ivue-browser/node_modules/playwright" xvfb-run -a node tools/gif_projection_browser.cjs
       - run: IVUE_BROWSER=firefox PLAYWRIGHT_MODULE="$RUNNER_TEMP/ivue-browser/node_modules/playwright" xvfb-run -a node tools/shiny_controls_browser.cjs

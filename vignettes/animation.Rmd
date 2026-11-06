@@ -2,6 +2,10 @@
 title: "Playing and Exporting Coordinate Animations"
 output:
   rmarkdown::html_vignette:
+    self_contained: false
+    lib_dir: ivue-libs
+    css: ivue-vignette.css
+    math_method: mathml
 vignette: >
   %\VignetteIndexEntry{Playing and Exporting Coordinate Animations}
   %\VignetteEngine{knitr::rmarkdown}
@@ -125,7 +129,7 @@ finite-coordinate requirement of ordinary `plot3D` functions is unchanged.
 
 ## Animate a changing 3D surface
 
-![Three static views show a plane, halfway deformation, and a saddle, using the same framing. Blue and red colors stay fixed and describe final saddle height, even in the flat frame.](figures/saddle-animation.png)
+![Three static views show a plane, halfway deformation, and a saddle, using the same framing. Blue and red colors stay fixed and describe final saddle height, even in the flat frame.](guide-images/saddle-animation.png)
 
 The poster shows three of the recorded states below with a common spatial
 scale. All players start paused, including for readers who prefer reduced

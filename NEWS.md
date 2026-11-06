@@ -1,3 +1,14 @@
+# ivue 0.1.1
+
+- Added a worked guide to comparing scientific views, with shared display
+  settings and distance diagnostics for an exact rotation and a lossy projection.
+- Improved guide navigation and CRAN installation instructions; corrected
+  unavailable article links.
+- Vignette examples hide camera panels while retaining mouse interaction.
+  Use `controls = TRUE` to enable keyboard camera controls in your own views.
+- Installed guides share local display assets to reduce package size while
+  retaining offline examples.
+
 # ivue 0.1.0
 
 - **README figures:** static retinal alternatives use version-pinned web links

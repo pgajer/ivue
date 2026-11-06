@@ -2,6 +2,10 @@
 title: "Example data and reusable visualization recipes"
 output:
   rmarkdown::html_vignette:
+    self_contained: false
+    lib_dir: ivue-libs
+    css: ivue-vignette.css
+    math_method: mathml
     toc: true
 vignette: >
   %\VignetteIndexEntry{Example data and reusable visualization recipes}

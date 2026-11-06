@@ -24,5 +24,6 @@
 ^Meta$
 ^vignettes/.*\.(html|pdf)$
 ^vignettes/.*_(files|cache)$
+^vignettes/ivue-libs$
 ^tests/testthat\.Rout.*$
 ^\.Rout$

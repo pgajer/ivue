@@ -2,6 +2,10 @@
 title: "Retinal Development: Point-Cloud and Graph Views"
 output:
   rmarkdown::html_vignette:
+    self_contained: false
+    lib_dir: ivue-libs
+    css: ivue-vignette.css
+    math_method: mathml
 vignette: >
   %\VignetteIndexEntry{Retinal Development: Point-Cloud and Graph Views}
   %\VignetteEngine{knitr::rmarkdown}
@@ -153,7 +157,7 @@ umap.by.age
 ```
 
 ```{r umap-poster, echo=FALSE}
-knitr::include_graphics("figures/retinal-umap.png")
+knitr::include_graphics("guide-images/retinal-umap.png")
 ```
 
 ## Compare the embeddings without edges
@@ -177,7 +181,7 @@ sknn.points.by.age
 ```
 
 ```{r comparison-poster, echo=FALSE}
-knitr::include_graphics("figures/retinal-comparison.png")
+knitr::include_graphics("guide-images/retinal-comparison.png")
 ```
 
 The code holds cell identities, stage colors, point styling, projection, and
@@ -231,7 +235,7 @@ The README preview shows the extracted coordinates without edges; the code
 above adds the induced graph's edge overlay.
 
 ```{r graph-poster, echo=FALSE}
-knitr::include_graphics("figures/retinal-sknn.png")
+knitr::include_graphics("guide-images/retinal-sknn.png")
 ```
 
 ## Change the annotation, not the geometry
