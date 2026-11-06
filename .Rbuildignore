@@ -11,7 +11,7 @@
 ^.*\.Rcheck$
 ^Rplots\.pdf$
 ^artifacts$
-^build$
+^build/(?!vignette[.]rds$)
 ^tools$
 ^\.github$
 ^CRAN-SUBMISSION-CHECKLIST\.md$

@@ -23,7 +23,7 @@ document:
 	$(RSCRIPT_RUN) -e 'roxygen2::roxygenise()'
 
 # Publish only a successful build; refresh the browsable vignettes with it.
-# build/ is excluded from Git and source builds to prevent recursive packaging.
+# Local build products are excluded; R's generated vignette index is retained.
 build: document audit-guide
 	mkdir -p build
 	@set -eu; \
