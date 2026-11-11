@@ -4,7 +4,9 @@ const {spawn}=require('node:child_process');
 const engine=process.env.IVUE_BROWSER || 'chromium';
 (async()=>{
  const app=spawn('Rscript',['tools/shiny_controls.R'],{stdio:'inherit'});
- const browser=await playwright[engine].launch({headless:true,args:engine==='chromium'?['--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader']:[]});
+ // Use the virtual display for Firefox WebGL when running under Xvfb.
+ const headless=!(engine==='firefox' && process.platform==='linux' && process.env.DISPLAY);
+ const browser=await playwright[engine].launch({headless,args:engine==='chromium'?['--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader']:[]});
  try {
   const page=await browser.newPage(); const errors=[];page.on('pageerror',e=>errors.push(e.message));
   for(let i=0;i<60;i++) {

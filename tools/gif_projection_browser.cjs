@@ -4,7 +4,9 @@ const fs=require('node:fs'),path=require('node:path'),{pathToFileURL}=require('n
 const {execFileSync}=require('node:child_process');
 const engine=process.env.IVUE_BROWSER || 'chromium';
 (async()=>{
- const browser=await playwright[engine].launch({headless:true,args:engine==='chromium'?['--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader']:[]});
+ // Use the virtual display for Firefox WebGL when running under Xvfb.
+ const headless=!(engine==='firefox' && process.platform==='linux' && process.env.DISPLAY);
+ const browser=await playwright[engine].launch({headless,args:engine==='chromium'?['--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader']:[]});
  try {
   async function measure(file) {
    const records=JSON.parse(fs.readFileSync(file));

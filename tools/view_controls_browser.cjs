@@ -14,11 +14,17 @@ function snapshot(page,index=0) {
 }
 function near(a,b) {assert.equal(a.length,b.length); a.forEach((v,i)=>assert.ok(Math.abs(v-b[i])<1e-5,`${v} != ${b[i]}`));}
 (async()=>{
- const browser=await playwright[engine].launch({headless:true,args:engine==='chromium'?['--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader']:[]});
+ // Use the virtual display for Firefox WebGL when running under Xvfb.
+ const headless=!(engine==='firefox' && process.platform==='linux' && process.env.DISPLAY);
+ const browser=await playwright[engine].launch({headless,args:engine==='chromium'?['--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader']:[]});
  try {
   for(const width of [1280,390]) {
    const page=await browser.newPage({viewport:{width,height:950},reducedMotion:'reduce'});
-   const errors=[];page.on('pageerror',e=>errors.push(e.message));
+   const errors=[];page.on('pageerror',e=>{errors.push(e.message);console.error(`${engine} page error: ${e.message}`);});
+   page.on('console',message=>{
+    if(['error','warning'].includes(message.type())) console.error(`${engine} ${message.type()}: ${message.text()}`);
+   });
+   page.on('requestfailed',request=>console.error(`${engine} request failed: ${request.url()} (${request.failure()?.errorText})`));
    await page.goto(pathToFileURL(path.resolve('artifacts/view-controls.html')).href);
    const first=page.locator('.rglWebGL').nth(0),second=page.locator('.rglWebGL').nth(1);
    await first.getByText('View controls',{exact:true}).click();
