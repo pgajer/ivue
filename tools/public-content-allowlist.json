@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "exceptions": [
+    {
+      "scope": "repo",
+      "path": "tools/tests/test-public-content.py",
+      "rule": "private-reference",
+      "fingerprint": "2b367849e421d4bf81b9c249cb620ca684034e441c86519b4c793bc8d30ebffa",
+      "reason": "Synthetic Windows path used to verify the detector rejects personal filesystem references."
+    },
+    {
+      "scope": "repo",
+      "path": "tools/test_archive_links.py",
+      "rule": "private-reference",
+      "fingerprint": "6aad244796e4c54b7e2f2a2666871a6523d7a541b6d23b660e1393fb958e02c5",
+      "reason": "Deliberately invalid local file URI verifies that the archive-link checker rejects machine-local links."
+    }
+  ]
+}

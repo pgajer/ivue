@@ -24,18 +24,26 @@ document:
 
 # Publish only a successful build; refresh the browsable vignettes with it.
 # Local build products are excluded; R's generated vignette index is retained.
-build: document audit-guide
+build: check-public-content document audit-guide
 	mkdir -p build
 	@set -eu; \
 	stage=$$(mktemp -d "$(CURDIR)/build/.stage.XXXXXX"); \
 	trap 'rm -rf "$$stage"' EXIT HUP INT TERM; \
 	(cd "$$stage" && RGL_USE_NULL=TRUE $(R_RUN) CMD build "$(CURDIR)"); \
+	python3 tools/check-public-content.py --archive "$$stage/$(ARCHIVE)"; \
 	python3 tools/check_archive_links.py "$$stage/$(ARCHIVE)"; \
 	tar -xzf "$$stage/$(ARCHIVE)" -C "$$stage" "$(PKGNAME)/inst/doc"; \
 	rm -f build/$(PKGNAME)_*.tar.gz; \
 	mv "$$stage/$(ARCHIVE)" "$(TARBALL)"; \
 	rm -rf build/vignettes; \
 	mv "$$stage/$(PKGNAME)/inst/doc" build/vignettes
+
+.PHONY: check-public-content test-public-content
+check-public-content:
+	@python3 tools/check-public-content.py
+
+test-public-content:
+	@python3 tools/tests/test-public-content.py
 
 check: build
 	RGL_USE_NULL=TRUE $(R_RUN) CMD check --no-manual $(TARBALL)
@@ -64,6 +72,7 @@ audit-distribution: audit-installed
 site: audit-distribution
 	$(RSCRIPT_RUN) tools/build_site.R $(TARBALL)
 	python3 tools/check_site.py build/site
+	python3 tools/check-public-content.py --tree build/site
 
 readme-retinal-layout:
 	$(RSCRIPT_RUN) tools/prepare-retinal-readme.R

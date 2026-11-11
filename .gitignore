@@ -33,7 +33,7 @@ artifacts/
 tests/testthat.Rout*
 .Rout
 
-# Internal working records belong in ~/.codex/private/ivue/.
+# Keep investigation records outside the source repository.
 /MIGRATION.md
 /MIGRATION_STATUS.md
 /RELEASE_VALIDATION.md

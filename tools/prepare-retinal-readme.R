@@ -17,14 +17,14 @@ out <- file.path("artifacts", "retinal-readme")
 raw.dir <- file.path(out, "raw")
 dir.create(raw.dir, recursive = TRUE, showWarnings = FALSE)
 
-default.metadata <- path.expand(paste0(
-    "~/current_projects/retinal_development/data/",
+default.metadata <- file.path(
+    raw.dir,
     "10x_Mouse_retina_pData_umap2_CellType_annot_w_horiz.csv"
-))
-default.high.variance <- path.expand(paste0(
-    "~/current_projects/retinal_development/data/",
+)
+default.high.variance <- file.path(
+    raw.dir,
     "NIHMS1529461-supplement-7.xlsx"
-))
+)
 paths <- c(
     counts = Sys.getenv(
         "IVUE_RETINAL_COUNTS",

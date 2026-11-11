@@ -1,7 +1,7 @@
 # Run after creating X: one row per observation, with columns x, y, z.
 # geometry is an add-on package, not part of base R:
 # install.packages("geometry")
-# During local ivue development, first use pkgload::load_all("~/current_projects/ivue").
+# During local ivue development, first use pkgload::load_all(".") from the ivue source directory.
 
 # Triangulate the ORIGINAL two-dimensional parameter coordinates, once.
 triangles <- geometry::delaunayn(X[, c("x", "y")])

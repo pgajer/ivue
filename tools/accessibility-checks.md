@@ -51,13 +51,10 @@ and stopping a removed player that was playing.
 
 Native Safari 26.6 on macOS 26.6.1 passed a smaller manual check: scene naming,
 keyboard frame stepping, rotation/reset and readable camera settings. Its Shiny
-scene updated its description and retained one expanded camera panel; the
-window became unavailable before the full native Shiny sequence finished.
-This is partial Safari qualification, not evidence that every automated check
-was repeated there.
+scene updated its description and retained one expanded camera panel. The full
+Shiny sequence was not completed in native Safari, so these results establish
+only partial Safari qualification.
 
-NVDA/Windows is untested: no environment or tester was available. VoiceOver
-could be enabled locally, but the automation tool could not expose its caption
-window or spoken output. Safari keyboard/AX results are therefore recorded
-separately from an actual screen-reader listening pass. Both speech checks
-remain open qualifications; no accessibility-conformance claim is made.
+NVDA/Windows and VoiceOver speech output remain untested. The Safari keyboard
+and accessibility-tree checks do not establish screen-reader usability.
+No accessibility-conformance claim is made.

@@ -1,5 +1,5 @@
 args <- commandArgs(trailingOnly = TRUE)
-source.root <- if (length(args)) path.expand(args[1L]) else path.expand("~/current_projects/gflow")
+source.root <- if (length(args)) path.expand(args[1L]) else path.expand(Sys.getenv("IVUE_GFLOW_SOURCE", "../gflow"))
 options(rgl.useNULL = TRUE)
 functions <- c("plot3D.plain.widget", "plot3D.cont.widget", "plot3D.cltrs.widget",
                ".run_plot3d_html_layers", "label.end.pts", "quantize.cont.var")

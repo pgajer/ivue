@@ -19,6 +19,11 @@ jobs:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Check public repository content
+        run: python tools/check-public-content.py
       - uses: r-lib/actions/setup-r@v2
         with:
           use-public-rspm: true
@@ -31,6 +36,9 @@ jobs:
       - run: make site R_ENV=env -o document
       - run: git diff --exit-code
       - uses: actions/configure-pages@v5
+      - name: Check rendered public content
+        run: python tools/check-public-content.py --tree build/site
+
       - uses: actions/upload-pages-artifact@v3
         with:
           path: build/site

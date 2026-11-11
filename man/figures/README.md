@@ -150,8 +150,9 @@ By default, place them at `artifacts/retinal-readme/raw/` using their GEO names:
 [`GSE118614_10x_aggregate.mtx.gz`](https://ftp.ncbi.nlm.nih.gov/geo/series/GSE118nnn/GSE118614/suppl/GSE118614_10x_aggregate.mtx.gz),
 [`GSE118614_barcodes.tsv.gz`](https://ftp.ncbi.nlm.nih.gov/geo/series/GSE118nnn/GSE118614/suppl/GSE118614_barcodes.tsv.gz), and
 [`GSE118614_genes.tsv.gz`](https://ftp.ncbi.nlm.nih.gov/geo/series/GSE118nnn/GSE118614/suppl/GSE118614_genes.tsv.gz).
-The annotated retained-cell metadata and Supplementary Table S4 default to
-`~/current_projects/retinal_development`.
+Place the annotated retained-cell metadata
+(`10x_Mouse_retina_pData_umap2_CellType_annot_w_horiz.csv`) and Supplementary
+Table S4 (`NIHMS1529461-supplement-7.xlsx`) in the same raw-data directory.
 Override any source with `IVUE_RETINAL_COUNTS`, `IVUE_RETINAL_FEATURES`,
 `IVUE_RETINAL_CELLS`, `IVUE_RETINAL_DATA`, or
 `IVUE_RETINAL_HIGH_VARIANCE`. The source data, cached PCs, and prepared graph

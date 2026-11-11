@@ -3,8 +3,7 @@
 Run commands from the package root. `R/`, vignette `.Rmd` files, README.md,
 and `tools/site-index.html` are maintained sources. `man/*.Rd` and NAMESPACE
 come from roxygen; `build/`, check directories, and `artifacts/` are disposable
-outputs excluded from source packages and Git. Private investigation records
-live outside this repository. The reusable `check_*` scripts implement the
+outputs excluded from source packages and Git. The reusable `check_*` scripts implement the
 Makefile and CI checks described below.
 
 ## Routine changes

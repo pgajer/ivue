@@ -96,7 +96,7 @@ states a prepublication consent restriction tied to January 1, 2019.
 Public availability and the elapsed date do not establish public-domain status
 or a new permission grant. The package's GPL code license does not establish
 rights in third-party values. See the installed `extdata/README.md` and
-`retina$provenance$source.terms` for the documented review and limitations.
+`retina$provenance$source.terms` for the source terms and limitations.
 
 ## Shared categorical scales
 

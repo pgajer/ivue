@@ -331,7 +331,7 @@ The values come from [Clark et al. (2019)](https://doi.org/10.1016/j.neuron.2019
 GEO GSE118614, and the Goff lab's published coordinates and annotations.
 Their [source use agreement](https://github.com/gofflab/developing_mouse_retina_scRNASeq/blob/3bfeea29ecc957d59e4a156229449b060ffda0a8/README.md#use-agreement)
 contains a prepublication consent restriction tied to January 1, 2019.
-The documented source review found no separate dataset license. Public
+The available source documentation provides no separate dataset license. Public
 availability and the elapsed date are not a public-domain claim or a new
 permission grant; the package's GPL code license does not establish rights
 in third-party values. The installed `extdata/README.md` and stored

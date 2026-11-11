@@ -1,0 +1,28 @@
+:root { color-scheme: light; font-family: system-ui, -apple-system, sans-serif; color: #263438; background: #fff; }
+* { box-sizing: border-box; letter-spacing: 0; }
+body { margin: 0; }
+main { max-width: 1440px; margin: auto; padding: 30px 28px; }
+.eyebrow { color: #657477; font-size: 12px; text-transform: uppercase; margin: 0 0 8px; }
+h1 { font-size: 28px; font-weight: 650; margin: 0 0 10px; }
+.intro { max-width: 960px; font-size: 15px; line-height: 1.6; margin: 0 0 22px; }
+.toolbar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 12px 0; border-top: 1px solid #dce3e3; border-bottom: 1px solid #dce3e3; }
+.buttons { display: flex; gap: 5px; flex-wrap: wrap; }
+button { width: 38px; height: 36px; background: #fff; border: 1px solid #b6c3c5; border-radius: 4px; color: #284347; font-size: 20px; cursor: pointer; }
+button:hover { background: #edf4f3; }
+button:focus-visible { outline: 2px solid #137e81; outline-offset: 2px; }
+button[aria-pressed="true"] { background: #d7eeea; }
+.camera-note { font-size: 13px; color: #5e6e72; }
+.views { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 20px; }
+.view { min-width: 0; padding-top: 22px; }
+h2 { font-size: 18px; font-weight: 600; margin: 0 0 6px; }
+.rglWebGL { width: 100% !important; max-width: 100%; }
+.ivue-description { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.legend-band { border-top: 1px solid #dce3e3; padding: 16px 0; display: flex; gap: 15px; align-items: baseline; flex-wrap: wrap; font-size: 13px; }
+.legend { display: flex; gap: 9px 16px; flex-wrap: wrap; }
+.legend span { display: inline-flex; gap: 6px; align-items: center; }
+.legend i { width: 11px; height: 11px; border-radius: 50%; flex: none; }
+.note, details { font-size: 14px; line-height: 1.65; max-width: 1080px; }
+.note { margin: 0 0 15px; }
+details summary { cursor: pointer; font-weight: 600; }
+footer { font-size: 12px; color: #6b777a; margin-top: 22px; }
+@media(max-width: 700px) { main { padding: 22px 16px; } h1 { font-size: 24px; } .views { grid-template-columns: minmax(0,1fr); gap: 0; } .view { padding-top: 18px; } }
