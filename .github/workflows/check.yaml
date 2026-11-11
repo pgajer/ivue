@@ -69,6 +69,7 @@ jobs:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       PKG_USE_BIOCONDUCTOR: "false"
       _R_CHECK_FORCE_SUGGESTS_: "false"
+      _R_CHECK_CRAN_INCOMING_: "false"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v6
