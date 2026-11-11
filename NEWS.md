@@ -11,6 +11,8 @@
 
 # ivue 0.1.0
 
+Initial release.
+
 - **README figures:** static retinal alternatives use version-pinned web links
   so they remain accessible from the source package, which excludes large
   repository figure assets.
@@ -29,7 +31,6 @@
 - **Guide navigation:** task links and function-help links work in installed
   and hosted documentation, with a persistent first-export recipe.
 
-
 - Prepared graphs and color scales now print concise summaries while retaining
   full list access.
 - Point and graph views accept common framing `limits`, scene `description`,
@@ -38,8 +39,6 @@
   Installed guides include small static saddle and animation alternatives.
 - `animate.frames()` accepts a fixed `mapping` and interpretation `caption`,
   retained in saved HTML, and gives its player and slider descriptive names.
-
-Initial release.
 
 - **Getting started:** installed package help is visible in the help index,
   links directly to all five guides, and includes a small executable example.

@@ -14,12 +14,15 @@
 #' [plot3D.plain()] shows a point cloud, [plot3D.cont()] maps numerical values,
 #' and [plot3D.groups()] maps categorical annotations. Each returns a browser
 #' widget. Printing it in RStudio opens the Viewer; in an interactive R console
-#' it opens the browser. Function execution itself does not launch a browser.
-#' Use `htmlwidgets::saveWidget()` to export HTML for later viewing or sharing.
+#' it opens the browser. Calling one of these functions does not by itself
+#' open a browser. Use `htmlwidgets::saveWidget()` to export HTML for later
+#' viewing or sharing.
 #'
-#' [prepare.graph()] exposes IDs, edge order, and attributes before rendering.
-#' [plot3D.graph()] accepts that object with supplied coordinates or an explicit
-#' layout. Weights do not automatically control edge width or color.
+#' [prepare.graph()] checks a graph and returns its vertex IDs, edges in a
+#' fixed order, and attributes, so that you can inspect them before plotting.
+#' [plot3D.graph()] draws the prepared graph at coordinates that you supply or
+#' that a layout computes. Edge weights do not determine edge width or color
+#' unless you set these yourself.
 #'
 #' @section Guides:
 #' Five installed vignettes provide complementary starting points:

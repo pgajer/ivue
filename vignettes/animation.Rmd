@@ -137,7 +137,7 @@ motion. Use the labeled frame slider with the arrow keys to inspect one frame
 at a time without starting playback.
 
 
-Any sequence satisfying the frame contract can be played. This example explicitly
+Any sequence of frames that meets the requirements above can be played. This example explicitly
 constructs a sequence from a plane to a saddle; it is an illustrative
 deformation, not the output of a layout optimizer. The xy positions and
 vertex identities are fixed while the height changes. A 7-by-7 grid and

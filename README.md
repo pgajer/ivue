@@ -65,8 +65,9 @@ zoom it. No native graphics window or XQuartz setup is needed. Assign the
 returned widget to a variable to reuse it or save it with
 `htmlwidgets::saveWidget()`.
 
-With explicit coordinate row IDs, named annotations match those IDs in both
-point-cloud and graph views. Unnamed annotations follow row order. See the
+If the coordinate matrix has row names, they identify the observations, and
+a named annotation vector is matched to them by name in both point-cloud and
+graph views. An unnamed annotation vector is taken in row order. See the
 [input recipes](https://pgajer.github.io/ivue/doc/example-data.html#construct-a-point-cloud) for checks
 and a shuffled-annotation example.
 
@@ -94,7 +95,8 @@ renders the supplied coordinates without computing the embeddings.
 The vignettes develop these examples and show how to adapt them to your data:
 
 - [Finding your way around ivue](https://pgajer.github.io/ivue/doc/function-guide.html): choose a task,
-  find its public functions, and check input and export contracts.
+  find the functions for it, and see what inputs they expect and how to
+  export the result.
 - [Example data and recipes](https://pgajer.github.io/ivue/doc/example-data.html): prepare reproducible
   point clouds, graphs, and frames, with shared scales and cameras.
 - [Point clouds and weighted graphs](https://pgajer.github.io/ivue/doc/ivue-introduction.html): colors,

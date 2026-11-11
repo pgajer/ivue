@@ -21,12 +21,15 @@ Color mapping and \code{\link[=prepare.graph]{prepare.graph()}} work without it.
 \code{\link[=plot3D.plain]{plot3D.plain()}} shows a point cloud, \code{\link[=plot3D.cont]{plot3D.cont()}} maps numerical values,
 and \code{\link[=plot3D.groups]{plot3D.groups()}} maps categorical annotations. Each returns a browser
 widget. Printing it in RStudio opens the Viewer; in an interactive R console
-it opens the browser. Function execution itself does not launch a browser.
-Use \code{htmlwidgets::saveWidget()} to export HTML for later viewing or sharing.
+it opens the browser. Calling one of these functions does not by itself
+open a browser. Use \code{htmlwidgets::saveWidget()} to export HTML for later
+viewing or sharing.
 
-\code{\link[=prepare.graph]{prepare.graph()}} exposes IDs, edge order, and attributes before rendering.
-\code{\link[=plot3D.graph]{plot3D.graph()}} accepts that object with supplied coordinates or an explicit
-layout. Weights do not automatically control edge width or color.
+\code{\link[=prepare.graph]{prepare.graph()}} checks a graph and returns its vertex IDs, edges in a
+fixed order, and attributes, so that you can inspect them before plotting.
+\code{\link[=plot3D.graph]{plot3D.graph()}} draws the prepared graph at coordinates that you supply or
+that a layout computes. Edge weights do not determine edge width or color
+unless you set these yourself.
 }
 
 \section{Guides}{

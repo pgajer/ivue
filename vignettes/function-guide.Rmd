@@ -143,21 +143,25 @@ highlight overrides. See [groups and highlighting](ivue-introduction.html#groups
 
 ## Function catalog
 
-This catalog covers all **18 explicit public function exports**, once each.
-ivue registers **2 S3 methods**: `print()` summarizes prepared graphs and color
-scales without rendering; `$vertices`, `$edges`, and scale fields retain the full
-data. These methods are described through their object workflows, not counted
-as separate function rows. ivue re-exports no functions. Dots in names such
-as `plot3D.cont` do not make them registered methods of `plot3D()` or `plot()`.
-Call these functions directly. The returned widgets use printing and knitting
-methods supplied by htmlwidgets/rgl; ivue does not add a separate widget
-printing interface. Prepared graphs, scales, and layers are lists carrying
-classes, inspected with ordinary R list operations.
+The tables below list all **18 explicit public function exports** of ivue,
+each exactly once. ivue also registers **2 S3 methods**, both for `print()`:
+printing a prepared graph or a color scale shows a short summary, and the
+full data remain available in `$vertices`, `$edges`, and the fields of the
+scale. These methods have no rows of their own in the tables. ivue re-exports
+no functions from other packages.
 
-In an R session, every name below has help, for example
-`help("plot3D.cont", package = "ivue")`. Shared help topics describe related
-functions together. Internal dot-prefixed helpers are implementation details.
-The repository's `make audit-guide` checks catalog coverage and help aliases.
+The dots in names such as `plot3D.cont` are part of the name. These functions
+are not methods of a generic `plot3D()` or of `plot()`, so call them by their
+full names. The widgets they return are printed and knitted by htmlwidgets
+and rgl; ivue adds no printing method for widgets. Prepared graphs, color
+scales, and layers are lists with a class attribute, and you can inspect them
+with the usual list operations.
+
+Every function below has a help page, for example
+`help("plot3D.cont", package = "ivue")`; some related functions share one
+page. Functions whose names begin with a dot are internal. In the source
+repository, `make audit-guide` checks that this catalog lists every exported
+function and that each has a help page.
 
 ### Point clouds and annotations
 
@@ -225,7 +229,7 @@ Out-of-range values are squished to the endpoints by default. `oob = "censor"`
 uses `na.color`; `oob = "error"` rejects them. Missing values use `na.color`
 (default `"gray80"`). No default winsorization occurs. In `mode = "binned"`,
 choose uniform or quantile bins, or explicit increasing breaks; the intervals
-are right-closed, with the lowest endpoint included. The [scale help](../html/color.scale.cont.html) gives the contracts for
+are right-closed, with the lowest endpoint included. The [scale help](../html/color.scale.cont.html) gives the rules for
 explicit breaks, winsorization, and legend precision.
 
 Factors retain level order, including unused nonmissing levels. Other group
@@ -240,7 +244,7 @@ function runs at mapping time on data-unit values after out-of-range handling.
 It must return one color per value and be deterministic and **pointwise**:
 the same value must have the same color when mapped alone, reordered, or in
 another batch. Observations, legend ticks, and the ramp are separate calls.
-`function(x) ifelse(x < 0, "blue", "red")` obeys that contract; recomputing
+`function(x) ifelse(x < 0, "blue", "red")` satisfies this requirement; recomputing
 `range(x)` or ranks inside each call does not, even without mutable external
 state. Prefer a palette with fixed limits for ordinary comparisons. Supply
 `color.map` or `palette`, not both.

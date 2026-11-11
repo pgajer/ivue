@@ -33,7 +33,7 @@ extended plotting controls.
 | Finite n-by-3 positions and one numerical value per row | `color.scale.cont()`, `plot3D.cont()` | Coordinates, IDs, scale, initial camera, HTML widget. |
 | The same positions and category labels | `color.scale.groups()`, `plot3D.groups()` | Named palette, level order, annotations, HTML widget. |
 | A vertex set, weighted edges, and supplied positions | `prepare.graph()`, `plot3D.graph()`, optional layers | Vertex IDs, normalized edge order, weight meaning, coordinates. |
-| Triangle indices or an independent height grid | `layer3D.mesh()` or `layer3D.surface()` with a point plot | Connectivity or grid coordinates; these have different reuse semantics. |
+| Triangle indices or an independent height grid | `layer3D.mesh()` or `layer3D.surface()` with a point plot | Connectivity or grid coordinates; the two are reused in different ways. |
 | Stable observation rows over two or more frames | `map.colors()`, `animate.frames()` | Original frames and labels, retained indices, fixed colors, player. |
 | A finished static or animated view | `htmlwidgets::saveWidget()`; for animation, `write.animation.gif()` | Interactive HTML plus dependencies, or a noninteractive GIF. |
 
